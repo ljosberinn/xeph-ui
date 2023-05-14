@@ -1,0 +1,9 @@
+{
+    "Lua.diagnostics.globals": [
+        "PlayerFrame",
+        "CR_VERSATILITY_DAMAGE_DONE",
+        "Plater",
+        "aura_env",
+        "WeakAuras",
+    ]
+}

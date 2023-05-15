@@ -57,6 +57,7 @@ function (self, unitId, unitFrame, envTable)
         ["Decay Totem"] = "Decay Totem",
         --Halls of Infusion
         --Neltharus
+        ["Chargath, Bane of Scales"] = "Chargath",
         --The Nokhud Offensive
         ["Stormsurge Totem"] = "Storm Totem",
         ["Stormcaller Solongo"] = "Stormcaller",

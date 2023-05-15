@@ -210,7 +210,7 @@ aura_env.setup = function()
 
                 --- @type table<number, boolean>
                 local buffAllowList = {}
-                if ability.buffs[1].amplification > 0 and ability.buffs[1].id > 0 then
+                if ability.buffs[1].id > 0 then
                     for _, info in pairs(ability.buffs[1].allowlist) do
                         buffAllowList[info.id] = true
                     end
@@ -218,7 +218,7 @@ aura_env.setup = function()
 
                 --- @type table<number, boolean>
                 local debuffAllowList = {}
-                if ability.debuffs[1].amplification > 0 and ability.debuffs[1].id > 0 then
+                if ability.debuffs[1].id > 0 then
                     for _, info in pairs(ability.debuffs[1].allowlist) do
                         debuffAllowList[info.id] = true
                     end
@@ -245,18 +245,17 @@ aura_env.setup = function()
                     icon = icon,
                     total = 0,
                     buffAmplifier = ability.buffs[1].amplification,
-                    buffTrigger = ability.buffs[1].amplification > 0 and ability.buffs[1].id or 0,
+                    buffTrigger = ability.buffs[1].id,
                     buffAllowList = buffAllowList,
                     buffTargets = {},
                     debuffAmplifier = ability.debuffs[1].amplification,
-                    debuffTrigger = ability.debuffs[1].amplification and ability.debuffs[1].id or 0,
+                    debuffTrigger = ability.debuffs[1].id,
                     debuffAllowList = debuffAllowList,
                     debuffTargets = {},
                     damageTrigger = damageTrigger,
                     healTrigger = healTrigger,
                     resetOnSpell = ability.castSpellId,
-                    ownOnly = ability.ownOnly,
-                    name = ability.name
+                    ownOnly = ability.ownOnly
                 }
 
                 table.insert(cache, cacheEntry)
@@ -460,7 +459,7 @@ local function handleDamageEvent(...)
 
         if mayProceed and ability.buffTrigger > 0 then
             if
-                ability.buffTargets[sourceGUID] == nil or getLength(ability.buffAllowList) > 0 or
+                ability.buffTargets[sourceGUID] == nil or getLength(ability.buffAllowList) == 0 or
                     ability.buffAllowList[spellId] ~= true
              then
                 mayProceed = false

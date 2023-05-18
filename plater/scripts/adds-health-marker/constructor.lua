@@ -114,7 +114,7 @@ function (self, unitId, unitFrame, envTable, scriptTable)
         [200912] = {50}, -- Neldris, Experiment
         [200913] = {50}, -- Thadrion, Experiment
         [199659] = {25}, --Warlord Kagni, Assault of the Zaqali
-        [201754] = {40}, -- Sarkareth
+        [201754] = {65, 40}, -- Sarkareth
         -- Vault of the Incarnates
         [181378] = {66, 33}, --Kurog Grimtotem, 
         [194990] = {50}, -- Stormseeker Acolyte

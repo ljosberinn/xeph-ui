@@ -22,9 +22,13 @@ do
 end
 
 local abilities = {
-    [185123] = {
+    [185123] = { -- throw glaive
         determineCost = function()
-            return 25
+            if IsPlayerSpell(393029) then -- Furious Throws
+                return 25
+            end
+
+            return 0
         end
     },
     [162794] = { -- chaos strike

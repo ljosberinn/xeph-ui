@@ -5,6 +5,7 @@
         "Plater",
         "aura_env",
         "WeakAuras",
-        "TooltipUtil"
+        "TooltipUtil",
+        "WA_GetUnitBuff"
     ]
 }

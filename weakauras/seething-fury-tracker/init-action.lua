@@ -1,27 +1,15 @@
-aura_env.prevFury = 0
-aura_env.currentFury = 0
 aura_env.furySpent = 0
 aura_env.threshold = 175
-aura_env.seethingFuryActive = false
+aura_env.seethingFuryBuffId = 408737
 
---- @return boolean
-local function isSeethingFuryActive()
-    return WA_GetUnitBuff("player", 408737) ~= nil
-end
+aura_env.seethingFuryActive = WA_GetUnitBuff("player", aura_env.seethingFuryBuffId) ~= nil
 
---- @return number
-local function getCurrentFury()
-    return UnitPower("player", 17)
-end
-
-do
-    local currentFury = getCurrentFury()
-    aura_env.prevFury = currentFury
-    aura_env.currentFury = currentFury
-    aura_env.seethingFuryActive = isSeethingFuryActive()
-end
-
-local abilities = {
+aura_env.abilities = {
+    [342817] = { -- glaive tempest
+        determineCost = function()
+            return 30
+        end,
+    },
     [185123] = { -- throw glaive
         determineCost = function()
             if IsPlayerSpell(393029) then -- Furious Throws
@@ -71,34 +59,3 @@ local abilities = {
         end
     }
 }
-
-aura_env.onPlayerAuraUpdate = function()
-    local hasBuff = isSeethingFuryActive()
-
-    if hasBuff and not aura_env.seethingFuryActive then
-        aura_env.seethingFuryActive = true
-
-        local remainder = aura_env.furySpent - aura_env.threshold
-
-        if remainder <= 0 then
-            aura_env.furySpent = 0
-        else
-            aura_env.furySpent = remainder
-        end
-
-    elseif not hasBuff and aura_env.seethingFuryActive then
-        aura_env.seethingFuryActive = false
-    end
-end
-
-aura_env.onPlayerSpellCastSuccess = function(spellId)
-    if not abilities[spellId] then
-        return
-    end
-    
-    local cost = abilities[spellId].determineCost()
-    
-    if cost and cost > 0 then
-        aura_env.furySpent = aura_env.furySpent + cost
-    end
-end

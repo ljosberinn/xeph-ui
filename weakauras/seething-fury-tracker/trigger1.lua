@@ -1,7 +1,13 @@
 -- UNIT_SPELLCAST_SUCCEEDED:player, CLEU:SPELL_AURA_REFRESH, CLEU:SPELL_AURA_APPLIED, CLEU:SPELL_AURA_REMOVED
---- @param event "UNIT_SPELLCAST_SUCCEEDED" | "COMBAT_LOG_EVENT_UNFILTERED"
+--- @param event "UNIT_SPELLCAST_SUCCEEDED" | "COMBAT_LOG_EVENT_UNFILTERED" | "PLAYER_DEAD"
 --- @return boolean
 function (event, ...)
+    if event == "PLAYER_DEAD" then
+        aura_env.furySpent = 0
+
+        return true
+    end
+
     if event == "UNIT_SPELLCAST_SUCCEEDED" then
         local unit, _, spellId = ...
 

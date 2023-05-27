@@ -76,6 +76,7 @@ end
 --- @field buffs table<number, DeBuff>
 --- @field debuffs table<number, DeBuff>
 --- @field ownOnly boolean whether to only count own spells
+--- @field name string
 
 --- @class AuraEnvironmentConfig
 --- @field abilities table<number, ConfigAbility>
@@ -154,180 +155,175 @@ aura_env.setup = function()
         [39] = 73
     }
 
+    local function getIcon(id)
+        return select(3, GetSpellInfo(id))
+    end
+
     --- @param ability ConfigAbility
     --- @return number
-    local function findIconIdForLookup(ability)
+    local function resolveIcon(ability)
+        if ability.iconId > 0 then
+            return ability.iconId
+        end
+
         if ability.buffs[1].id > 0 then
-            return ability.buffs[1].id
+            return getIcon(ability.buffs[1].id)
         end
 
         if ability.debuffs[1].id > 0 then
-            return ability.debuffs[1].id
+            return getIcon(ability.debuffs[1].id)
         end
 
         if #ability.damage > 0 then
-            return ability.damage[1].id
+            return getIcon(ability.damage[1].id)
         end
 
         if #ability.healing > 0 then
-            return ability.healing[1].id
+            return getIcon(ability.healing[1].id)
         end
 
         if ability.castSpellId > 0 then
-            return ability.castSpellId
+            return getIcon(ability.castSpellId)
         end
 
-        return 0
+        -- somehow, couldn't determine an icon. use questionmark to not look stupid
+        return 134400
+    end
+
+    --- @param ability ConfigAbility
+    --- @return boolean
+    local function thisSpellShouldLoad(ability)
+        if not ability.active then
+            return false
+        end
+
+        for index, selected in pairs(ability.specs) do
+            if selected then
+                local specId = specToIdList[index]
+
+                if specId == currentSpecId then
+                    return true
+                end
+            end
+        end
+
+        return false
     end
 
     for _, ability in pairs(aura_env.config.abilities) do
-        if ability.active then
-            local shouldLoad = false
+        if thisSpellShouldLoad(ability) then
+            local icon = resolveIcon(ability)
 
-            for index, selected in pairs(ability.specs) do
-                if selected then
-                    local specId = specToIdList[index]
-
-                    if specId == currentSpecId then
-                        shouldLoad = true
-                        break
-                    end
+            --- @type table<number, boolean>
+            local buffAllowList = {}
+            if ability.buffs[1].id > 0 then
+                for _, info in pairs(ability.buffs[1].allowlist) do
+                    buffAllowList[info.id] = true
                 end
             end
 
-            if shouldLoad then
-                local icon = nil
-                local iconIdToLookup = findIconIdForLookup(ability)
-
-                if iconIdToLookup > 0 then
-                    icon = select(3, GetSpellInfo(iconIdToLookup))
-                elseif ability.iconId > 0 then
-                    icon = ability.iconId
-                else
-                    -- somehow, couldn't determine an icon. use questionmark to not look stupid
-                    icon = 134400
+            --- @type table<number, boolean>
+            local debuffAllowList = {}
+            if ability.debuffs[1].id > 0 then
+                for _, info in pairs(ability.debuffs[1].allowlist) do
+                    debuffAllowList[info.id] = true
                 end
-
-                --- @type table<number, boolean>
-                local buffAllowList = {}
-                if ability.buffs[1].id > 0 then
-                    for _, info in pairs(ability.buffs[1].allowlist) do
-                        buffAllowList[info.id] = true
-                    end
-                end
-
-                --- @type table<number, boolean>
-                local debuffAllowList = {}
-                if ability.debuffs[1].id > 0 then
-                    for _, info in pairs(ability.debuffs[1].allowlist) do
-                        debuffAllowList[info.id] = true
-                    end
-                end
-
-                --- @type table<number, boolean>
-                local damageTrigger = {}
-                for _, info in pairs(ability.damage) do
-                    damageTrigger[info.id] = true
-                end
-
-                --- @type table<number, boolean>
-                local healTrigger = {}
-                for _, info in pairs(ability.healing) do
-                    healTrigger[info.id] = true
-                end
-
-                hasPeriodicDamage = hasPeriodicDamage or ability.hasDots
-                hasPeriodicHealing = hasPeriodicHealing or ability.hasHots
-
-                --- @type CacheEntry
-                local cacheEntry = {
-                    lastModified = nil,
-                    icon = icon,
-                    total = 0,
-                    buffAmplifier = ability.buffs[1].amplification,
-                    buffTrigger = ability.buffs[1].id,
-                    buffAllowList = buffAllowList,
-                    buffTargets = {},
-                    debuffAmplifier = ability.debuffs[1].amplification,
-                    debuffTrigger = ability.debuffs[1].id,
-                    debuffAllowList = debuffAllowList,
-                    debuffTargets = {},
-                    damageTrigger = damageTrigger,
-                    healTrigger = healTrigger,
-                    resetOnSpell = ability.castSpellId,
-                    ownOnly = ability.ownOnly
-                }
-
-                table.insert(cache, cacheEntry)
             end
+
+            --- @type table<number, boolean>
+            local damageTrigger = {}
+            for _, info in pairs(ability.damage) do
+                damageTrigger[info.id] = true
+            end
+
+            --- @type table<number, boolean>
+            local healTrigger = {}
+            for _, info in pairs(ability.healing) do
+                healTrigger[info.id] = true
+                hasHeal = true
+            end
+
+            if ability.hasDots then
+                hasPeriodicDamage = true
+            end
+
+            if ability.hasHots then
+                hasPeriodicHealing = true
+            end
+
+            if ability.buffs[1].id > 0 then
+                hasBuffs = true
+                hasBuffsOrDebuffs = true
+            end
+
+            if ability.debuffs[1].id > 0 then
+                hasDebuffs = true
+                hasBuffsOrDebuffs = true
+            end
+
+            --- @type CacheEntry
+            local cacheEntry = {
+                lastModified = nil,
+                icon = icon,
+                total = 0,
+                buffAmplifier = ability.buffs[1].amplification,
+                buffTrigger = ability.buffs[1].id,
+                buffAllowList = buffAllowList,
+                buffTargets = {},
+                debuffAmplifier = ability.debuffs[1].amplification,
+                debuffTrigger = ability.debuffs[1].id,
+                debuffAllowList = debuffAllowList,
+                debuffTargets = {},
+                damageTrigger = damageTrigger,
+                healTrigger = healTrigger,
+                resetOnSpell = ability.castSpellId,
+                ownOnly = ability.ownOnly
+            }
+
+            table.insert(cache, cacheEntry)
         end
     end
 
     aura_env.active = #cache > 0
 
+    --- @param tbl table<number, table<number, number>>
+    --- @param trigger integer
+    --- @param index integer
+    local function populateForSpell(tbl, trigger, index)
+        if not tbl[trigger] then
+            tbl[trigger] = {}
+        end
+
+        table.insert(tbl[trigger], index)
+    end
+
     for index, entry in pairs(cache) do
         if entry.resetOnSpell > 0 then
-            if not keyMaps.cast[entry.resetOnSpell] then
-                keyMaps.cast[entry.resetOnSpell] = {}
-            end
-
-            table.insert(keyMaps.cast[entry.resetOnSpell], index)
+            populateForSpell(keyMaps.cast, entry.resetOnSpell, index)
         end
 
         if entry.buffTrigger > 0 then
-            if not keyMaps.buff[entry.buffTrigger] then
-                keyMaps.buff[entry.buffTrigger] = {}
-            end
-
-            table.insert(keyMaps.buff[entry.buffTrigger], index)
+            populateForSpell(keyMaps.buff, entry.buffTrigger, index)
 
             for id in pairs(entry.buffAllowList) do
-                if not keyMaps.damage[id] then
-                    keyMaps.damage[id] = {}
-                end
-
-                table.insert(keyMaps.damage[id], index)
+                populateForSpell(keyMaps.damage, id, index)
             end
-
-            hasBuffs = true
-            hasBuffsOrDebuffs = true
         end
 
         if entry.debuffTrigger > 0 then
-            if not keyMaps.debuff[entry.debuffTrigger] then
-                keyMaps.debuff[entry.debuffTrigger] = {}
-            end
-
-            table.insert(keyMaps.debuff[entry.debuffTrigger], index)
+            populateForSpell(keyMaps.debuff, entry.debuffTrigger, index)
 
             for id in pairs(entry.debuffAllowList) do
-                if not keyMaps.damage[id] then
-                    keyMaps.damage[id] = {}
-                end
-
-                table.insert(keyMaps.damage[id], index)
+                populateForSpell(keyMaps.damage, id, index)
             end
-
-            hasDebuffs = true
-            hasBuffsOrDebuffs = true
         end
 
         for key in pairs(entry.damageTrigger) do
-            if not keyMaps.damage[key] then
-                keyMaps.damage[key] = {}
-            end
-
-            table.insert(keyMaps.damage[key], index)
+            populateForSpell(keyMaps.damage, key, index)
         end
 
         for key in pairs(entry.healTrigger) do
-            if not keyMaps.heal[key] then
-                keyMaps.heal[key] = {}
-            end
-
-            table.insert(keyMaps.heal[key], index)
-
-            hasHeal = true
+            populateForSpell(keyMaps.heal, key, index)
         end
     end
 end
@@ -426,10 +422,18 @@ end
 --- @return number
 local function getLength(tbl)
     local count = 0
+
     for _ in pairs(tbl) do
         count = count + 1
     end
+
     return count
+end
+
+--- @param guid string
+--- @return boolean
+local function isBasicallyMe(guid)
+    return guid == WeakAuras.myGUID or isMyPet(guid) or false
 end
 
 --- @return boolean
@@ -454,7 +458,7 @@ local function handleDamageEvent(...)
         local mayProceed = true
 
         if ability.ownOnly then
-            mayProceed = sourceGUID == WeakAuras.myGUID or isMyPet(sourceGUID) or false
+            mayProceed = isBasicallyMe(sourceGUID)
         end
 
         if mayProceed and ability.buffTrigger > 0 then
@@ -527,7 +531,7 @@ local function handleHealEvent(...)
         local mayProceed = true
 
         if ability.ownOnly then
-            mayProceed = sourceGUID == WeakAuras.myGUID or isMyPet(sourceGUID) or false
+            mayProceed = isBasicallyMe(sourceGUID)
         end
 
         if mayProceed and ability.buffTrigger > 0 then
@@ -603,22 +607,22 @@ local function handleAuraApplication(...)
         for _, key in pairs(keys) do
             cache[key].buffTargets[targetGUID] = stacks
         end
-    else
-        if not hasDebuffs then
-            return false
-        end
+    end
 
-        local keys = keyMaps.debuff[spellId]
+    if not hasDebuffs then
+        return false
+    end
 
-        if not keys then
-            return false
-        end
+    local keys = keyMaps.debuff[spellId]
 
-        stacks = stacks or 1
+    if not keys then
+        return false
+    end
 
-        for _, key in pairs(keys) do
-            cache[key].debuffTargets[targetGUID] = stacks
-        end
+    stacks = stacks or 1
+
+    for _, key in pairs(keys) do
+        cache[key].debuffTargets[targetGUID] = stacks
     end
 
     return false
@@ -651,24 +655,26 @@ local function handleAuraRemoval(...)
                 cache[key].buffTargets[targetGUID] = stacks
             end
         end
-    else
-        if not hasDebuffs then
-            return false
-        end
 
-        local keys = keyMaps.debuff[spellId]
+        return false
+    end
 
-        if not keys then
-            return false
-        end
+    if not hasDebuffs then
+        return false
+    end
 
-        -- since this fn is used for both general aura removal and individual stacks
-        stacks = stacks or nil
+    local keys = keyMaps.debuff[spellId]
 
-        for _, key in pairs(keys) do
-            if cache[key].debuffTargets[targetGUID] then
-                cache[key].debuffTargets[targetGUID] = stacks
-            end
+    if not keys then
+        return false
+    end
+
+    -- since this fn is used for both general aura removal and individual stacks
+    stacks = stacks or nil
+
+    for _, key in pairs(keys) do
+        if cache[key].debuffTargets[targetGUID] then
+            cache[key].debuffTargets[targetGUID] = stacks
         end
     end
 
@@ -778,7 +784,7 @@ end
 --- to just assume whenever you leave combat, we can drop all seen debuff stacks
 --- @return boolean
 aura_env.onPlayerRegenEnabled = function()
-    if not hasBuffsOrDebuffs then
+    if not hasDebuffs then
         return false
     end
 

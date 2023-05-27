@@ -25,12 +25,16 @@ end
 --- @field buffAmplifier number by how much % per stack this ability increases values
 --- @field buffTrigger number
 --- @field buffAllowList table<number, boolean> list of spells that are allowed to count for this trigger
+--- @field buffAllowListLength number
 --- @field debuffTargets table<string, number> map of guid, stacks
 --- @field debuffAmplifier number by how much % per stack this ability increases values
 --- @field debuffTrigger number
 --- @field debuffAllowList table<number, boolean> list of spells that are allowed to count for this trigger
+--- @field debuffAllowListLength number
 --- @field damageTrigger table<number, boolean> list of spells that should be merged
+--- @field damageTriggerLength number
 --- @field healTrigger table<number, boolean> list of spells that should be merged
+--- @field healTriggerLength number
 --- @field resetOnSpell number whether the spell resets on spellcast success, and which spell to reset on
 --- @field ownOnly boolean whether to only count own spells
 
@@ -210,6 +214,18 @@ aura_env.setup = function()
         return false
     end
 
+    --- @param tbl table
+    --- @return number
+    local function getLength(tbl)
+        local count = 0
+
+        for _ in pairs(tbl) do
+            count = count + 1
+        end
+
+        return count
+    end
+
     for _, ability in pairs(aura_env.config.abilities) do
         if thisSpellShouldLoad(ability) then
             local icon = resolveIcon(ability)
@@ -269,13 +285,17 @@ aura_env.setup = function()
                 buffAmplifier = ability.buffs[1].amplification,
                 buffTrigger = ability.buffs[1].id,
                 buffAllowList = buffAllowList,
+                buffAllowListLength = getLength(buffAllowList),
                 buffTargets = {},
                 debuffAmplifier = ability.debuffs[1].amplification,
                 debuffTrigger = ability.debuffs[1].id,
                 debuffAllowList = debuffAllowList,
+                debuffAllowListLength = getLength(debuffAllowList),
                 debuffTargets = {},
                 damageTrigger = damageTrigger,
+                damageTriggerLength = getLength(damageTrigger),
                 healTrigger = healTrigger,
+                healTriggerLength = getLength(healTrigger),
                 resetOnSpell = ability.castSpellId,
                 ownOnly = ability.ownOnly
             }
@@ -418,22 +438,92 @@ local function isMyPet(guid)
     return false
 end
 
---- @param tbl table
---- @return number
-local function getLength(tbl)
-    local count = 0
-
-    for _ in pairs(tbl) do
-        count = count + 1
-    end
-
-    return count
-end
-
 --- @param guid string
 --- @return boolean
 local function isBasicallyMe(guid)
     return guid == WeakAuras.myGUID or isMyPet(guid) or false
+end
+
+--- @param ability CacheEntry
+--- @param sourceGUID string
+--- @param targetGUID string
+--- @param spellId number
+--- @param kind "heal" | "damage"
+--- @return boolean, number
+local function validateAndDetermineAmplification(ability, sourceGUID, targetGUID, spellId, kind)
+    if ability.ownOnly and not isBasicallyMe(sourceGUID) then
+        return false, 0
+    end
+
+    if ability.buffTrigger > 0 then
+        if
+            ability.buffTargets[sourceGUID] == nil or ability.buffAllowListLength == 0 or
+                ability.buffAllowList[spellId] ~= true
+         then
+            return false, 0
+        end
+
+        local amplification = 0
+
+        if ability.buffAmplifier > 0 then
+            amplification = ability.buffTargets[sourceGUID] * ability.buffAmplifier
+        end
+
+        return true, amplification
+    end
+
+    if ability.debuffTrigger > 0 then
+        if
+            ability.debuffTargets[targetGUID] == nil or ability.debuffAllowListLength == 0 or
+                ability.debuffAllowList[spellId] ~= true
+         then
+            return false, 0
+        end
+
+        local amplification = 0
+
+        -- spell is debuff trigger, implying its already amplified
+        if ability.debuffAmplifier > 0 and ability.debuffTrigger ~= spellId then
+            amplification = ability.debuffTargets[targetGUID] * ability.debuffAmplifier
+        end
+
+        return true, amplification
+    end
+
+    local genericTriggers = kind == "damage" and ability.damageTrigger or ability.healTrigger
+    local length = kind == "damage" and ability.damageTriggerLength or ability.healTriggerLength
+
+    if length > 0 and genericTriggers[spellId] == nil then
+        return false, 0
+    end
+
+    return true, 0
+end
+
+--- @param amount number
+--- @param amplification number
+--- @return number
+local function calculateAmplification(amount, amplification)
+    if amplification == 0 then
+        return amount
+    end
+
+    local result = amount / (100 + amplification) * amplification
+
+    if amplification < 1 then
+        return result * 100
+    end
+
+    return result
+end
+
+--- @param key number
+--- @param total number
+local function updateCacheAndDirty(key, total)
+    cache[key].total = cache[key].total + total
+    cache[key].lastModified = GetTime()
+
+    aura_env.dirtyIndices[key] = true
 end
 
 --- @return boolean
@@ -453,59 +543,16 @@ local function handleDamageEvent(...)
     local hasChanges = false
 
     for _, key in pairs(keys) do
-        local ability = cache[key]
-        local amplification = 0
-        local mayProceed = true
-
-        if ability.ownOnly then
-            mayProceed = isBasicallyMe(sourceGUID)
-        end
-
-        if mayProceed and ability.buffTrigger > 0 then
-            if
-                ability.buffTargets[sourceGUID] == nil or getLength(ability.buffAllowList) == 0 or
-                    ability.buffAllowList[spellId] ~= true
-             then
-                mayProceed = false
-            elseif ability.buffAmplifier > 0 then
-                amplification = ability.buffTargets[sourceGUID] * ability.buffAmplifier
-            end
-        end
-
-        if mayProceed and ability.debuffTrigger > 0 then
-            if
-                ability.debuffTargets[targetGUID] == nil or getLength(ability.debuffAllowList) == 0 or
-                    ability.debuffAllowList[spellId] ~= true
-             then
-                mayProceed = false
-            elseif ability.debuffAmplifier > 0 and ability.debuffTrigger ~= spellId then -- spell is debuff trigger, implying its already amplified
-                amplification = ability.debuffTargets[targetGUID] * ability.debuffAmplifier
-            end
-        end
-
-        if mayProceed and getLength(ability.damageTrigger) > 0 and ability.damageTrigger[spellId] == nil then
-            mayProceed = false
-        end
+        local mayProceed, amplification =
+            validateAndDetermineAmplification(cache[key], sourceGUID, targetGUID, spellId, "damage")
 
         if mayProceed then
-            local actualAmount = amount + (absorbed or 0)
-            local copy = actualAmount
+            local total = calculateAmplification(amount + (absorbed or 0), amplification)
 
-            if amplification > 0 then
-                copy = actualAmount / (100 + amplification) * amplification
-
-                if amplification > 0 and amplification < 1 then
-                    copy = copy * 100
-                end
-            end
-
-            if copy > 0 then
+            if total > 0 then
                 hasChanges = true
 
-                cache[key].total = cache[key].total + copy
-                cache[key].lastModified = GetTime()
-
-                aura_env.dirtyIndices[key] = true
+                updateCacheAndDirty(key, total)
             end
         end
     end
@@ -526,56 +573,14 @@ local function handleHealEvent(...)
     local hasChanges = false
 
     for _, key in pairs(keys) do
-        local ability = cache[key]
-        local amplification = 0
-        local mayProceed = true
-
-        if ability.ownOnly then
-            mayProceed = isBasicallyMe(sourceGUID)
-        end
-
-        if mayProceed and ability.buffTrigger > 0 then
-            if
-                ability.buffTargets[sourceGUID] == nil or getLength(ability.buffAllowList) == 0 or
-                    ability.buffAllowList[spellId] ~= true
-             then
-                mayProceed = false
-            elseif ability.buffAmplifier > 0 then
-                amplification = ability.buffTargets[sourceGUID] * ability.buffAmplifier
-            end
-        end
-
-        if mayProceed and ability.debuffTrigger > 0 then
-            if
-                ability.debuffTargets[targetGUID] == nil or getLength(ability.debuffAllowList) == 0 or
-                    ability.debuffAllowList[spellId] ~= true
-             then
-                mayProceed = false
-            elseif ability.debuffAmplifier > 0 and ability.debuffTrigger ~= spellId then
-                amplification = ability.debuffTargets[targetGUID] * ability.debuffAmplifier
-            end
-        end
-
-        if mayProceed and getLength(ability.healTrigger) > 0 and ability.healTrigger[spellId] == nil then
-            mayProceed = false
-        end
+        local mayProceed, amplification =
+            validateAndDetermineAmplification(cache[key], sourceGUID, targetGUID, spellId, "heal")
 
         if mayProceed then
-            local copy = amount - overheal
-
-            if copy > 0 then
-                if amplification > 0 then
-                    copy = amount / (100 + amplification) * amplification
-                end
-
-                if copy > 0 then
-                    hasChanges = true
-
-                    cache[key].total = cache[key].total + copy
-                    cache[key].lastModified = GetTime()
-
-                    aura_env.dirtyIndices[key] = true
-                end
+            local total = calculateAmplification(amount - overheal, amplification)
+            if total > 0 then
+                hasChanges = true
+                updateCacheAndDirty(key, total)
             end
         end
     end

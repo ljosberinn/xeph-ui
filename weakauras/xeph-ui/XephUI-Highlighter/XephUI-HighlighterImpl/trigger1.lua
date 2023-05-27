@@ -57,7 +57,7 @@ function (states, event, ...)
 
         aura_env.nextFrame = nil
 
-        local hasChanges = aura_env.expireOutdatedData(aura_env.dirtyIndices, false)
+        local hasChanges = false
         local now = GetTime()
 
         for index in pairs(aura_env.dirtyIndices) do

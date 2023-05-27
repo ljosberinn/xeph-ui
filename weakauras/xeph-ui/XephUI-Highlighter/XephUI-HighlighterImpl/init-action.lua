@@ -297,7 +297,7 @@ aura_env.setup = function()
                 healTrigger = healTrigger,
                 healTriggerLength = getLength(healTrigger),
                 resetOnSpell = ability.castSpellId,
-                ownOnly = ability.ownOnly
+                ownOnly = ability.ownOnly,
             }
 
             table.insert(cache, cacheEntry)
@@ -350,23 +350,23 @@ end
 
 aura_env.setup()
 
---- @param index number
+--- @param key number
 --- @param now number
 --- @param force boolean
 --- @return boolean
-local function reset(index, now, force)
+local function reset(key, now, force)
     local hasChanges = false
 
     if
         force or
-            (cache[index].total > 0 and cache[index].lastModified ~= nil and
-                now > cache[index].lastModified + aura_env.config.duration)
+            (cache[key].total > 0 and cache[key].lastModified ~= nil and
+                now > cache[key].lastModified + aura_env.config.duration)
      then
         hasChanges = true
 
-        aura_env.dirtyIndices[index] = nil
-        cache[index].total = 0
-        cache[index].lastModified = nil
+        aura_env.dirtyIndices[key] = nil
+        cache[key].total = 0
+        cache[key].lastModified = nil
     end
 
     return hasChanges
@@ -379,9 +379,11 @@ aura_env.expireOutdatedData = function(tbl, force)
     local hasChanges = false
     local now = GetTime()
 
-    for index in pairs(tbl) do
-        local updated = reset(index, now, force)
-        hasChanges = hasChanges or updated or false
+    for key in pairs(tbl) do
+        local updated = reset(key, now, force)
+        if not hasChanges and updated then
+            hasChanges = true
+        end
     end
 
     return hasChanges
@@ -390,11 +392,7 @@ end
 --- @param spellId number
 --- @return boolean
 aura_env.onSpellCastSuccess = function(spellId)
-    local keysToAdditionallyReset = keyMaps.cast[spellId]
-
-    if not keysToAdditionallyReset then
-        return false
-    end
+    local keysToAdditionallyReset = keyMaps.cast[spellId] or {}
 
     local copy = {}
 
@@ -402,7 +400,7 @@ aura_env.onSpellCastSuccess = function(spellId)
         table.insert(copy, index, true)
     end
 
-    return aura_env.expireOutdatedData(copy, true)
+    return aura_env.expireOutdatedData(copy, true) or aura_env.expireOutdatedData(aura_env.dirtyIndices, false) or false
 end
 
 --- @type table<string, boolean>
@@ -444,13 +442,15 @@ local function isBasicallyMe(guid)
     return guid == WeakAuras.myGUID or isMyPet(guid) or false
 end
 
---- @param ability CacheEntry
+--- @param key number
 --- @param sourceGUID string
 --- @param targetGUID string
 --- @param spellId number
 --- @param kind "heal" | "damage"
 --- @return boolean, number
-local function validateAndDetermineAmplification(ability, sourceGUID, targetGUID, spellId, kind)
+local function validateAndDetermineAmplification(key, sourceGUID, targetGUID, spellId, kind)
+    local ability = cache[key]
+
     if ability.ownOnly and not isBasicallyMe(sourceGUID) then
         return false, 0
     end
@@ -463,13 +463,11 @@ local function validateAndDetermineAmplification(ability, sourceGUID, targetGUID
             return false, 0
         end
 
-        local amplification = 0
-
         if ability.buffAmplifier > 0 then
-            amplification = ability.buffTargets[sourceGUID] * ability.buffAmplifier
+            return true, ability.buffTargets[sourceGUID] * ability.buffAmplifier
         end
 
-        return true, amplification
+        return true, 0
     end
 
     if ability.debuffTrigger > 0 then
@@ -480,14 +478,12 @@ local function validateAndDetermineAmplification(ability, sourceGUID, targetGUID
             return false, 0
         end
 
-        local amplification = 0
-
         -- spell is debuff trigger, implying its already amplified
         if ability.debuffAmplifier > 0 and ability.debuffTrigger ~= spellId then
-            amplification = ability.debuffTargets[targetGUID] * ability.debuffAmplifier
+            return true, ability.debuffTargets[targetGUID] * ability.debuffAmplifier
         end
 
-        return true, amplification
+        return true, 0
     end
 
     local genericTriggers = kind == "damage" and ability.damageTrigger or ability.healTrigger
@@ -503,7 +499,7 @@ end
 --- @param amount number
 --- @param amplification number
 --- @return number
-local function calculateAmplification(amount, amplification)
+local function calculateTotal(amount, amplification)
     if amplification == 0 then
         return amount
     end
@@ -544,10 +540,10 @@ local function handleDamageEvent(...)
 
     for _, key in pairs(keys) do
         local mayProceed, amplification =
-            validateAndDetermineAmplification(cache[key], sourceGUID, targetGUID, spellId, "damage")
+            validateAndDetermineAmplification(key, sourceGUID, targetGUID, spellId, "damage")
 
         if mayProceed then
-            local total = calculateAmplification(amount + (absorbed or 0), amplification)
+            local total = calculateTotal(amount + (absorbed or 0), amplification)
 
             if total > 0 then
                 hasChanges = true
@@ -574,10 +570,11 @@ local function handleHealEvent(...)
 
     for _, key in pairs(keys) do
         local mayProceed, amplification =
-            validateAndDetermineAmplification(cache[key], sourceGUID, targetGUID, spellId, "heal")
+            validateAndDetermineAmplification(key, sourceGUID, targetGUID, spellId, "heal")
 
         if mayProceed then
-            local total = calculateAmplification(amount - overheal, amplification)
+            local total = calculateTotal(amount - overheal, amplification)
+
             if total > 0 then
                 hasChanges = true
                 updateCacheAndDirty(key, total)

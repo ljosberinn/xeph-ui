@@ -108,15 +108,16 @@ function (self, unitId, unitFrame, envTable, scriptTable)
         -- DF Raid
         --Aberrus, the Shadowed Crucible
         [201261] = {80, 60, 40}, -- Kazzara
-        [201773] = {50}, -- Moltannia
-        [201774] = {50}, -- Krozgoth
-        [201668] = {70, 40}, -- Neltharion
+        [201773] = {50}, -- Moltannia (Eternal Blaze)
+        [201774] = {50}, -- Krozgoth (Essence of Shadow)
+        [201668] = {60, 35}, -- Neltharion
         [200912] = {50}, -- Neldris, Experiment
         [200913] = {50}, -- Thadrion, Experiment
-        [199659] = {25}, --Warlord Kagni, Assault of the Zaqali
+        [199659] = {25}, -- Warlord Kagni, Assault of the Zaqali
         [201754] = {65, 40}, -- Sarkareth
+        [203230] = {50}, -- Dragonfire Golem, Zskarn
         -- Vault of the Incarnates
-        [181378] = {66, 33}, --Kurog Grimtotem, 
+        [181378] = {66, 33}, -- Kurog Grimtotem, 
         [194990] = {50}, -- Stormseeker Acolyte
         [189492] = {65}, -- Raszageth
         

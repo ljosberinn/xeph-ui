@@ -68,6 +68,7 @@ function (self, unitId, unitFrame, envTable)
         --Uldaman: Legacy of Tyr
         ["Refti Custodian"] = "Refti",
         ["Earthen Custodian"] = "Earthen",
+        ['Eric "The Swift"'] = "Eric",
         --Shadowlands
         
         --Open World

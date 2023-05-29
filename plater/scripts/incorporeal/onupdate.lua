@@ -3,7 +3,10 @@ function (_, unitId, unitFrame, _, scriptTable)
 
     if isDebuffed then
         Plater.SetNameplateScale(unitFrame, scriptTable.config.debuffedScale)
-        unitFrame.healthBar.HealthFlashFrame:StopAnimating()
+        -- instantly ccd enemies (e.g. freeze trap) never had the animation start
+        if unitFrame.healthBar.HealthFlashFrame then
+            unitFrame.healthBar.HealthFlashFrame:StopAnimating()
+        end
     else
         Plater.SetNameplateScale(unitFrame, scriptTable.config.activeScale)
         Plater.FlashNameplateBorder(unitFrame)

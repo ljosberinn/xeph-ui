@@ -231,6 +231,7 @@ function (modTable)
         [190371] = 1, --Primalist Earthshaker
         [190407] = 2, --Aqua Rager
         [190359] = 2, --Skulking Zealot
+        [190406] = 2, -- Aqualing
             
         --Neltharus
         [192787] = 2, --Qalashi Spinecrusher

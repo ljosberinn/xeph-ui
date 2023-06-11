@@ -1,4 +1,4 @@
--- UNIT_POWER_UPDATE:player, UNIT_SPELLCAST_CHANNEL_START:player, UNIT_SPELLCAST_CHANNEL_STOP:player, CLEU:SPELL_EMPOWER_START, CLEU:SPELL_EMPOWER_INTERRUPT, CLEU:SPELL_EMPOWER_END, CLEU:SPELL_CAST_START, CLEU:SPELL_CAST_SUCCESS, CLEU:SPELL_CAST_FAILED
+-- UNIT_POWER_UPDATE:player, UNIT_SPELLCAST_CHANNEL_START:player, UNIT_SPELLCAST_CHANNEL_STOP:player, CLEU:SPELL_EMPOWER_START, CLEU:SPELL_EMPOWER_INTERRUPT, CLEU:SPELL_EMPOWER_END, CLEU:SPELL_CAST_START, CLEU:SPELL_CAST_SUCCESS, CLEU:SPELL_CAST_FAILED, PLAYER_DEAD
 --- @class State
 --- @field show boolean
 --- @field changed boolean
@@ -17,9 +17,26 @@
 --- @field remaining number | nil
 
 --- @param states table<number, State>
---- @param event "STATUS" | "OPTIONS" | "COMBAT_LOG_EVENT_UNFILTERED" | "UNIT_POWER_UPDATE" | "UNIT_SPELLCAST_CHANNEL_START" | "UNIT_SPELLCAST_CHANNEL_STOP"
+--- @param event "STATUS" | "OPTIONS" | "COMBAT_LOG_EVENT_UNFILTERED" | "UNIT_POWER_UPDATE" | "UNIT_SPELLCAST_CHANNEL_START" | "UNIT_SPELLCAST_CHANNEL_STOP" | "PLAYER_DEAD"
 --- @returns boolean
 function (states, event, ...)
+    if event == "PLAYER_DEAD" then
+        local hasChanges = false
+        local now = GetTime()
+
+        for _, state in pairs(states) do
+            if state.paused then
+                hasChanges = true
+                state.paused = false
+                state.changed = true
+                state.desaturated = false
+                state.remaining = now - state.start
+            end
+        end
+
+        return hasChanges
+    end
+
     if event == "UNIT_SPELLCAST_CHANNEL_START" then
         local unit, _, spellId = ...
 
@@ -174,10 +191,23 @@ function (states, event, ...)
 
             if castTime > 0 then
                 local now = GetTime()
+                local hasChanges = false
+
+                local previousIndex = aura_env.spellcasts - 1
+                local previousCast = states[previousIndex]
+
+                -- revert marking item use as interrupted when trying to use an
+                -- item that was already being casted
+                if previousCast and previousCast.spellId == spellId and previousCast.interrupted then
+                    hasChanges = true
+                    previousCast.interrupted = false
+                    previousCast.changed = true
+                end
 
                 -- unpause everything paused
                 for _, state in pairs(states) do
                     if state.paused then
+                        hasChanges = true
                         state.paused = false
                         state.changed = true
                         state.desaturated = false
@@ -185,7 +215,7 @@ function (states, event, ...)
                     end
                 end
 
-                return true
+                return hasChanges
             end
 
             local _, _, _, channelStartTime = UnitChannelInfo("player")
@@ -239,48 +269,48 @@ function (states, event, ...)
             local previousIndex = aura_env.spellcasts - 1
             local previousCast = states[previousIndex]
 
-            if previousCast and previousCast.paused then
-                -- ignore spamcasting an ability you currently cannot cast
-                -- for whichever reason (already casting, cd, range, line of sight, missing resources)
-                if previousCast.spellId ~= spellId then
-                    return false
-                end
-
-                local now = GetTime()
-
-                -- ignore spamming buttons but be sensible enough about instant aborts
-                if now - previousCast.start < 0.05 then
-                    return false
-                end
-
-                local _, _, _, channelStartTime, _, _, _, channelSpellId = UnitChannelInfo("player")
-
-                -- ignore spamming channels. why would you anyways?
-                if channelStartTime ~= nil and channelSpellId == spellId then
-                    return false
-                end
-
-                local hasChanges = false
-
-                -- unpause everything paused
-                for index, state in pairs(states) do
-                    if state.paused then
-                        hasChanges = true
-                        state.paused = false
-                        state.changed = true
-                        state.desaturated = false
-                        state.remaining = now - state.start
-
-                        if index == previousIndex then
-                            state.interrupted = true
-                        end
-                    end
-                end
-
-                return hasChanges
+            if not previousCast or not previousCast.paused then
+                return false
             end
 
-            return false
+            -- ignore spamcasting an ability you currently cannot cast
+            -- for whichever reason (already casting, cd, range, line of sight, missing resources)
+            if previousCast.spellId ~= spellId then
+                return false
+            end
+
+            local now = GetTime()
+
+            -- ignore spamming buttons but be sensible enough about instant aborts
+            if now - previousCast.start < 0.05 then
+                return false
+            end
+
+            local _, _, _, channelStartTime, _, _, _, channelSpellId = UnitChannelInfo("player")
+
+            -- ignore spamming channels. why would you anyways?
+            if channelStartTime ~= nil and channelSpellId == spellId then
+                return false
+            end
+
+            local hasChanges = false
+
+            -- unpause everything paused
+            for index, state in pairs(states) do
+                if state.paused then
+                    hasChanges = true
+                    state.paused = false
+                    state.changed = true
+                    state.desaturated = false
+                    state.remaining = now - state.start
+
+                    if index == previousIndex then
+                        state.interrupted = true
+                    end
+                end
+            end
+
+            return hasChanges
         end
 
         if subEvent == "SPELL_EMPOWER_START" then

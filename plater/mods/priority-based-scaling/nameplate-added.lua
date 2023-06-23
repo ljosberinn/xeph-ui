@@ -1,21 +1,19 @@
 function (self, unitId, unitFrame, envTable, modTable)
-    local npcID = unitFrame.namePlateNpcId or  modTable.parseGUID(unitId)
-    
-    if npcID then        
-        local prio = modTable["npcIDs"][npcID]
-        
-        if prio then
-            local targetScale = modTable.getScale(prio)
-            local targetColor = modTable.getColor(prio)
-            
-            if targetScale then
-                Plater.SetNameplateScale(unitFrame, targetScale)
-            end
-            
-            if targetColor then
-                Plater.SetNameplateColor (unitFrame, targetColor)
-            end
-        end
+    local npcID = unitFrame.namePlateNpcId or modTable.parseGUID(unitId)
+
+    if not npcID then
+        return
+    end
+
+    local prio = modTable["npcIDs"][npcID]
+
+    if not prio then
+        return
+    end
+
+    local targetScale = modTable.getScale(prio)
+
+    if targetScale then
+        Plater.SetNameplateScale(unitFrame, targetScale)
     end
 end
-

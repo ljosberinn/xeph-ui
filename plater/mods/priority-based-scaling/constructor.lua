@@ -1,6 +1,11 @@
 function (modTable)
-    -- 1 = mid prio, 2 = low prio
-    
+    local prioScaleMap = {
+        [1] = modTable.config.midScale, -- 0.9
+        [2] = modTable.config.lowScale, -- 0.8
+        [3] = modTable.config.extraLowScale, -- 0.7,
+        [4] = modTable.config.higherScale -- 1.1
+    }
+
     modTable["npcIDs"] = {
         --TEST
         --["160325"] = 1, --Testing Dummy
@@ -9,230 +14,211 @@ function (modTable)
         [62358] = 2, -- Corrupt Droplet
         [200126] = 1, -- Fallen Waterspeaker
         [65317] = 1, -- Xiang
-        [59547] = 1, --Jiang
-        [58319] = 2, --Lesser Sha
-        [59598] = 2, --Lesser Sha
-        [59553] = 1, --The Songbird Queen
-        [59545] = 2, --Golden Beetle
-        [59544] = 1, --The Nodding Tiger
-        [59552] = 1, --The Crybaby Hozen
-        [200131] = 1, --Sha-Touched Guardian
-        [57109] = 2, --Minion of Doubt
-        [200388] = 2, --Malformed Sha
-        [200387] = 1, --Shambling Infester
-        --The Nokhud Offensive
-        [192803] = 2, --War Ohuna
-        [195265] = 1, --Stormcaller Arynga
-        --[194317] = 1, --Stormcaller Boroo
-        [194315] = 1, --Stormcaller Solongo
-        [194316] = 1, --Stormcaller Zarii
-        [192794] = 2, --Nokhud Beastmaster
-        [192796] = 1, --Nokhud Hornsounder
-        [192789] = 2, --Nokhud Longbow
-        [192800] = 1, --Nokhud Lancemaster
-        [191847] = 1, --Nokhud Plainstomper
-        --[192791] = 1, --Nokhud Warspear
-        [194898] = 2, --Primalist Arcblade
-        [194895] = 2, --Unstable Squall
-        [194896] = 2, --Primal Stormshield
-        [194897] = 2, --Stormsurge Totem
-        [195579] = 2, --Primal Gust
-        [195696] = 1, --Primalist Thunderbeast
-        [195855] = 2, --Risen Warrior
-        [195875] = 2, --Desecrated Bakar
-        [196645] = 2, --Desecrated Bakar
-        [195878] = 1, --Ukhel Beastcaller
-        [195876] = 2, --Descecrated Ohuna
-        --[195877] = 1, -- Risen Mystic
-        [195851] = 1, --Ukhel Deathspeaker
-        [195927] = 1, --Soulharvester Galtmaa (same)
-        [195928] = 1, --Soulharvester Duuren (same)
-        [195929] = 1, --Soulharvester Tumen (same)
-        [195930] = 1, --Soulharvester Mandakh (same)
-        [193553] = 2, --Nokhud Warhound
-        [193555] = 2, --Nokhud Villager (female)
-        [186643] = 2, --Nokhud Villager (male)
-        [193544] = 2, --Nokhud Houndsman
-        [193565] = 1, --Nokhud Defender
-        [193457] = 1, --Balara
-        [196263] = 2, --Nokhud Neophyte
-        [199325] = 2, --Nokhud Stormcaller
-        [196484] = 2, --Nokhud Stormcaller
-        [199294] = 2, --Nokhud Stormcaster
-        [199320] = 2, --Nokhud Warspear (RP version)
-        [199321] = 2, --Nokhud Warspear (RP version)
-        --Court of Stars
-        [105703] = 2, --Mana Wyrm,
-        [104251] = 1, --Duskwatch Sentry
-        [104246] = 1, --Duskwatch Guard
-        [111563] = 1, --Duskwatch Guard
-        [105705] = 1, --Bound Energy
-        [104295] = 2, --Blazing Imp
-        --[105715] = 1, --Watchful Inquisitor
-        [104277] = 2, --Legion Hound
-        [104300] = 1, --Shadow Mistress
-        --Shadowmoon Burial Grounds
-        [75715] = 1, --Reanimated Ritual Bones
-        [75451] = 2, --Defiled Spirit (non-casting)
-        [75506] = 1, --Shadowmoon Loyalist
-        [77006] = 2, --Corpse Skitterling
-        --[76446] = 2, --Subjugated Enslaver
-        [76444] = 2, --Subjugated Soul
-        --[75979] = 1, --Exhumed Spirit
-        --[75459] = 1, --Plagued Bat
-        
-        --Algeth'ar Academy
-        [196642] = 2, --Hungry Lasher
-        [197398] = 2, --Hungry Lasher
-        [197219] = 1, --Vile Lasher
-        [192329] = 2, --Territorial Eagle
-        [196694] = 2, --Arcane Forager
-        [196671] = 1, --Arcane Ravager
-        [196577] = 2, --Spellbound Battleaxe
-        [197904] = 2, --Spellbound Battleaxe
-        [196798] = 1, --Corrupted Manafiend
-        [196045] = 1, --Corrupted Manafiend
-        [196200] = 2, --Algeth'ar Echoknight
-        [196202] = 1, --Spectral Invoker
-        [196203] = 2, --Ethereal Restorer
-        --The Azure Vault
-        [191313] = 2, --Bubbling Sapling
-        --[191164] = 1, --Arcane Tender
-        --[196115] = 1, --Arcane Tender
-        [196559] = 2, --Volatile Sapling
-        [187155] = 1, --Rune Seal Keeper
-        [187154] = 1, --Unstable Curator
-        [196116] = 1, --Crystal Fury
-        [196117] = 2, --Crystal Thrasher
-        [186740] = 2, --Arcane Construct
-        [189555] = 2, --Arcane Attendant
-        [190510] = 2, --Vault Guard
-        [191739] = 1, --Scalebane Liutenant
-        [187246] = 2, --Nullmagic Hornswog
-        [187242] = 2, --Tarasek Looter
-        [187240] = 1, --Draconid Breaker
-        --Halls of Valor
-        [97087] = 2, --Valajar Champion
-        [95842] = 1, --Valajar Thundercaller
-        [96574] = 1, --Stormforged Sentinel
-        [95832] = 2, --Valajar Shieldmaiden
-        [101639] = 2, --Valajar Shieldmaiden
-        [101637] = 1, --Valajar Aspirant
-        [97197] = 1, --Valajar Purifier
-        [96640] = 1, --Valajar Marksman
-        [96611] = 2, --Angehoof Bull
-        [99922] = 2, --Ebonclaw Packmate
-        [96608] = 2, --Ebonclaw Worg
-        [97068] = 1, --Storm Drake
-        --Ruby Life Pools
-        [188011] = 2, --Primal Terrasentry
-        [188067] = 2, --Flashfrost Chillweaver
-        [188244] = 1, --Primal Juggernaut
-        [189893] = 2, --Infused Whelp
-        [187894] = 2, --Infused Whelp
-        [187897] = 1, --Defier Draghar
-        [194622] = 2, --Scorchling
-        [190205] = 2, --Scorchling
-        [197698] = 1, --Thunderhead
-        [190034] = 1, --Blazebound Destroyer
-        [190207] = 1, --Primalist Cinderweaver
-        [197697] = 1, --Flamegullet
-        [197509] = 2, --Primal Thundercloud
-        [197982] = 2, --Storm Warrior
-
-        --The Underrot
-        [131402] = 2, --Underrot Tick
-        [131436] = 1, --Chosen Blood Matron
-        [133663] = 1, --Fanatical Headhunter
-        [133852] = 2, --Living Rot
-        [130909] = 1, --Fetid Maggot
-        [133836] = 2, --Reanimated Guardian
-        [134284] = 1, --Fallen Deathspeaker
-        [135169] = 2, --Spirit Drain Totem
-        [138281] = 1, --Faceless Corruptor
-        [137458] = 2, --Rotting Spore
-            
-        --Freehold
-        [126928] = 2, --Irontide Corsair
-        [126918] = 1, --Irontide Crackshot
-        [128551] = 2, --Irontide Mastiff
-        [129602] = 1, --Irontide Enforcer
-        [127119] = 2, --Freehold Deckhand
-        [130521] = 2, --Freehold Deckhand
-        [129550] = 2, --Bilge Rat Padfoot
-        [129526] = 2, --Bilge Rat Swabby
-        [129548] = 2, --Blacktooth Brute
-        [130522] = 2, --Freehold Shipmate
-        [127124] = 2, --Freehold Barhand
-        [129559] = 2, --Cutwater Duelist
-        [130404] = 1, --Vermin Trapper
-        [126497] = 2, --Shiprat
-        [130024] = 2, --Soggy Shiprat
-        [129527] = 1, --Bilge Rat Buccaneer
-        [130011] = 2, --Irontide Buccaneer
-        [129599] = 2, --Cutwater Knife Juggler
-        [129547] = 2, --Blacktooth Knuckleduster
-        [129529] = 2, --Blacktooth Scrapper
-        [129601] = 2, --Cutwater Harpooner
-        [130400] = 1, --Irontide Crusher
-        [127019] = 2, --Target Dummy
-        [130012] = 2, --Irontide Ravager
-        [127111] = 1, --Irontide Oarsman
-        [127106] = 2, --Irontide Officer
-            
-        --Neltharion's Lair
-        [96247] = 2, --Vileshard Crawler
-        --[91006] = 1, --Rockback Gnasher
-        [98406] = 1, --Embershard Scorpion
-        [91001] = 1, --Tarspitter Lurker
-        [101438] = 1, --Vileshard Chunk
-        [105636] = 2, --Understone Drudge
-        [105720] = 2, --Understone Drudge
-        [92350] = 2, --Understone Drudge
-        [92610] = 2, --Understone Drummer
-        [92387] = 2, --Drums of War
-        [91332] = 1, --Stoneclaw Hunter
-        [90997] = 1, --Mightstone Breaker
-        [113998] = 1, --Mightstone Breaker
-        [94224] = 2, --Petrifying Totem
-        [90998] = 1, --Blightshard Shaper
-        [101437] = 2, --Burning Geode
-        [102430] = 2, --Tarspitter SLug
-        [102253] = 2, --Understone Demolisher
-            
-        --Vortex Pinnacle
-        --[45912] = 1, --Wild Vortex
-        [205326] = 2, --Gust Soldier
-        [45477] = 2, --Gust Soldier
-        [45915] = 1, --Armored Mistral
-        --[45912] = 1, --Wild Vortex
-        [45704] = 2, --Lurking Tempest
-        [204337] = 2, --Lurking Tempest
-        [45917] = 1, --Cloud Prince
-        [45924] = 1, --Turbulent Squall
-        [45922] = 2, --Empyrean Assassin
-        [45926] = 2, --Servant of Asaad
-        [45928] = 1, --Executor of the Caliph
-        [45932] = 2, --Skyfall Star
-        [45930] = 1, --Minister of Air
-            
-        --Halls of Infusion
-        [190345] = 2, --Primalist Geomancer
-        [190348] = 2, --Primalist Ravager
-        --[190340] = 1, --Refti Defender
-        [190342] = 1, --Containment Apperatus
-        [196712] = 1, --Nullification Device
-        [190366] = 2, --Curious Swoglet
-        [195399] = 2, --Curious Swoglet
-        [199037] = 1, --Primalist Shocktrooper
-        [190370] = 1, --Squallbringer Cyraz
-        [190923] = 2, --Zephyrling
-        [190373] = 1, --Primalist Galesinger
-        [190371] = 1, --Primalist Earthshaker
-        [190407] = 2, --Aqua Rager
-        [190359] = 2, --Skulking Zealot
+        [59547] = 1, -- Jiang
+        [58319] = 2, -- Lesser Sha
+        [59598] = 2, -- Lesser Sha
+        [59553] = 1, -- The Songbird Queen
+        [59545] = 2, -- Golden Beetle
+        [59544] = 1, -- The Nodding Tiger
+        [59552] = 1, -- The Crybaby Hozen
+        [200131] = 1, -- Sha-Touched Guardian
+        [57109] = 2, -- Minion of Doubt
+        [200388] = 2, -- Malformed Sha
+        [200387] = 1, -- Shambling Infester
+        -- The Nokhud Offensive
+        [192803] = 2, -- War Ohuna
+        [192794] = 2, -- Nokhud Beastmaster
+        [192796] = 1, -- Nokhud Hornsounder
+        [192789] = 2, -- Nokhud Longbow
+        [192800] = 1, -- Nokhud Lancemaster
+        [191847] = 1, -- Nokhud Plainstomper
+        [194898] = 2, -- Primalist Arcblade
+        [194895] = 2, -- Unstable Squall
+        [194896] = 2, -- Primal Stormshield
+        [194897] = 2, -- Stormsurge Totem
+        [195579] = 2, -- Primal Gust
+        [195696] = 1, -- Primalist Thunderbeast
+        [195855] = 2, -- Risen Warrior
+        [195875] = 2, -- Desecrated Bakar
+        [196645] = 2, -- Desecrated Bakar
+        [195878] = 1, -- Ukhel Beastcaller
+        [195876] = 2, -- Descecrated Ohuna
+        [195851] = 1, -- Ukhel Deathspeaker
+        [195927] = 1, -- Soulharvester Galtmaa (same)
+        [195928] = 1, -- Soulharvester Duuren (same)
+        [195929] = 1, -- Soulharvester Tumen (same)
+        [195930] = 1, -- Soulharvester Mandakh (same)
+        [193553] = 2, -- Nokhud Warhound
+        [193555] = 2, -- Nokhud Villager (female)
+        [186643] = 2, -- Nokhud Villager (male)
+        [193544] = 2, -- Nokhud Houndsman
+        [193565] = 1, -- Nokhud Defender
+        [193457] = 1, -- Balara
+        [196263] = 2, -- Nokhud Neophyte
+        [199325] = 2, -- Nokhud Stormcaller
+        [196484] = 2, -- Nokhud Stormcaller
+        [199294] = 2, -- Nokhud Stormcaster
+        [199320] = 2, -- Nokhud Warspear (RP version)
+        [199321] = 2, -- Nokhud Warspear (RP version)
+        -- Court of Stars
+        [105703] = 2, -- Mana Wyrm,
+        [104251] = 1, -- Duskwatch Sentry
+        [104246] = 1, -- Duskwatch Guard
+        [111563] = 1, -- Duskwatch Guard
+        [105705] = 1, -- Bound Energy
+        [104295] = 2, -- Blazing Imp
+        [104277] = 2, -- Legion Hound
+        [104300] = 1, -- Shadow Mistress
+        -- Shadowmoon Burial Grounds
+        [75715] = 1, -- Reanimated Ritual Bones
+        [75451] = 2, -- Defiled Spirit (non-casting)
+        [75506] = 1, -- Shadowmoon Loyalist
+        [77006] = 2, -- Corpse Skitterling
+        [76444] = 2, -- Subjugated Soul
+        -- Algeth'ar Academy
+        [196642] = 2, -- Hungry Lasher
+        [197398] = 2, -- Hungry Lasher
+        [197219] = 1, -- Vile Lasher
+        [192329] = 2, -- Territorial Eagle
+        [196694] = 2, -- Arcane Forager
+        [196671] = 1, -- Arcane Ravager
+        [196577] = 2, -- Spellbound Battleaxe
+        [197904] = 2, -- Spellbound Battleaxe
+        [196798] = 1, -- Corrupted Manafiend
+        [196045] = 1, -- Corrupted Manafiend
+        [196200] = 2, -- Algeth'ar Echoknight
+        [196202] = 1, -- Spectral Invoker
+        [196203] = 2, -- Ethereal Restorer
+        -- The Azure Vault
+        [191313] = 2, -- Bubbling Sapling
+        [196559] = 2, -- Volatile Sapling
+        [187155] = 1, -- Rune Seal Keeper
+        [187154] = 1, -- Unstable Curator
+        [196116] = 1, -- Crystal Fury
+        [196117] = 2, -- Crystal Thrasher
+        [186740] = 2, -- Arcane Construct
+        [189555] = 2, -- Arcane Attendant
+        [190510] = 2, -- Vault Guard
+        [191739] = 1, -- Scalebane Liutenant
+        [187246] = 2, -- Nullmagic Hornswog
+        [187242] = 2, -- Tarasek Looter
+        [187240] = 1, -- Draconid Breaker
+        -- Halls of Valor
+        [97087] = 2, -- Valajar Champion
+        [95842] = 1, -- Valajar Thundercaller
+        [96574] = 1, -- Stormforged Sentinel
+        [95832] = 2, -- Valajar Shieldmaiden
+        [101639] = 2, -- Valajar Shieldmaiden
+        [101637] = 1, -- Valajar Aspirant
+        [97197] = 1, -- Valajar Purifier
+        [96640] = 1, -- Valajar Marksman
+        [96611] = 2, -- Angehoof Bull
+        [99922] = 2, -- Ebonclaw Packmate
+        [96608] = 2, -- Ebonclaw Worg
+        [97068] = 1, -- Storm Drake
+        -- Ruby Life Pools
+        [188011] = 2, -- Primal Terrasentry
+        [188067] = 2, -- Flashfrost Chillweaver
+        [188244] = 1, -- Primal Juggernaut
+        [189893] = 2, -- Infused Whelp
+        [187894] = 2, -- Infused Whelp
+        [187897] = 1, -- Defier Draghar
+        [194622] = 2, -- Scorchling
+        [190205] = 2, -- Scorchling
+        [197698] = 1, -- Thunderhead
+        [190034] = 1, -- Blazebound Destroyer
+        [190207] = 1, -- Primalist Cinderweaver
+        [197697] = 1, -- Flamegullet
+        [197509] = 2, -- Primal Thundercloud
+        [197982] = 2, -- Storm Warrior
+        -- The Underrot
+        [131402] = 2, -- Underrot Tick
+        [131436] = 1, -- Chosen Blood Matron
+        [133663] = 1, -- Fanatical Headhunter
+        [133852] = 2, -- Living Rot
+        [130909] = 1, -- Fetid Maggot
+        [133836] = 2, -- Reanimated Guardian
+        [134284] = 1, -- Fallen Deathspeaker
+        [135169] = 2, -- Spirit Drain Totem
+        [138281] = 1, -- Faceless Corruptor
+        [137458] = 2, -- Rotting Spore
+        -- Freehold
+        [126928] = 2, -- Irontide Corsair
+        [126918] = 1, -- Irontide Crackshot
+        [128551] = 2, -- Irontide Mastiff
+        [129602] = 1, -- Irontide Enforcer
+        [127119] = 2, -- Freehold Deckhand
+        [130521] = 2, -- Freehold Deckhand
+        [129550] = 2, -- Bilge Rat Padfoot
+        [129526] = 2, -- Bilge Rat Swabby
+        [129548] = 2, -- Blacktooth Brute
+        [130522] = 2, -- Freehold Shipmate
+        [127124] = 2, -- Freehold Barhand
+        [129559] = 2, -- Cutwater Duelist
+        [130404] = 1, -- Vermin Trapper
+        [126497] = 2, -- Shiprat
+        [130024] = 2, -- Soggy Shiprat
+        [129527] = 1, -- Bilge Rat Buccaneer
+        [130011] = 2, -- Irontide Buccaneer
+        [129599] = 2, -- Cutwater Knife Juggler
+        [129547] = 2, -- Blacktooth Knuckleduster
+        [129529] = 2, -- Blacktooth Scrapper
+        [129601] = 2, -- Cutwater Harpooner
+        [130400] = 1, -- Irontide Crusher
+        [127019] = 2, -- Target Dummy
+        [130012] = 2, -- Irontide Ravager
+        [127111] = 1, -- Irontide Oarsman
+        [127106] = 2, -- Irontide Officer
+        -- Neltharion's Lair
+        [96247] = 2, -- Vileshard Crawler
+        -- [91006] = 1, -- Rockback Gnasher
+        [98406] = 1, -- Embershard Scorpion
+        [91001] = 1, -- Tarspitter Lurker
+        [101438] = 1, -- Vileshard Chunk
+        [105636] = 2, -- Understone Drudge
+        [105720] = 2, -- Understone Drudge
+        [92350] = 2, -- Understone Drudge
+        [92610] = 2, -- Understone Drummer
+        [92387] = 2, -- Drums of War
+        [91332] = 1, -- Stoneclaw Hunter
+        [90997] = 1, -- Mightstone Breaker
+        [113998] = 1, -- Mightstone Breaker
+        [94224] = 2, -- Petrifying Totem
+        [90998] = 1, -- Blightshard Shaper
+        [101437] = 2, -- Burning Geode
+        [102430] = 2, -- Tarspitter SLug
+        [102253] = 2, -- Understone Demolisher
+        -- Vortex Pinnacle
+        -- [45912] = 1, -- Wild Vortex
+        [205326] = 2, -- Gust Soldier
+        [45477] = 2, -- Gust Soldier
+        [45915] = 1, -- Armored Mistral
+        -- [45912] = 1, -- Wild Vortex
+        [45704] = 2, -- Lurking Tempest
+        [204337] = 2, -- Lurking Tempest
+        [45917] = 1, -- Cloud Prince
+        [45924] = 1, -- Turbulent Squall
+        [45922] = 2, -- Empyrean Assassin
+        [45926] = 2, -- Servant of Asaad
+        [45928] = 1, -- Executor of the Caliph
+        [45932] = 2, -- Skyfall Star
+        [45930] = 1, -- Minister of Air
+        -- Halls of Infusion
+        [190345] = 2, -- Primalist Geomancer
+        [190348] = 2, -- Primalist Ravager
+        -- [190340] = 1, -- Refti Defender
+        [190342] = 1, -- Containment Apperatus
+        [196712] = 1, -- Nullification Device
+        [190366] = 2, -- Curious Swoglet
+        [195399] = 2, -- Curious Swoglet
+        [199037] = 1, -- Primalist Shocktrooper
+        [190370] = 1, -- Squallbringer Cyraz
+        [190923] = 2, -- Zephyrling
+        [190373] = 1, -- Primalist Galesinger
+        [190371] = 1, -- Primalist Earthshaker
+        [190407] = 2, -- Aqua Rager
+        [190359] = 2, -- Skulking Zealot
         [190406] = 2, -- Aqualing
-            
         --Neltharus
         [192787] = 2, --Qalashi Spinecrusher
         [193293] = 2, --Qalashi Warden
@@ -247,50 +233,48 @@ function (modTable)
         [189471] = 1, --Qalashi Blacksmith
         [193291] = 1, --Apex Blazewing
         [194389] = 2, --Lava Spawn
-            
-        --Uldaman
-        [184134] = 2, --Scavenging Leaper
-        [184020] = 2, --Hulking Berserker
-        [184019] = 2, --Burly Rock-Thrower
-        [186664] = 2, --Stonevault Ambusher
-        [186696] = 2, --Quaking Totem
-        [184130] = 2, --Earthen Custodian
-        [184319] = 1, --Refti Custodian
-        [184107] = 1, --Runic Protector
-        [184303] = 2, --Skittering Crawler
-        [184300] = 1, --Ebonstone Golem
-        [184131] = 1, --Earthen Guardian
-        [184331] = 1, --Infinite Timereaver
-        [191311] = 2, --Infinite Whelp
-            
-        --Brackenhide
-        [185529] = 1, --Bracken Warscourge
-        [185508] = 2, --Claw Fighter
-        [186206] = 2, --Cruel Bonecrusher
-        [186191] = 1, --Decay Speaker
-        [185534] = 1, --Bonebolt Hunter
-        [185691] = 2, --Vicious Hyena
-        [186122] = 2, --Rira Hackclaw
-        [186124] = 1, --Gashtooth
-        [186208] = 1, --Rotbow Stalker
-        [186284] = 2, --Gutchewer Bear
-        [194745] = 2, --Rotfang Hyena
-        [186227] = 2, --Monstrous Decay
-        [189299] = 2, --Decaying Slime
-        [192481] = 2, --Decaying Slime
-        [194273] = 2, --Witherling
-        [187238] = 2, --Witherling
-        [187231] = 2, --Wither Biter
-        [187315] = 2, --Disease Slasher
-        [191243] = 2, --Wild Lasher
-        [189363] = 2, --Infected Lasher
-        [189531] = 1, --Decayed Elder
-        [186226] = 1, --Fetid Rotsinger
-        [186229] = 1, --Wilted Oak
-        [194373] = 2, --Witherling
-        [199916] = 2, --Decaying Slime
-
-        --Misc
+        -- Uldaman
+        [184134] = 2, -- Scavenging Leaper
+        [184020] = 2, -- Hulking Berserker
+        [184019] = 2, -- Burly Rock-Thrower
+        [186664] = 2, -- Stonevault Ambusher
+        [186696] = 4, -- Quaking Totem
+        [184130] = 2, -- Earthen Custodian
+        [184319] = 1, -- Refti Custodian
+        [184107] = 1, -- Runic Protector
+        [184303] = 2, -- Skittering Crawler
+        [184300] = 1, -- Ebonstone Golem
+        [184131] = 1, -- Earthen Guardian
+        [184331] = 1, -- Infinite Timereaver
+        [191311] = 2, -- Infinite Whelp
+        -- Brackenhide
+        [185529] = 1, -- Bracken Warscourge
+        [185508] = 2, -- Claw Fighter
+        [186206] = 2, -- Cruel Bonecrusher
+        [186191] = 1, -- Decay Speaker
+        [185534] = 1, -- Bonebolt Hunter
+        [185691] = 2, -- Vicious Hyena
+        [186122] = 2, -- Rira Hackclaw
+        [186124] = 1, -- Gashtooth
+        [186208] = 1, -- Rotbow Stalker
+        [186284] = 2, -- Gutchewer Bear
+        [194745] = 2, -- Rotfang Hyena
+        [186227] = 2, -- Monstrous Decay
+        [189299] = 2, -- Decaying Slime
+        [192481] = 2, -- Decaying Slime
+        [194273] = 2, -- Witherling
+        [187238] = 2, -- Witherling
+        [187231] = 2, -- Wither Biter
+        [187315] = 2, -- Disease Slasher
+        [191243] = 2, -- Wild Lasher
+        [189363] = 2, -- Infected Lasher
+        [189531] = 1, -- Decayed Elder
+        [186226] = 1, -- Fetid Rotsinger
+        [186229] = 1, -- Wilted Oak
+        [194373] = 2, -- Witherling
+        [199916] = 2, -- Decaying Slime
+        [190381] = 4, -- Rotburst Totem
+        -- Misc
         -- Fodder to the Flame demons
         [169428] = 2,
         [169430] = 2,
@@ -300,24 +284,30 @@ function (modTable)
         [169425] = 2,
         [168932] = 2
     }
-    
+
     modTable.isSpiteful = function(id)
         return tonumber(id) == 174773
     end
-    
-    modTable.parseGUID = function(guid)
-        local id = select(6, strsplit("-", UnitGUID(guid)))
-        
+
+    modTable.parseGUID = function(unit)
+        local guid = UnitGUID(unit)
+
+        if not guid then
+            return nil
+        end
+
+        local id = select(6, strsplit("-", guid))
+
         return id and tonumber(id) or nil
     end
-    
+
     modTable.spitefulTargetsPlayer = function(unitId)
         local targetName = UnitName(unitId .. "target")
-        
+
         if not targetName then
             return false
         end
-        
+
         return UnitIsUnit(targetName, "player")
     end
 
@@ -325,31 +315,7 @@ function (modTable)
         if not modTable.config.scale then
             return nil
         end
-        
-        if prio == 1 then
-            return modTable.config.midScale
-        end
-        
-        if prio == 2 then
-            return modTable.config.lowScale
-        end
-        
-        return nil
-    end
-    
-    modTable.getColor = function(prio)
-        if not modTable.config.color then
-            return nil
-        end
-        
-        if prio == 1 then
-            return modTable.config.midColor
-        end
-        
-        if prio == 2 then
-            return modTable.config.lowScale
-        end
-        
-        return nil
+
+        return prioScaleMap[prio]
     end
 end

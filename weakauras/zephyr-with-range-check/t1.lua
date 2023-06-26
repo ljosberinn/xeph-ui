@@ -20,23 +20,24 @@ function (event, ...)
         local now = GetTime()
 
         if event == "UNIT_SPELLCAST_SUCCEEDED" then
+            if aura_env.zephyrOnCooldown(now) then
+                return false
+            end
+
             local castingActor, _, spellId = ...
 
             -- disable when seen casting zephyr
             if castingActor == "player" and spellId == 374227 then
-                aura_env.rangeCheckEnabled = false
                 aura_env.closePlayers = 0
                 aura_env.lastZephyrCast = now
+                aura_env.lastCheck = now
                 return true
             end
         end
 
-        -- re-enable 115s after the last cast
-        if not aura_env.lastZephyrCast or (aura_env.lastZephyrCast and now - aura_env.lastZephyrCast > 115) then
-            aura_env.rangeCheckEnabled = true
-        end
-
-        if not aura_env.rangeCheckEnabled or (aura_env.lastCheck and now - aura_env.lastCheck < 0.5) then
+        -- ignore events until 5s before Zephyr is ready again
+        -- onyl check twice per second in general tops
+        if aura_env.zephyrOnCooldown(now) or (aura_env.lastCheck and now - aura_env.lastCheck < 0.5) then
             return false
         end
 

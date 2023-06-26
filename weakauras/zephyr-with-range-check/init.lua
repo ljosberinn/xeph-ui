@@ -13,3 +13,6 @@ aura_env.raidList = {
 
 aura_env.partyList = {"player", "party1", "party2", "party3", "party4"}
 
+aura_env.zephyrOnCooldown = function(now)
+    return aura_env.lastZephyrCast and now - aura_env.lastZephyrCast < 115
+end

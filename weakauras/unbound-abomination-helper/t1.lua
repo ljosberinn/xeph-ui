@@ -13,17 +13,17 @@
 
 --- @param states table<string, UnboundAbominationHelperState>
 --- @param event "COMBAT_LOG_EVENT_UNFILTERED" | "OPTIONS" | "STATUS"
-function f(states, event, ...)
+function (states, event, ...)
     if event ~= "COMBAT_LOG_EVENT_UNFILTERED" then
         return false
     end
-
+    
     local _, subEvent, _, _, _, _, _, targetGUID, targetName, _, _, spellId = ...
-
+    
     if subEvent == "SPELL_CAST_START" and spellId == 269310 then
         local expirationTime = GetTime() + 5
         local key = "cleansing-light"
-
+        
         if not states[key] then
             states[key] = {
                 show = true,
@@ -42,17 +42,17 @@ function f(states, event, ...)
             states[key].changed = true
             states[key].expirationTime = expirationTime
         end
-
+        
         return true
     end
-
+    
     if spellId ~= 269301 then
         return false
     end
-
+    
     if subEvent == "SPELL_PERIODIC_DAMAGE" or subEvent == "SPELL_AURA_APPLIED" then
         local expirationTime = GetTime() + 4
-
+        
         if not states[targetGUID] then
             states[targetGUID] = {
                 changed = true,
@@ -71,14 +71,15 @@ function f(states, event, ...)
             states[targetGUID].expirationTime = expirationTime
             states[targetGUID].show = true
         end
-
+        
         return true
-    elseif subEvent == "SPELL_AURA_REMOVED" then
+    elseif subEvent == "SPELL_AURA_REMOVED" and states[targetGUID] then
         states[targetGUID].changed = true
         states[targetGUID].show = false
-
+        
         return true
     end
-
+    
     return false
 end
+

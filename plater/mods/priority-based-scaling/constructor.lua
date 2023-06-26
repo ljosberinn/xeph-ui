@@ -227,7 +227,6 @@ function (modTable)
         [189227] = 1, --Qalashi Hunter
         [189247] = 2, --Tamed Phoenix
         [189266] = 2, --Qalashi Trainee
-        [189470] = 2, --Lava Flare
         [189472] = 2, --Qalashi Lavabearer
         [189467] = 2, --Qalashi Bonesplitter
         [189471] = 1, --Qalashi Blacksmith

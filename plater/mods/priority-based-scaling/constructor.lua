@@ -228,7 +228,6 @@ function (modTable)
         [189247] = 2, --Tamed Phoenix
         [189266] = 2, --Qalashi Trainee
         [189472] = 2, --Qalashi Lavabearer
-        [189467] = 2, --Qalashi Bonesplitter
         [189471] = 1, --Qalashi Blacksmith
         [193291] = 1, --Apex Blazewing
         [194389] = 2, --Lava Spawn

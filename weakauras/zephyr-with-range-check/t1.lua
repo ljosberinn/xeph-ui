@@ -1,15 +1,10 @@
---- PLAYER_DEAD, UNIT_SPELLCAST_SUCCEEDED, GROUP_JOINED, GROUP_LEFT, PLAYER_STARTED_MOVING, PLAYER_STOPPED_MOVING
---- @param event "PLAYER_DEAD" | "UNIT_SPELLCAST_SUCCEEDED" | "OPTIONS" | "STATUS" | "GROUP_JOINED" | "GROUP_LEFT" | "PLAYER_STARTED_MOVING" | "PLAYER_STOPPED_MOVING"
+--- PLAYER_DEAD, UNIT_SPELLCAST_SUCCEEDED, PLAYER_STARTED_MOVING, PLAYER_STOPPED_MOVING, GROUP_LEFT, GROUP_JOINED
+--- @param event "PLAYER_DEAD" | "UNIT_SPELLCAST_SUCCEEDED" | "OPTIONS" | "STATUS" | "PLAYER_STARTED_MOVING" | "PLAYER_STOPPED_MOVING" | "GROUP_JOINED" | "GROUP_LEFT"
 function (event, ...)
     if event == "GROUP_JOINED" then
         aura_env.isInParty = true
-        return false
-    end
-
-    if event == "GROUP_LEFT" then
+    elseif event == "GROUP_LEFT" then
         aura_env.isInParty = false
-        aura_env.closePlayers = 0
-        return true
     end
 
     if not aura_env.isInParty then
@@ -37,7 +32,7 @@ function (event, ...)
 
         -- ignore events until 5s before Zephyr is ready again
         -- onyl check twice per second in general tops
-        if aura_env.zephyrOnCooldown(now) or (aura_env.lastCheck and now - aura_env.lastCheck < 0.5) then
+        if aura_env.zephyrOnCooldown(now) or aura_env.lastCheck and now - aura_env.lastCheck < 0.5 then
             return false
         end
 

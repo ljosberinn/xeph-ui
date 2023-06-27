@@ -1,4 +1,3 @@
-aura_env.rangeCheckEnabled = select(2, GetSpellCooldown(374227)) < 2
 aura_env.lastCheck = nil
 aura_env.closePlayers = 0
 aura_env.lastZephyrCast = nil
@@ -13,6 +12,12 @@ aura_env.raidList = {
 
 aura_env.partyList = {"player", "party1", "party2", "party3", "party4"}
 
+--- @param now number
+--- @return boolean
 aura_env.zephyrOnCooldown = function(now)
-    return aura_env.lastZephyrCast and now - aura_env.lastZephyrCast < 115
+    if aura_env.lastZephyrCast then
+        return now - aura_env.lastZephyrCast < 115
+    end
+
+    return false
 end

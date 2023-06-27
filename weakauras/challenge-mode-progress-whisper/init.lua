@@ -102,9 +102,7 @@ aura_env.handlers = {
 
         whispers[source] = GetTime()
 
-        local response = createResponse()
-
-        SendChatMessage(message, "WHISPER", nil, response)
+        SendChatMessage(createResponse(), "WHISPER", nil, source)
 
         return false
     end,
@@ -122,9 +120,7 @@ aura_env.handlers = {
 
         whispers[source] = GetTime()
 
-        local response = createResponse()
-
-        BNSendWhisper(source, response)
+        BNSendWhisper(source, createResponse())
 
         return false
     end,

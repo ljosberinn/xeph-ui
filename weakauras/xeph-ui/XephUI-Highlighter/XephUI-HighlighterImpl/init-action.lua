@@ -451,10 +451,6 @@ end
 local function validateAndDetermineAmplification(key, sourceGUID, targetGUID, spellId, kind)
     local ability = cache[key]
 
-    if ability.ownOnly and not isBasicallyMe(sourceGUID) then
-        return false, 0
-    end
-
     if ability.buffTrigger > 0 then
         if
             ability.buffTargets[sourceGUID] == nil or ability.buffAllowListLength == 0 or
@@ -490,6 +486,10 @@ local function validateAndDetermineAmplification(key, sourceGUID, targetGUID, sp
     local length = kind == "damage" and ability.damageTriggerLength or ability.healTriggerLength
 
     if length > 0 and genericTriggers[spellId] == nil then
+        return false, 0
+    end
+
+    if ability.ownOnly and not isBasicallyMe(sourceGUID) then
         return false, 0
     end
 

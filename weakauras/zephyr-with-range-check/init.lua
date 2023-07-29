@@ -16,7 +16,8 @@ aura_env.partyList = {"player", "party1", "party2", "party3", "party4"}
 --- @return boolean
 aura_env.zephyrOnCooldown = function(now)
     if aura_env.lastZephyrCast then
-        return now - aura_env.lastZephyrCast < 115
+        -- this isn't aug - time skip aware but accounts for interwoven threads
+        return now - aura_env.lastZephyrCast < 105
     end
 
     return false

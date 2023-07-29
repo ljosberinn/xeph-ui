@@ -1,5 +1,5 @@
---- PLAYER_DEAD, UNIT_SPELLCAST_SUCCEEDED, PLAYER_STARTED_MOVING, PLAYER_STOPPED_MOVING, GROUP_LEFT, GROUP_JOINED
---- @param event "PLAYER_DEAD" | "UNIT_SPELLCAST_SUCCEEDED" | "OPTIONS" | "STATUS" | "PLAYER_STARTED_MOVING" | "PLAYER_STOPPED_MOVING" | "GROUP_JOINED" | "GROUP_LEFT"
+--- PLAYER_DEAD, UNIT_SPELLCAST_SUCCEEDED, PLAYER_STOPPED_MOVING, GROUP_LEFT, GROUP_JOINED
+--- @param event "PLAYER_DEAD" | "UNIT_SPELLCAST_SUCCEEDED" | "OPTIONS" | "STATUS" | "PLAYER_STOPPED_MOVING" | "GROUP_JOINED" | "GROUP_LEFT"
 function (event, ...)
     if event == "GROUP_JOINED" then
         aura_env.isInParty = true
@@ -11,7 +11,7 @@ function (event, ...)
         return false
     end
 
-    if event == "UNIT_SPELLCAST_SUCCEEDED" or event == "PLAYER_STOPPED_MOVING" or event == "PLAYER_STARTED_MOVING" then
+    if event == "UNIT_SPELLCAST_SUCCEEDED" or event == "PLAYER_STOPPED_MOVING" then
         local now = GetTime()
 
         if event == "UNIT_SPELLCAST_SUCCEEDED" then
@@ -30,8 +30,8 @@ function (event, ...)
             end
         end
 
-        -- ignore events until 5s before Zephyr is ready again
-        -- onyl check twice per second in general tops
+        -- ignore events until briefly before Zephyr is ready again
+        -- only check twice per second in general tops
         if aura_env.zephyrOnCooldown(now) or aura_env.lastCheck and now - aura_env.lastCheck < 0.5 then
             return false
         end

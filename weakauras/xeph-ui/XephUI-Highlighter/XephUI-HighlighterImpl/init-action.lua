@@ -400,7 +400,10 @@ aura_env.onSpellCastSuccess = function(spellId)
         table.insert(copy, index, true)
     end
 
-    return aura_env.expireOutdatedData(copy, true) or aura_env.expireOutdatedData(aura_env.dirtyIndices, false) or false
+    local expiredOnCastKeys = aura_env.expireOutdatedData(copy, true)
+    local expiredOutdatedKeys = aura_env.expireOutdatedData(aura_env.dirtyIndices, false)
+
+    return expiredOnCastKeys or expiredOutdatedKeys or false
 end
 
 --- @type table<string, boolean>

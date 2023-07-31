@@ -13,8 +13,23 @@
 --- @param event "STATUS" | "OPTIONS" | "COMBAT_LOG_EVENT_UNFILTERED" | "XEPHUI_BREATH_OF_EONS" | "UNIT_SPELLCAST_SUCCEEDED"
 --- @returns boolean
 function (states, event, ...)
+    if not states[""] then
+        states[""] = {
+            stacks = 0,
+            show = false,
+            changed = true,
+            progressType = "timed",
+            icon = 5199622,
+            duration = 5,
+            expirationTime = 0,
+            autoHide = true
+        }
+
+        return false
+    end
+
     if event == "UNIT_SPELLCAST_SUCCEEDED" then
-        if aura_env.total == 0 or not states[""] then
+        if aura_env.total == 0 then
             return false
         end
 
@@ -25,7 +40,7 @@ function (states, event, ...)
         end
 
         aura_env.total = 0
-        states[""].total = 0
+        states[""].stacks = 0
         states[""].expirationTime = now
         states[""].changed = true
         states[""].show = false
@@ -73,26 +88,11 @@ function (states, event, ...)
 
     aura_env.nextFrame = nil
 
-    local expirationTime = GetTime() + 5
-
-    if states[""] then
-        states[""].stacks = aura_env.total
-        states[""].changed = true
-        states[""].show = true
-        states[""].expirationTime = expirationTime
-        states[""].duration = 5
-    else
-        states[""] = {
-            stacks = aura_env.total,
-            show = true,
-            changed = true,
-            progressType = "timed",
-            icon = 5199622,
-            duration = 5,
-            expirationTime = expirationTime,
-            autoHide = true
-        }
-    end
+    states[""].stacks = aura_env.total
+    states[""].changed = true
+    states[""].show = true
+    states[""].expirationTime = GetTime() + 5
+    states[""].duration = 5
 
     return true
 end

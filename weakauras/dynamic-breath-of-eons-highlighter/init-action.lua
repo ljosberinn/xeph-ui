@@ -21,9 +21,9 @@ aura_env.queue = function()
     if aura_env.nextFrame then
         return
     end
-
+    
     aura_env.nextFrame =
-        C_Timer.NewTimer(
+    C_Timer.NewTimer(
         0,
         function()
             WeakAuras.ScanEvents(aura_env.customEventName, aura_env.id)

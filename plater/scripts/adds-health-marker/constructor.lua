@@ -1,4 +1,4 @@
-function f(self, unitId, unitFrame, envTable, scriptTable)
+function (self, unitId, unitFrame, envTable, scriptTable)
     envTable.lifePercent = {
         -- DF Dungeons
         -- Ruby Life Pools
@@ -61,6 +61,7 @@ function f(self, unitId, unitFrame, envTable, scriptTable)
         -- Freehold
         [126983] = {60, 30}, --Harlan Sweete - Freehold
         [126832] = {75}, --Skycap'n Kragg - Freehold
+        [129699] = {90, 70, 50, 30}, -- Ludwig von Tortollan - Freehold
         -- The MOTHERLODE
         [133345] = {20}, --Feckless Assistant
         -- Mechagon: Junkyard
@@ -147,7 +148,7 @@ function f(self, unitId, unitFrame, envTable, scriptTable)
         [207639] = {80}, -- Blight of Galakrond
         [198997] = {80}, -- Blight of Galakrond
         [201792] = {50}, -- Ahnzon
-        [199000] = {20} -- Deios
+        [199000] = {20} -- Deios}
     }
 
     function envTable.CreateMarker(unitFrame)

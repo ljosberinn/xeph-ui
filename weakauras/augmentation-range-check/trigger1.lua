@@ -9,7 +9,7 @@
 
 --- @param states table<number, AugmentationEvokerRangeCheckState>
 --- @param event "STATUS" | "GROUP_ROSTER_UPDATE" | "UNIT_SPECIALIZATION_CHANGED" | "PLAYER_STARTED_MOVING" | "PLAYER_STOPPED_MOVING" | "UNIT_SPELLCAST_START"
---- @returns boolean
+--- @return boolean
 function f(states, event)
     if aura_env.itemId == nil then
         return false

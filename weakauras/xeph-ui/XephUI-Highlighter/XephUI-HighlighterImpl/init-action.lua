@@ -297,7 +297,7 @@ aura_env.setup = function()
                 healTrigger = healTrigger,
                 healTriggerLength = getLength(healTrigger),
                 resetOnSpell = ability.castSpellId,
-                ownOnly = ability.ownOnly,
+                ownOnly = ability.ownOnly
             }
 
             table.insert(cache, cacheEntry)

@@ -11,7 +11,7 @@
 
 --- @param states table<number, AfterTheWildfireState>
 --- @param event "STATUS" | "OPTIONS" | "COMBAT_LOG_EVENT_UNFILTERED" | "UNIT_SPELLCAST_SUCCEEDED"
---- @returns boolean
+--- @return boolean
 function (states, event, ...)
     local hasChanges = false
     

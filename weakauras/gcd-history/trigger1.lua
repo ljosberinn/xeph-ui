@@ -18,7 +18,7 @@
 
 --- @param states table<number, State>
 --- @param event "STATUS" | "OPTIONS" | "COMBAT_LOG_EVENT_UNFILTERED" | "UNIT_POWER_UPDATE" | "UNIT_SPELLCAST_CHANNEL_START" | "UNIT_SPELLCAST_CHANNEL_STOP" | "PLAYER_DEAD"
---- @returns boolean
+--- @return boolean
 function (states, event, ...)
     if event == "PLAYER_DEAD" then
         local hasChanges = false

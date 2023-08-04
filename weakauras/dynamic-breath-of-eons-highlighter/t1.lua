@@ -11,7 +11,7 @@
 
 --- @param states table<number, BreathOfEonsHighlighter>
 --- @param event "STATUS" | "OPTIONS" | "COMBAT_LOG_EVENT_UNFILTERED" | "XEPHUI_BREATH_OF_EONS" | "UNIT_SPELLCAST_SUCCEEDED"
---- @returns boolean
+--- @return boolean
 function (states, event, ...)
     if not states[""] then
         states[""] = {

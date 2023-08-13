@@ -29,7 +29,7 @@ aura_env.getCastTime = function(id)
     return castTime / 1000
 end
 
---- @return number|nil
+--- @return number
 aura_env.getExpirationTime = function()
     for i = 1, 255 do
         local _, _, _, _, _, expirationTime, _, _, _, spellId, _, _, _, _, _ = UnitAura("player", i, "HELPFUL PLAYER")
@@ -39,7 +39,7 @@ aura_env.getExpirationTime = function()
         end
     end
 
-    return nil
+    return 0
 end
 
 aura_env.customEventName = "XEPHUI_AugmentationCastCheck"

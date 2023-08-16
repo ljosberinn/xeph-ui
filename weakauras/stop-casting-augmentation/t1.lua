@@ -1,5 +1,5 @@
--- XEPHUI_AugmentationCastCheck, UNIT_SPELLCAST_START:player, UNIT_SPELLCAST_EMPOWER_START:player, UNIT_AURA:player
---- @param event "OPTIONS" | "STATUS" | "XEPHUI_AugmentationCastCheck" | "UNIT_SPELLCAST_START" | "UNIT_SPELLCAST_EMPOWER_START" | "UNIT_AURA"
+-- XEPHUI_AugmentationCastCheck, UNIT_SPELLCAST_START:player, UNIT_SPELLCAST_EMPOWER_START:player, UNIT_AURA:player, UNIT_SPELLCAST_SUCCEEDED:player
+--- @param event "OPTIONS" | "STATUS" | "XEPHUI_AugmentationCastCheck" | "UNIT_SPELLCAST_START" | "UNIT_SPELLCAST_EMPOWER_START" | "UNIT_AURA" | "UNIT_SPELLCAST_SUCCEEDED"
 --- @return boolean
 function (event, ...)
     if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_EMPOWER_START" then
@@ -9,11 +9,17 @@ function (event, ...)
             return false
         end
 
+        local now = GetTime()
+
         if aura_env.expirationTime == 0 then
+            -- queueing up a spell directly after EM will not have the buff yet
+            if now == aura_env.lastEbonMightCast then
+                return false
+            end
+
             return true
         end
 
-        local now = GetTime()
         local castTime = aura_env.getCastTime(spellId)
         -- the game does not send refresh events when you extend so we have to
         -- poll for the latest expiration time. luckily, this appears to be cheap
@@ -31,6 +37,16 @@ function (event, ...)
         return result
     end
 
+    if event == "UNIT_SPELLCAST_SUCCEEDED" then
+        local spellId = select(3, ...)
+
+        if spellId == 395152 then
+            aura_env.lastEbonMightCast = GetTime()
+        end
+
+        return false
+    end
+
     if event == "UNIT_AURA" then
         aura_env.expirationTime = aura_env.getExpirationTime()
 
@@ -46,7 +62,11 @@ function (event, ...)
 
         aura_env.nextFrame = nil
 
-        local spellId = select(9, UnitCastingInfo("player"))
+        local spellId = select(9, UnitCastingInfo("player")) or select(8, UnitChannelInfo("player"))
+
+        if spellId == nil then
+            return false
+        end
 
         -- cast that triggered the queue may be aborted by now
         if not aura_env.isExtender(spellId) then

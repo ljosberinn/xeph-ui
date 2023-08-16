@@ -1,4 +1,5 @@
 aura_env.expirationTime = nil
+aura_env.lastEbonMightCast = 0
 
 local eruptionCastId = 395160
 

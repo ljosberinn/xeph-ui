@@ -426,6 +426,15 @@ local function isMyPet(guid)
     for _, line in ipairs(tooltipData.lines) do
         TooltipUtil.SurfaceArgs(line)
 
+        -- special case for Sub Rogue Secret Technique. These units are not pets,
+        -- have no _formal_ tooltip but can still be queried
+        if line.type == Enum.TooltipDataLineType.UnitName then
+            local result = line.unitToken == "player"
+            unknownGuidIsMyPet[guid] = result
+
+            return result
+        end
+
         if line.type == Enum.TooltipDataLineType.UnitOwner then
             local result = line.guid == WeakAuras.myGUID
             unknownGuidIsMyPet[guid] = result
@@ -533,6 +542,7 @@ local function handleDamageEvent(...)
 
     local _, _, _, sourceGUID, _, _, _, targetGUID, _, _, _, spellId, _, _, amount, _, _, _, _, absorbed = ...
 
+    
     local keys = keyMaps.damage[spellId]
 
     if not keys then

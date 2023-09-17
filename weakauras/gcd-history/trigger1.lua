@@ -14,6 +14,7 @@
 --- @field desaturated boolean
 --- @field interrupted boolean
 --- @field specialNumber number
+--- @field isPet boolean
 --- @field remaining number | nil
 
 --- @param states table<number, State>
@@ -120,13 +121,10 @@ function (states, event, ...)
         --- @cast spellId number
         --- @cast stage number
 
-        if sourceGUID ~= WeakAuras.myGUID then
+        if not subEvent or aura_env.ignorelist[spellId] ~= nil or not aura_env.isBasicallyMe(sourceGUID) then
             return false
         end
 
-        if aura_env.ignorelist[spellId] ~= nil then
-            return false
-        end
 
         if subEvent == "SPELL_CAST_START" then
             local now = GetTime()
@@ -178,7 +176,8 @@ function (states, event, ...)
                 start = now,
                 desaturated = paused,
                 specialNumber = 0,
-                interrupted = false
+                interrupted = false,
+                isPet = aura_env.isPet(sourceGUID),
             }
 
             aura_env.spellcasts = aura_env.spellcasts + 1
@@ -257,7 +256,9 @@ function (states, event, ...)
                 paused = false,
                 start = now,
                 desaturated = false,
-                specialNumber = specialNumber
+                specialNumber = specialNumber,
+                interrupted = false,
+                isPet = aura_env.isPet(sourceGUID),
             }
 
             aura_env.spellcasts = aura_env.spellcasts + 1
@@ -334,7 +335,8 @@ function (states, event, ...)
                 start = now,
                 desaturated = true,
                 specialNumber = 0,
-                interrupted = false
+                interrupted = false,
+                isPet = aura_env.isPet(sourceGUID),
             }
 
             aura_env.spellcasts = aura_env.spellcasts + 1

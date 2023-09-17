@@ -428,11 +428,10 @@ local function isMyPet(guid)
 
         -- special case for Sub Rogue Secret Technique. These units are not pets,
         -- have no _formal_ tooltip but can still be queried
-        if line.type == Enum.TooltipDataLineType.UnitName then
-            local result = line.unitToken == "player"
-            unknownGuidIsMyPet[guid] = result
+        if line.type == Enum.TooltipDataLineType.UnitName and line.unitToken == "player" then
+            unknownGuidIsMyPet[guid] = true
 
-            return result
+            return true
         end
 
         if line.type == Enum.TooltipDataLineType.UnitOwner then
@@ -542,7 +541,6 @@ local function handleDamageEvent(...)
 
     local _, _, _, sourceGUID, _, _, _, targetGUID, _, _, _, spellId, _, _, amount, _, _, _, _, absorbed = ...
 
-    
     local keys = keyMaps.damage[spellId]
 
     if not keys then

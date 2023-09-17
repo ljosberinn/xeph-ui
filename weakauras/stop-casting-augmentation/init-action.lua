@@ -24,10 +24,7 @@ aura_env.getCastTime = function(id)
         return select(4, GetSpellInfo(id)) / 1000
     end
 
-    local _, _, _, channelStartTime, channelEndTime = UnitChannelInfo("player")
-    local castTime = channelEndTime - channelStartTime
-
-    return castTime / 1000
+    return GetUnitEmpowerMinHoldTime("player") / 1000
 end
 
 --- @return number

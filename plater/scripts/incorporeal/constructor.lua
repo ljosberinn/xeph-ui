@@ -36,13 +36,10 @@ function (scriptTable)
         [1513] = "HUNTER" -- Scare Beast
     }
 
-    --- @param unit string
     --- @return boolean
-    scriptTable.isDebuffed = function(unit)
-        for i = 0, 30 do
-            local _, _, _, _, _, _, _, _, _, spellId = UnitAura(unit, i, "HARMFUL")
-
-            if spellId and spells[spellId] ~= nil then
+    scriptTable.isDebuffed = function(unitFrame)
+        for spellId in pairs(spells) do
+            if Plater.UnitHasAura(unitFrame, spellId) then
                 return true
             end
         end

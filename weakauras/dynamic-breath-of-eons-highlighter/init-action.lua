@@ -17,6 +17,8 @@ aura_env.determineSpec = function()
     aura_env.isAugvoker = currentSpecId == 1473
 end
 
+aura_env.determineSpec()
+
 aura_env.queue = function()
     if aura_env.nextFrame then
         return

@@ -46,4 +46,24 @@ function (scriptTable)
 
         return false
     end
+
+    scriptTable.hide = function(unitFrame)
+        if unitFrame._isHidden then
+            return
+        end
+
+        Plater.HideHealthBar(unitFrame)
+        Plater.DisableHighlight(unitFrame)
+        unitFrame._isHidden = true
+    end
+
+    scriptTable.show = function(unitFrame)
+        if not unitFrame._isHidden then
+            return
+        end
+
+        Plater.ShowHealthBar(unitFrame)
+        Plater.EnableHighlight(unitFrame)
+        unitFrame._isHidden = false
+    end
 end

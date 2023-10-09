@@ -1,25 +1,28 @@
-function (self, unitId, unitFrame, envTable, scriptTable)
+function (_, _, _, envTable, scriptTable)
     envTable.lifePercent = {
         -- DF Dungeons
         -- Ruby Life Pools
-        [190485] = {50}, --Stormvein
-        [190484] = {50}, --Kyrakka
-        [193435] = {50}, --Kyrakka
-        [188252] = {75, 45}, --Melidrussa Chillworn
+        [190485] = {50}, -- Stormvein
+        [190484] = {50}, -- Kyrakka
+        [193435] = {50}, -- Kyrakka
+        [188252] = {75, 45}, -- Melidrussa Chillworn
         [197697] = {50}, -- Flamegullet
         -- The Azure Vault
-        [186738] = {75, 50, 25}, --Umbrelskul
+        [186738] = {75, 50, 25}, -- Umbrelskul
         -- Brackenhide Hollow
-        [186125] = {30}, --Tricktotem
-        [186122] = {30}, --Rira Hackclaw
-        [186124] = {30}, --Gashtooth
-        [185534] = {10}, --Bonebolt Hunter
+        [186125] = {30}, -- Tricktotem
+        [186122] = {30}, -- Rira Hackclaw
+        [186124] = {30}, -- Gashtooth
+        [185534] = {15}, -- Bonebolt Hunter
+        [186206] = {15}, -- Cruel Bonecrusher
+        [185508] = {15}, -- Claw Fighter
+        [185528] = {15}, -- Trickclaw Mystic
         [186121] = {4}, -- Decatriarch Wratheye
         [186227] = {20}, -- Monstrous Decay
         -- Neltharus
         [194816] = {10}, -- Forgewrought Monstrosity
         -- Halls of Infusion
-        [189719] = {15}, --Watcher Irideus
+        [189719] = {15}, -- Watcher Irideus
         [190407] = {20}, --Aqua Rager
         -- The Nokhud Offensive
         [186151] = {60}, --Balakar Khan
@@ -31,62 +34,67 @@ function (self, unitId, unitFrame, envTable, scriptTable)
         [184125] = {1}, -- Chrono-Lord Deios
         -- SL Dungeons
         -- Theater of Pain
-        [164451] = {40}, --dessia the decapirator
-        [164463] = {40}, --Paceran the Virulent
-        [164461] = {40}, --Sathel the Accursed
-        [165946] = {50}, -- ~mordretha
+        [164451] = {40}, -- Dessia the Decapitator
+        [164463] = {40}, -- Paceran the Virulent
+        [164461] = {40}, -- Sathel the Accursed
+        [165946] = {50}, -- Mordretha
         -- Mists of Tirna Scithe
-        [164501] = {70, 40, 10}, --mistcaller
+        [164501] = {70, 40, 10}, -- Mistcaller
         [164926] = {50}, --Drust Boughbreaker
         [164804] = {22}, -- Droman Oulfarran
         -- Plaguefall
-        [164267] = {66, 33}, --Magrave Stradama
-        [164967] = {66, 33}, --Doctor ickus
+        [164267] = {66, 33}, -- Magrave Stradama
+        [164967] = {66, 33}, -- Doctor ickus
         [169861] = {66, 33}, -- Ickor Bileflesh
         -- Halls of Atonement
         [164218] = {70, 40}, --Lord Chamberlain
         -- Sanguine Depths
-        [162099] = {50}, --General Kaal Boss fight
+        [162099] = {50}, -- General Kaal Boss fight
         -- Spires of Ascension
         [162061] = {70, 30}, --Devos
         -- Necrotic Wake
         [163121] = {70}, -- Stitched Vanguard
         -- De Other Side
-        [164558] = {80, 60, 40, 20}, --Hakkar the Soulflayer
+        [164558] = {80, 60, 40, 20}, -- Hakkar the Soulflayer
         -- Tazavesh: So'leah Gambit
-        [177269] = {40}, --So'leah
+        [177269] = {40}, -- So'leah
         -- Tazavesh: Streets of Wonder
-        [175806] = {66, 33}, --So'azmi
+        [175806] = {66, 33}, -- So'azmi
         -- BFA Dungeons
         -- Freehold
-        [126983] = {60, 30}, --Harlan Sweete - Freehold
-        [126832] = {75}, --Skycap'n Kragg - Freehold
+        [126983] = {60, 30}, -- Harlan Sweete - Freehold
+        [126832] = {75}, -- Skycap'n Kragg - Freehold
         [129699] = {90, 70, 50, 30}, -- Ludwig von Tortollan - Freehold
+        -- Waycrest
+        [131527] = {30}, -- Lord Waycrest
         -- The MOTHERLODE
-        [133345] = {20}, --Feckless Assistant
+        [133345] = {20}, -- Feckless Assistant
         -- Mechagon: Junkyard
-        [150276] = {50}, --Heavy Scrapbot
-        [152009] = {30}, --Malfunctioning Scrapbots
+        [150276] = {50}, -- Heavy Scrapbot
+        [152009] = {30}, -- Malfunctioning Scrapbots
         -- Mechagon: Workshop
-        [144298] = {30}, --Defense Bot Mk III (casts a shield)
+        [144298] = {30}, -- Defense Bot Mk III (casts a shield)
         -- Legion Dungeons
         -- Karazhan: Upper
         [114790] = {66, 33}, -- Viz'aduum
         -- Karazhan: Lower
-        [114261] = {50}, --Toe Knee
+        [114261] = {50}, -- Toe Knee
         [114260] = {50}, -- Mrrgria
-        [114265] = {50}, --Gang Ruffian
-        [114783] = {50}, --Reformed Maiden
+        [114265] = {50}, -- Gang Ruffian
+        [114783] = {50}, -- Reformed Maiden
         [114312] = {60}, -- Moroes
         -- Halls of Valor
-        [96574] = {30}, --Stormforged Sentinel
+        [96574] = {30}, -- Stormforged Sentinel
         [95674] = {60.5}, -- Fenryr P1
         [94960] = {10.5}, -- Hymdall
-        [95676] = {80, 5}, --Odyn
+        [95676] = {80, 5}, -- Odyn
         -- Court of Stars
         [104215] = {25}, -- Patrol Captain Gerdo
         --- Neltharion's Lair
-        [91005] = {20}, --Naraxas
+        [91005] = {20}, -- Naraxas
+        --- Black Rook Hold
+        [98542] = {50}, -- Amalgam of Souls
+        [98965] = {20}, -- Kur'talos Ravencrest
         -- Draenor Dungeons
         -- Grimrail Depot
         [81236] = {50}, -- Grimrail Technician
@@ -100,8 +108,15 @@ function (self, unitId, unitFrame, envTable, scriptTable)
         -- Temple of the Jade Serpent
         [59544] = {50}, --The Nodding Tiger
         [56732] = {70, 29.5}, -- Liu Flameheart
+        -- Cata Dungeons
+        -- Throne of the Tides
+        [40586] = {60, 30}, -- Lady Naz'jar
+        [40825] = {25}, -- Erunak Stonespeaker
         -- DF Raid
-        --Aberrus, the Shadowed Crucible
+        -- Amirdrassil
+        [208445] = {40}, -- Larodar
+        [209090] = {75, 50}, -- Tindral
+        -- Aberrus, the Shadowed Crucible
         [201261] = {80, 60, 40}, -- Kazzara
         [201773] = {50}, -- Moltannia (Eternal Blaze)
         [201774] = {50}, -- Krozgoth (Essence of Shadow)
@@ -117,30 +132,30 @@ function (self, unitId, unitFrame, envTable, scriptTable)
         [189492] = {65}, -- Raszageth
         --SL Raid
         -- Sepulcher of the First Ones
-        [181548] = {40}, --Absolution: Prototype Pantheon
-        [181551] = {40}, --Duty: Prototype Pantheon
-        [181546] = {40}, --Renewal: Prototype Pantheon
-        [181549] = {40}, --War: Prototype Pantheon
+        [181548] = {40}, -- Absolution: Prototype Pantheon
+        [181551] = {40}, -- Duty: Prototype Pantheon
+        [181546] = {40}, -- Renewal: Prototype Pantheon
+        [181549] = {40}, -- War: Prototype Pantheon
         [183501] = {75, 50}, --Xymox
         [180906] = {78, 45}, --Halondrus
-        [183671] = {40}, --Monstrous Soul - Anduin
-        [185421] = {15}, --The Jailer
+        [183671] = {40}, -- Monstrous Soul - Anduin
+        [185421] = {15}, -- The Jailer
         -- Sanctum of Domination
-        [175730] = {70, 40}, --Fatescribe Roh-Kalo
-        [176523] = {70, 40}, --Painsmith
-        [175725] = {66, 33}, --Eye of the Jailer
-        [176929] = {60, 20}, --Remnant of Kel'Thuzad
+        [175730] = {70, 40}, -- Fatescribe Roh-Kalo
+        [176523] = {70, 40}, -- Painsmith
+        [175725] = {66, 33}, -- Eye of the Jailer
+        [176929] = {60, 20}, -- Remnant of Kel'Thuzad
         [175732] = {83, 50}, -- Sylvanas Windrunner
         -- Castle Nathria
-        [166969] = {50}, --Council of Blood - Frieda
-        [166970] = {50}, --Council of Blood - Stavros
-        [166971] = {50}, --Council of Blood - Niklaus
+        [166969] = {50}, -- Council of Blood - Frieda
+        [166970] = {50}, -- Council of Blood - Stavros
+        [166971] = {50}, -- Council of Blood - Niklaus
         [167406] = {70.5, 37.5}, --Sire Denathrius
         [173162] = {66, 33}, --Lord Evershade
         -- Open World
-        [180013] = {20}, --Escaped Wilderling, Shadowlands - Korthia
-        [179931] = {80, 60}, --Relic Breaker krelva, Shadowlands - Korthia
-        [193532] = {40}, --Bazual, The Dreaded Flame, Dhragonflight
+        [180013] = {20}, -- Escaped Wilderling, Shadowlands - Korthia
+        [179931] = {80, 60}, -- Relic Breaker krelva, Shadowlands - Korthia
+        [193532] = {40}, -- Bazual, The Dreaded Flame, Dragonflight
         --Mage Tower
         [116410] = {33}, -- Karam Magespear
         -- Dawn of the Infinite
@@ -148,7 +163,8 @@ function (self, unitId, unitFrame, envTable, scriptTable)
         [207639] = {80}, -- Blight of Galakrond
         [198997] = {80}, -- Blight of Galakrond
         [201792] = {50}, -- Ahnzon
-        [199000] = {20} -- Deios}
+        [199000] = {20}, -- Deios
+        [198933] = {90, 85}, -- Iridikron
     }
 
     function envTable.CreateMarker(unitFrame)

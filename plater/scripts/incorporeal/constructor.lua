@@ -48,10 +48,8 @@ function (scriptTable)
     end
 
     scriptTable.hide = function(unitFrame)
-        if unitFrame._isHidden then
-            return
-        end
-
+        -- no check whether its already hidden as it may reappear for whichever
+        -- reason when you turn camera away and back to it again
         Plater.HideHealthBar(unitFrame)
         Plater.DisableHighlight(unitFrame)
         unitFrame._isHidden = true

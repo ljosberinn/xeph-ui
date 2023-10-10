@@ -14,10 +14,10 @@
 --- @return boolean
 function (states, event, ...)
     local hasChanges = false
-    
+
     if not states[""] then
         hasChanges = true
-        
+
         states[""] = {
             show = true,
             changed = true,
@@ -30,48 +30,29 @@ function (states, event, ...)
 
     if event == "COMBAT_LOG_EVENT_UNFILTERED" then
         local subEvent = select(2, ...)
+        local sourceGUID = select(4, ...)
+
+        if sourceGUID ~= WeakAuras.myGUID then
+            return hasChanges
+        end
+
+        local spellId = select(12, ...)
 
         if subEvent == "SPELL_AURA_APPLIED" then
-            local _, _, _, sourceGUID, _, _, _, _, _, _, _, spellId = ...
-
-            if sourceGUID ~= WeakAuras.myGUID then
-                return hasChanges
-            end
-
-            if spellId == aura_env.buffs.incarn.id then
-                aura_env.buffs.incarn.active = true
-            elseif spellId == aura_env.buffs.toothAndClaws.id then
-                aura_env.buffs.toothAndClaws.active = true
-            elseif spellId == aura_env.buffs.goryFur.id then
-                aura_env.buffs.goryFur.active = true
-            end
+            aura_env.applyBuff(spellId)
 
             return hasChanges
-        elseif subEvent == "SPELL_AURA_REMOVED" then
-            local _, _, _, sourceGUID, _, _, _, _, _, _, _, spellId = ...
+        end
 
-            if sourceGUID ~= WeakAuras.myGUID then
-                return hasChanges
-            end
-
-            if spellId == aura_env.buffs.incarn.id then
-                aura_env.buffs.incarn.active = false
-            elseif spellId == aura_env.buffs.toothAndClaws.id then
-                aura_env.buffs.toothAndClaws.active = false
-            elseif spellId == aura_env.buffs.goryFur.id then
-                aura_env.buffs.goryFur.active = false
-            end
+        if subEvent == "SPELL_AURA_REMOVED" then
+            aura_env.removeBuff(spellId)
 
             return hasChanges
-        elseif subEvent == "SPELL_HEAL" then
+        end
+
+        if subEvent == "SPELL_HEAL" then
             -- heal fires once per target hit, guard against only the first event
-            if states[""].value < 150 then
-                return hasChanges
-            end
-
-            local _, _, _, sourceGUID, _, _, _, _, _, _, _, spellId = ...
-
-            if sourceGUID ~= WeakAuras.myGUID or spellId ~= 371982 then
+            if states[""].value < 150 or spellId ~= 371982 then
                 return hasChanges
             end
 
@@ -87,33 +68,11 @@ function (states, event, ...)
 
     if event == "UNIT_SPELLCAST_SUCCEEDED" then
         local spellId = select(3, ...)
-        local cost = 0
-
-        if spellId == 400254 and not aura_env.buffs.toothAndClaws.active then
-            if aura_env.buffs.incarn.active then
-                cost = 20
-            else
-                cost = 40
-            end
-        elseif spellId == 6807 and not aura_env.buffs.toothAndClaws.active then
-            if aura_env.buffs.incarn.active then
-                cost = 20
-            else 
-                cost = 40
-            end
-        elseif spellId == 192081 then
-            if aura_env.buffs.incarn.active then
-                if aura_env.buffs.goryFur.active then
-                    cost = 15
-                else
-                    cost = 20
-                end
-            elseif aura_env.buffs.goryFur.active then
-                cost = 30
-            else
-                cost = 40
-            end
+        if not spellId then
+            return hasChanges
         end
+
+        local cost = aura_env.getRageCostForSpell(spellId)
 
         if cost == 0 then
             return hasChanges
@@ -133,6 +92,6 @@ function (states, event, ...)
         states[""].value = nextValue
         states[""].changed = true
     end
-    
+
     return hasChanges
 end

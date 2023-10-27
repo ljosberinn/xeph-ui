@@ -1,4 +1,4 @@
--- CLEU:SPELL_AURA_APPLIED, CLEU:SPELL_AURA_REFRESH
+-- UNIT_AURA, UNIT_SPELLCAST_SUCCEEDED:player
 --- @class T31_PrescienceState
 --- @field show boolean
 --- @field changed boolean
@@ -7,45 +7,71 @@
 --- @field progressType "static"
 
 --- @param states table<"", T31_PrescienceState>
---- @param event "OPTIONS" | "STATUS" | "XEPHUI_T31_Prescience" | "COMBAT_LOG_EVENT_UNFILTERED"
+--- @param event "OPTIONS" | "STATUS" | "UNIT_AURA" | "UNIT_SPELLCAST_SUCCEEDED" | "TRIGGER" | "STATUS"
 --- @return boolean
 function (states, event, ...)
-    if event == "COMBAT_LOG_EVENT_UNFILTERED" then
-        local _, _, _, sourceGUID, _, _, _, targetGUID, _, _, _, spellId = ...
+    if event == "STATUS" and not states[""] then
+        states[""] = {
+            stacks = 2,
+            show = true,
+            changed = true,
+            autoHide = false,
+            progressType = "static"
+        }
 
-        if spellId ~= 410089 then
+        return true
+    end
+
+    if event == "TRIGGER" then
+        local updatedTriggerStates = select(2, ...)
+
+        if updatedTriggerStates then
+            for _, state in pairs(updatedTriggerStates) do
+                aura_env.active = state.equipped >= 2
+            end
+        end
+
+        return false
+    end
+
+    if not aura_env.active then
+        return false
+    end
+
+    if event == "UNIT_SPELLCAST_SUCCEEDED" then
+        local spellId = select(3, ...)
+
+        if spellId == 409311 then
+            aura_env.intercept = true
+        end
+
+        return false
+    end
+
+    if not aura_env.intercept then
+        return false
+    end
+
+    if event == "UNIT_AURA" then
+        local unit, info = ...
+
+        if info.isFullUpdate then
             return false
         end
 
-        if sourceGUID ~= WeakAuras.myGUID then
-            return false
-        end
-
-        local unit = UnitTokenFromGUID(targetGUID)
-
-        if not unit then
-            return false
-        end
-
-        for i = 1, 255 do
-            local _, _, _, _, duration, _, _, _, _, auraSpellId = UnitAura(unit, i, "HELPFUL")
-
-            if auraSpellId == 410089 then
-                if not states[""] then
-                    states[""] = {
-                        stacks = 2,
-                        show = true,
-                        changed = true,
-                        autoHide = false,
-                        progressType = "static"
-                    }
+        if info.addedAuras then
+            for _, aura in pairs(info.addedAuras) do
+                if aura_env.maybeUpdateState(states, aura) then
+                    return true
                 end
+            end
+        end
 
-                states[""].stacks = duration > 30 and 2 or states[""].stacks - 1
-                states[""].changed = true
-                states[""].show = true
-
-                return true
+        if info.updatedAuraInstanceIDs then
+            for _, id in pairs(info.updatedAuraInstanceIDs) do
+                if aura_env.maybeUpdateState(states, C_UnitAuras.GetAuraDataByAuraInstanceID(unit, id)) then
+                    return true
+                end
             end
         end
     end

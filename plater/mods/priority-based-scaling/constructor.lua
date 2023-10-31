@@ -8,8 +8,27 @@ function (modTable)
 
     modTable["npcIDs"] = {
         --TEST
-        --["160325"] = 1, --Testing Dummy
         [198594] = 2, -- Valdrakken Dummy
+        -- Dawn of the Infinite
+        [204536] = 2, -- Blight Chunk
+        -- Waycrest Manor
+        [131669] = 1, -- Jagged Hound
+        -- Atal'Dazar
+        [128436] = 2, -- Saurids
+        -- Darkheart Thicket
+        [100529] = 2, -- Hatespawn Slime
+        -- Everbloom
+        [81864] = 1, -- Dreadpetal
+        [84401] = 2, -- Swift Sproutling
+        -- Black Rook Hold
+        [98677] = 2, -- Rook Spiderling
+        [98900] = 1, -- Wyrmtongue Trickster
+        [102781] = 2, -- Fel Bat Pup
+        --Throne of the Tides
+        [40923] = 1, -- Unstable Corruption
+        -- Amirdrassil
+        [210231] = 1, --Tainted Lasher
+        [211306] = 2, --Fiery Vines
         -- Temple of the Jade Serpent
         [62358] = 2, -- Corrupt Droplet
         [200126] = 1, -- Fallen Waterspeaker
@@ -206,7 +225,6 @@ function (modTable)
         -- Halls of Infusion
         [190345] = 2, -- Primalist Geomancer
         [190348] = 2, -- Primalist Ravager
-        -- [190340] = 1, -- Refti Defender
         [190342] = 1, -- Containment Apperatus
         [196712] = 1, -- Nullification Device
         [190366] = 2, -- Curious Swoglet

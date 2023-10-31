@@ -1,14 +1,10 @@
-aura_env.customEventName = "XEPHUI_AUG_VUHDO_MANUAL_OVERRIDE_UPDATE"
-
 local vuhdo = VUHDO_slashCmd
 
+aura_env.customEventName = "XEPHUI_AUG_VUHDO_MANUAL_OVERRIDE_UPDATE"
 aura_env.active = vuhdo ~= nil
 
 --- @type table<string, number>
-aura_env.inspectedSpecMap = {}
-
---- @type table<string, number>
-aura_env.awaitingInspect = {}
+aura_env.nameToSpecIdMap = {}
 
 aura_env.log = function(...)
     if aura_env.config.dev.log then
@@ -46,6 +42,8 @@ if aura_env.active and not _G["AugVuhDoHooked"] then
                     lastArguments = nil
                 end
 
+                -- todo: account for adding a list of players manually?
+
                 return
             end
 
@@ -75,20 +73,12 @@ if aura_env.active and not _G["AugVuhDoHooked"] then
     )
 end
 
+--- @param specName string
+--- @param icon string
+--- @param className string
 --- @param name string
---- @param className string|nil
---- @param specId number|nil
---- @param token string|nil
-aura_env.getColoredLabelFor = function(name, className, specId, token)
-    if token then
-        specId = GetInspectSpecialization(token)
-        className = select(2, UnitClass(token))
-    else
-        className = string.upper(className)
-    end
-
-    local _, specName, _, icon = GetSpecializationInfoByID(specId)
-
+--- @return string
+aura_env.formattedSpecIconWithName = function(specName, icon, className, name)
     return "|T" ..
         icon .. ":0|t" .. " " .. ("|c%s%s|r"):format(RAID_CLASS_COLORS[className].colorStr, specName .. " " .. name)
 end
@@ -96,14 +86,10 @@ end
 --- @param event string
 --- @param names table<number, string>
 local function setupPrivateTanks(event, names)
-    if not aura_env.active then
-        return
-    end
-
     local eventExplanationMap = {
-        ["GROUP_ROSTER_UPDATE"] = "roster changed",
-        ["INSPECT_READY"] = "received spec information",
-        [aura_env.customEventName] = "manual override observed"
+        ["PLAYER_ENTERING_WORLD"] = "login or reload",
+        ["READY_CHECK"] = "ready check",
+        [aura_env.customEventName] = "manual override seen"
     }
 
     aura_env.log("clearing private tanks. reason: " .. (eventExplanationMap[event] or event))
@@ -120,10 +106,11 @@ local function setupPrivateTanks(event, names)
     aura_env.log("Setting up private tanks:")
 
     for _, name in pairs(names) do
-        local specId = aura_env.inspectedSpecMap[name]
+        local specId = aura_env.nameToSpecIdMap[name]
         local str = name
         if specId then
-            str = aura_env.getColoredLabelFor(name, select(7, GetSpecializationInfoByID(specId)), specId)
+            local _, specName, _, icon, _, _, className = GetSpecializationInfoByID(specId)
+            str = aura_env.formattedSpecIconWithName(specName, icon, className, name)
         end
 
         aura_env.log("--> " .. str)
@@ -145,71 +132,41 @@ local function populateTable(tbl, players, limit)
     end
 end
 
---- @param unit string
---- @param force boolean
---- @return boolean
-aura_env.maybeQueueForInspect = function(unit, force)
-    local name = UnitName(unit)
+local function isAugmentationEvoker(name)
+    return aura_env.nameToSpecIdMap[name] == 1473
+end
 
-    -- debounce
-    if aura_env.awaitingInspect[name] ~= nil then
+local function isHealer(name)
+    local specId = aura_env.nameToSpecIdMap[name]
+    
+    if not specId then
         return false
     end
 
-    -- unless forced, dont do anything if we already know a spec
-    if aura_env.inspectedSpecMap[name] ~= nil and aura_env.inspectedSpecMap ~= -1 and not force then
-        return false
-    end
-
-    NotifyInspect(unit)
-    aura_env.awaitingInspect[name] = GetTime()
-    aura_env.log("requesting spec for " .. WA_ClassColorName(name))
-
-    return true
+    return specId == 105 or specId == 1468 or specId == 270 or specId == 65 or specId == 256 or specId == 257 or
+        specId == 264
 end
 
 --- @param event string
 local function doGroupUpdate(event)
-    local tankName
-    local dpsNames = {}
-    local delaySetup = false
+    local players = {}
 
     for unit in WA_IterateGroupMembers() do
         if not UnitIsUnit(unit, "player") then
-            local role = UnitGroupRolesAssigned(unit)
             local name = UnitName(unit)
 
-            local queued = aura_env.maybeQueueForInspect(unit, false)
-
-            if queued then
-                delaySetup = true
-            else
-                if aura_env.config.group.includeTank and role == "TANK" then
-                    tankName = name
-                elseif role == "DAMAGER" then
-                    dpsNames[#dpsNames + 1] = name
-                end
+            if not isHealer(name) and not isAugmentationEvoker(name) then
+                players[#players + 1] = name
             end
         end
     end
 
-    if delaySetup then
-        return
-    end
-
-    local players = {}
-
     populateTable(players, manuallyAddedPlayers)
-    populateTable(players, dpsNames)
-
-    if tankName then
-        players[#players + 1] = tankName
-    end
+    populateTable(players, players)
 
     setupPrivateTanks(event, players)
 end
 
---- @param event string
 local function doRaidUpdate(event)
     --- @type number
     local limit = aura_env.config.raid.limit
@@ -223,8 +180,6 @@ local function doRaidUpdate(event)
     local lowPriority = {}
     --- @type table<string, string>
     local unitNameToTokenMap = {}
-    --- @type table<string, number>
-    local unitNameToSpecIdMap = {}
 
     -- THIS LIST NEEDS TO BE KEPT IN SYNC WITH CUSTOM OPTIONS
     local specializationIds = {
@@ -269,34 +224,14 @@ local function doRaidUpdate(event)
         73 -- warr prot
     }
 
-    local delaySetup = false
-    
     for unit in WA_IterateGroupMembers() do
         if not UnitIsUnit(unit, "player") then
             local name = UnitName(unit)
 
             if name then
                 unitNameToTokenMap[name] = unit
-                unitNameToSpecIdMap[name] = aura_env.inspectedSpecMap[name] or -1
-
-                local queued = aura_env.maybeQueueForInspect(unit, false)
-
-                if queued then
-                    delaySetup = true
-                end
-            else
-                -- clean up manual overrides to not carry them around when they leave group
-                for key, value in pairs(manuallyAddedPlayers) do
-                    if value == manuallyAddedPlayers then
-                        manuallyAddedPlayers[key] = nil
-                    end
-                end
             end
         end
-    end
-
-    if delaySetup then
-        return false
     end
 
     local playerInstanceId = select(4, UnitPosition("player"))
@@ -307,7 +242,7 @@ local function doRaidUpdate(event)
 
             if token and UnitIsConnected(token) and select(4, UnitPosition(token)) == playerInstanceId then
                 local wantedSpecId = specializationIds[dataset.spec]
-                local observedSpecId = unitNameToSpecIdMap[dataset.name]
+                local observedSpecId = aura_env.nameToSpecIdMap[dataset.name]
 
                 if observedSpecId == wantedSpecId then
                     local targetTable =
@@ -317,6 +252,13 @@ local function doRaidUpdate(event)
                     playersSeen[dataset.name] = true
                 end
             end
+        end
+    end
+
+    -- clean up manual overrides to not carry them around when they leave group
+    for key, name in pairs(manuallyAddedPlayers) do
+        if unitNameToTokenMap[name] == nil then
+            manuallyAddedPlayers[key] = nil
         end
     end
 

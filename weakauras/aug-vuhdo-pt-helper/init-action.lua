@@ -5,6 +5,7 @@ aura_env.active = vuhdo ~= nil
 
 --- @type table<string, number>
 aura_env.nameToSpecIdMap = {}
+local lastPrivateTanks = nil
 
 aura_env.log = function(...)
     if aura_env.config.dev.log then
@@ -86,22 +87,31 @@ end
 --- @param event string
 --- @param names table<number, string>
 local function setupPrivateTanks(event, names)
+    local nextPrivateTanks = table.concat(names, ",")
+
+    if nextPrivateTanks == lastPrivateTanks then
+        aura_env.log("setup identical to previous. skipping")
+        return
+    end
+
+    lastPrivateTanks = nextPrivateTanks
+
     local eventExplanationMap = {
         ["PLAYER_ENTERING_WORLD"] = "login or reload",
         ["READY_CHECK"] = "ready check",
-        [aura_env.customEventName] = "manual override seen"
+        [aura_env.customEventName] = "manual override seen",
+        ["UNIT_SPEC_CHANGED"] = "spec update received",
+        ["OPTIONS"] = "WeakAuras open"
     }
 
     aura_env.log("clearing private tanks. reason: " .. (eventExplanationMap[event] or event))
     vuhdo("pt clear")
 
-    local nextPts = table.concat(names, ",")
-
-    if nextPts == "" then
+    if nextPrivateTanks == "" then
         return
     end
 
-    lastArguments = nextPts
+    lastArguments = nextPrivateTanks
 
     aura_env.log("Setting up private tanks:")
 
@@ -109,20 +119,20 @@ local function setupPrivateTanks(event, names)
         local specId = aura_env.nameToSpecIdMap[name]
         local str = name
         if specId then
-            local _, specName, _, icon, _, _, className = GetSpecializationInfoByID(specId)
+            local _, specName, _, icon, _, className = GetSpecializationInfoByID(specId)
             str = aura_env.formattedSpecIconWithName(specName, icon, className, name)
         end
 
         aura_env.log("--> " .. str)
     end
 
-    vuhdo("pt " .. nextPts)
+    vuhdo("pt " .. nextPrivateTanks)
 end
 
 --- @param tbl table<number, string>
---- @param players table<number, string>
 --- @param limit number|nil
-local function populateTable(tbl, players, limit)
+--- @param players table<number, string>
+local function populateTable(tbl, limit, players)
     for _, name in pairs(players) do
         if limit and #tbl == limit then
             return
@@ -132,39 +142,56 @@ local function populateTable(tbl, players, limit)
     end
 end
 
-local function isAugmentationEvoker(name)
-    return aura_env.nameToSpecIdMap[name] == 1473
-end
-
-local function isHealer(name)
-    local specId = aura_env.nameToSpecIdMap[name]
-    
-    if not specId then
-        return false
+--- @param seenPlayers table<string, string>
+local function cleanupOrphanedManualPlayers(seenPlayers)
+    -- clean up manual overrides to not carry them around when they leave group
+    for key, name in pairs(manuallyAddedPlayers) do
+        if seenPlayers[name] == nil then
+            manuallyAddedPlayers[key] = nil
+        end
     end
-
-    return specId == 105 or specId == 1468 or specId == 270 or specId == 65 or specId == 256 or specId == 257 or
-        specId == 264
 end
 
 --- @param event string
 local function doGroupUpdate(event)
+    local bannedSpecs = {
+        [1473] = true, -- augmentation evoker
+        -- healers
+        [105] = true,
+        [1468] = true,
+        [270] = true,
+        [65] = true,
+        [256] = true,
+        [257] = true,
+        [264] = true
+    }
+
+    --- @type table<number, string>
     local players = {}
+    --- @type table<string, string>
+    local unitNameToTokenMap = {}
 
     for unit in WA_IterateGroupMembers() do
         if not UnitIsUnit(unit, "player") then
             local name = UnitName(unit)
 
-            if not isHealer(name) and not isAugmentationEvoker(name) then
+            if name then
+                unitNameToTokenMap[name] = unit
+            end
+            local specId = aura_env.nameToSpecIdMap[name]
+
+            if not specId or bannedSpecs[specId] == nil then
                 players[#players + 1] = name
             end
         end
     end
 
-    populateTable(players, manuallyAddedPlayers)
-    populateTable(players, players)
+    local names = {}
 
-    setupPrivateTanks(event, players)
+    cleanupOrphanedManualPlayers(unitNameToTokenMap)
+    populateTable(names, nil, manuallyAddedPlayers)
+    populateTable(names, nil, players)
+    setupPrivateTanks(event, names)
 end
 
 local function doRaidUpdate(event)
@@ -234,6 +261,8 @@ local function doRaidUpdate(event)
         end
     end
 
+    cleanupOrphanedManualPlayers(unitNameToTokenMap)
+
     local playerInstanceId = select(4, UnitPosition("player"))
 
     for _, dataset in pairs(aura_env.config.raid.priority) do
@@ -255,20 +284,13 @@ local function doRaidUpdate(event)
         end
     end
 
-    -- clean up manual overrides to not carry them around when they leave group
-    for key, name in pairs(manuallyAddedPlayers) do
-        if unitNameToTokenMap[name] == nil then
-            manuallyAddedPlayers[key] = nil
-        end
-    end
-
     --- @type table<number, string>
     local players = {}
 
-    populateTable(players, manuallyAddedPlayers, limit)
-    populateTable(players, highPriority, limit)
-    populateTable(players, mediumPriority, limit)
-    populateTable(players, lowPriority, limit)
+    populateTable(players, limit, manuallyAddedPlayers)
+    populateTable(players, limit, highPriority)
+    populateTable(players, limit, mediumPriority)
+    populateTable(players, limit, lowPriority)
 
     setupPrivateTanks(event, players)
 end

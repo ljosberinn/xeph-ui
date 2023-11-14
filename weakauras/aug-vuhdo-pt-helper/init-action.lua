@@ -80,8 +80,44 @@ end
 --- @param name string
 --- @return string
 aura_env.formattedSpecIconWithName = function(specName, icon, className, name)
-    return "|T" ..
-        icon .. ":0|t" .. " " .. ("|c%s%s|r"):format(RAID_CLASS_COLORS[className].colorStr, specName .. " " .. name)
+    local classColor = className and RAID_CLASS_COLORS[className] and RAID_CLASS_COLORS[className].colorStr or ""
+
+    return "|T" .. icon .. ":0|t" .. " " .. ("|c%s%s|r"):format(classColor, specName .. " " .. name)
+end
+
+aura_env.onGroupLeave = function()
+    lastPrivateTanks = nil
+end
+
+--- @param event string
+aura_env.onPlayerSpecChange = function(event)
+    local specId = GetSpecialization()
+
+    if specId == 3 then
+        aura_env.setup(event)
+        return
+    end
+
+    lastPrivateTanks = nil
+    aura_env.log("clearing private tanks. reason: no longer aug")
+    vuhdo("pt clear")
+end
+
+local function maybeRefreshOmniCD()
+    if not OmniCD or not OmniCD[1] or not OmniCD[1].Party then
+        return
+    end
+
+    aura_env.log("force-refreshing OmniCD")
+
+    OmniCD[1].Party:Test()
+
+    C_Timer.After(
+        0.1,
+        function()
+            OmniCD[1].Party:Test()
+        end
+    )
 end
 
 --- @param event string
@@ -101,13 +137,15 @@ local function setupPrivateTanks(event, names)
         ["READY_CHECK"] = "ready check",
         [aura_env.customEventName] = "manual override seen",
         ["UNIT_SPEC_CHANGED"] = "spec update received",
-        ["OPTIONS"] = "WeakAuras open"
+        ["OPTIONS"] = "WeakAuras open",
+        ["GROUP_ROSTER_UPDATE"] = "roster change"
     }
 
     aura_env.log("clearing private tanks. reason: " .. (eventExplanationMap[event] or event))
     vuhdo("pt clear")
 
     if nextPrivateTanks == "" then
+        aura_env.log("next private tanks empty, doing nothing.")
         return
     end
 
@@ -127,6 +165,10 @@ local function setupPrivateTanks(event, names)
     end
 
     vuhdo("pt " .. nextPrivateTanks)
+
+    if event == "GROUP_ROSTER_UPDATE" and IsInRaid() then
+        maybeRefreshOmniCD()
+    end
 end
 
 --- @param tbl table<number, string>
@@ -180,7 +222,17 @@ local function doGroupUpdate(event)
             end
             local specId = aura_env.nameToSpecIdMap[name]
 
+            local mayAdd = false
+
             if not specId or bannedSpecs[specId] == nil then
+                mayAdd = true
+            end
+
+            if UnitGroupRolesAssigned(unit) == "TANK" and not aura_env.config.group.includeTank then
+                mayAdd = false
+            end
+
+            if mayAdd then
                 players[#players + 1] = name
             end
         end
@@ -268,17 +320,26 @@ local function doRaidUpdate(event)
     for _, dataset in pairs(aura_env.config.raid.priority) do
         if playersSeen[dataset.name] == nil then
             local token = unitNameToTokenMap[dataset.name]
-
-            if token and UnitIsConnected(token) and select(4, UnitPosition(token)) == playerInstanceId then
+            if token and UnitIsConnected(token) then
                 local wantedSpecId = specializationIds[dataset.spec]
                 local observedSpecId = aura_env.nameToSpecIdMap[dataset.name]
 
                 if observedSpecId == wantedSpecId then
-                    local targetTable =
-                        dataset.priority == 3 and highPriority or dataset.priority == 2 and mediumPriority or
-                        lowPriority
-                    targetTable[#targetTable + 1] = dataset.name
-                    playersSeen[dataset.name] = true
+                    if select(4, UnitPosition(token)) == playerInstanceId then
+                        local targetTable =
+                            dataset.priority == 3 and highPriority or dataset.priority == 2 and mediumPriority or
+                            lowPriority
+                        targetTable[#targetTable + 1] = dataset.name
+                        playersSeen[dataset.name] = true
+                    else
+                        local _, specName, _, icon = GetSpecializationInfoByID(wantedSpecId)
+                        local className = UnitClassBase(token)
+
+                        aura_env.log(
+                            aura_env.formattedSpecIconWithName(specName, icon, className, dataset.name) ..
+                                " matches criteria but is in a different zone/phase and will be skipped."
+                        )
+                    end
                 end
             end
         end

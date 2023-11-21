@@ -116,6 +116,7 @@ function (_, _, _, envTable, scriptTable)
         -- Amirdrassil
         [208445] = {40}, -- Larodar
         [209090] = {75, 50}, -- Tindral
+        [204931] = {70, 25}, -- Fyrakk
         -- Aberrus, the Shadowed Crucible
         [201261] = {80, 60, 40}, -- Kazzara
         [201773] = {50}, -- Moltannia (Eternal Blaze)

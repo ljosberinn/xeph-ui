@@ -179,6 +179,8 @@ We'll try to provide examples for each but this list grew over a couple of month
 - `Boneduest Brew` (id 325217)
 - `Charred Passions` (id 386959)
 
+### Mage
+- `Glacial Blast` (id 424120) -- should NOT reattribute `Prescience` but EM and SS
 
 ## Abilities not reattributing Ebon Might
 

@@ -35,7 +35,9 @@ function (self, unitId, unitFrame, envTable)
         [184580] = 10, -- Olaf
         [184581] = 10, -- Baelog
         [184582] = 10, -- Eric "The Swift"
-        [184125] = 1 -- Chrono-Lord Deios
+        [184125] = 1, -- Chrono-Lord Deios,
+        -- Doti lower
+        [198933] = 90, -- Iridikron, technically 85 but you care only until 90
     }
 
     -- text settings:

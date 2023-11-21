@@ -17,6 +17,7 @@ function (modTable)
         [128436] = 2, -- Saurids
         -- Darkheart Thicket
         [100529] = 2, -- Hatespawn Slime
+        [101074] = 2, -- Hatespawn Whelpling
         -- Everbloom
         [81864] = 1, -- Dreadpetal
         [84401] = 2, -- Swift Sproutling

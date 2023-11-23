@@ -153,6 +153,8 @@ We'll try to provide examples for each but this list grew over a couple of month
 - `Soulreave` (id 409605) and `Soulrip` (id 409604) -- both components of Aberrus T30 so not terribly important at this point
 - `Sanguine Blades` (id 423193)
 - `Poisoned Edges` (id 409483)
+- `Caustic Splatter` (id 421979)
+- `Sudden Demise` (id 343769)
 
 ### Hunter
 - ~~`Beast Cleave` (id 118459)~~ reattributes since Nov 22

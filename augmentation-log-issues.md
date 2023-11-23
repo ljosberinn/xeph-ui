@@ -3,7 +3,7 @@
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s`).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: Nov 21**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
+**Last updated: Nov 23**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
 
 # FAQ
 
@@ -155,8 +155,8 @@ We'll try to provide examples for each but this list grew over a couple of month
 - `Poisoned Edges` (id 409483)
 
 ### Hunter
-- `Beast Cleave` (id 118459)
-- `Kill Cleave`
+- ~~`Beast Cleave` (id 118459)~~ reattributes since Nov 22
+- ~~`Kill Cleave`~~ reattributes since Nov 22
 
 ### Demon Hunter
 - [`Soulscar`](https://www.warcraftlogs.com/reports/GJAgTzhHRf6pVcbk#fight=22&type=damage-done&source=3&pins=0%24Separate%24%23244F4B%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24684609.0.0.DemonHunter%24false%24395152%5E0%24Separate%24%23909049%24damage%240%240.0.0.Any%24684609.0.0.DemonHunter%24true%240.0.0.Any%24false%24390181%5E2%24Off%24%23a04D8A%24expression%24supportedActor.name%20%3D%20%22Senkets%C3%BC%22%20or%20source.name%20%3D%20%22Senkets%C3%BC%22&view=events&start=3146230&end=3149231) (id 390181)
@@ -192,7 +192,13 @@ We'll try to provide examples for each but this list grew over a couple of month
 
 ### Hunter
 - [`Kill Command`](https://www.warcraftlogs.com/reports/GJAgTzhHRf6pVcbk#fight=10&type=damage-done&start=1190659&end=1193759&source=24&view=events&ability=83381&pins=0%24Off%24%23244F4B%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%240.0.0.Any%24false%24395152%5E0%24Off%24%23909049%24damage%240%240.0.0.Any%240.0.0.Any%24true%240.0.0.Any%24false%24395152%5E2%24Off%24%23a04D8A%24expression%24supportedActor.name%20%3D%20%22Jabl%22%20or%20source.name%20in%20(%22Jabl%22,%20%22Bloodgullet%22,%20%22Thickboy%22)&by=ability) (id 83381)
+  - `Kill Command` sourced to BM / Survival hunter reattribute since Nov 21
+  - `Kill Command` sourced to `Dire Beasts` doesn't reattribute yet
 - ~~`Claw`~~ fixed on or before Nov 21
+- `Kill Cleave` can stop reattributing `Ebon Might` for the remainder of a key (and presumably similarily in raid until zoning out) if the main pet dies and gets rezzed
+  - note how [here](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=damage-done&source=15) Catwag has no reattribution on Kill Cleave from `EM`
+  - [plenty of reattribution from Foxwag](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=damage-done&source=14) which [died sec 18](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=summary&pins=2%24Off%24%23244F4B%24expression%24type%20%3D%20"death"&view=events) and [got rezzed 2s later](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=casts&view=events&source=12&ability=982)
+  - it [does work the next key again however](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=11&type=damage-done&source=12)
 
 ### Demon Hunter
 - ~~`Sigil of Flame` DoT~~ fixed on or before Nov 16

@@ -1,9 +1,11 @@
-**This list is not only ongoing but also currently a major WIP! It's patch launch so we're plenty busy atm.**
+**This list is continously updated whenever we confirm findings.**
+
+**Log hooks are provided by Blizzard. WCL cannot fix it.**
 
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s`).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: Nov 23**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
+**Last updated: Nov 27**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
 
 # FAQ
 
@@ -182,7 +184,10 @@ We'll try to provide examples for each but this list grew over a couple of month
 - `Charred Passions` (id 386959)
 
 ### Mage
-- `Glacial Blast` (id 424120) -- should NOT reattribute `Prescience` but EM and SS
+- `Glacial Blast` (id 424120) -- should NOT reattribute `Prescience` but `EM` and `SS`
+
+### Other
+- `Timestrike` (id 419737) does not reattribute anything
 
 ## Abilities not reattributing Ebon Might
 

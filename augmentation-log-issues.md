@@ -5,7 +5,7 @@
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s`).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: Nov 27**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
+**Last updated: Nov 28**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
 
 # FAQ
 
@@ -182,9 +182,22 @@ We'll try to provide examples for each but this list grew over a couple of month
 ### Monk
 - `Boneduest Brew` (id 325217)
 - `Charred Passions` (id 386959)
+- `Charred Dreams` (id 425299)
+- melee hits as Mistweaver
 
 ### Mage
-- `Glacial Blast` (id 424120) -- should NOT reattribute `Prescience` but `EM` and `SS`
+- `Glacial Blast` (id 424120) -- should NOT reattribute `Prescience` but `Ebon Might` and `Shifting Sands`
+
+### Priest
+- melee as disc priest -- for completeness sake I suppose...
+
+### Shaman
+- `Lava Slag` (id 427729) T31 4pc
+- melee for Elemental -- for completeness sake
+
+### Paladin
+- `Cleansing Flame` (id 425261) T31 4pc
+- `Shield of Vengeance` (id 184689) -- unsure if this should reattribtue `Ebon Might`, but it certainly scales with vers and should reattribute `Shifting Sands`
 
 ### Other
 - `Timestrike` (id 419737) does not reattribute anything
@@ -207,11 +220,24 @@ We'll try to provide examples for each but this list grew over a couple of month
   - [plenty of reattribution from Foxwag](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=damage-done&source=14) which [died sec 18](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=summary&pins=2%24Off%24%23244F4B%24expression%24type%20%3D%20"death"&view=events) and [got rezzed 2s later](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=casts&view=events&source=12&ability=982)
   - it [does work the next key again however](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=11&type=damage-done&source=12)
 
+### Druid
+- `Tear Open Wounds` (id 391786) -- also does not reattribute `Shifting Sands`, see below
+- `Tear` (id 391356) -- also does not reattribute `Shifting Sands`, see below
+
 ### Demon Hunter
 - ~~`Sigil of Flame` DoT~~ fixed on or before Nov 16
 
 ### Death Knight
 - `Death Coil` DoT
+
+### Warlock
+- `Soul Cleave` (id 387502) via Fel Guard
+
+### Paladin
+- melee as holy paladin. note this is different to melee from mistweaver which indeed does not reattribute _anything_, while hpal reattributes `Shifting Sands` and `Prescience`
+
+### Shaman
+- `Earthquake` (id 77478)
 
 ## Abilities not reattributing Shifting Sands
 
@@ -222,7 +248,8 @@ We'll try to provide examples for each but this list grew over a couple of month
 ### Druid
 - `Feral Frenzy` (id 274838) [is not reattributing its bleed. the initial hit works](https://www.warcraftlogs.com/reports/QgNV8PZ6KxMCFyvD#fight=50&type=damage-done&pins=0%24Separate%24%23244F4B%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24174431619.0.0.Druid%24false%24395152%5E0%24Separate%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24174431619.0.0.Druid%24false%24413984%5E0%24Separate%24%23a04D8A%24casts%240%240.0.0.Any%24174431619.0.0.Druid%24true%240.0.0.Any%24false%24274837%5E2%24Off%24%23DF5353%24expression%24(source.name%20%3D%20%22Guiltyas%22%20and%20ability.name%20%3D%20%22Feral%20Frenzy%22)%20or%20supportedActor.name%20%3D%20%22Guiltyas%22&view=events&start=5028349&end=5034926&eventstart=5029901). it's a bit harder to spot but note how after each non-tick event, an `Ebon Might` reattribution event is present for the same millisecond, but for the ticks, there's none. also note that it's not possible to limit reattribution to a specific ability, so its showing other damage reattribution in here too, meaning that the next `Ebon Might` event that is delayed by e.g. 50 milliseconds at `01:48.488` is from another damage source. the matching EM event should be at `01:48.434` like `Shifting Sands` and `Prescience` are.
 - [`Brambles`](https://www.warcraftlogs.com/reports/kwZ6XztvhKa4Gj81#fight=3&type=damage-done&pull=1&pins=0%24Separate%24%23244F4B%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24207209715.0.0.Druid%24false%24395152%5E2%24Off%24%23909049%24expression%24(source.name%20%3D%20%22Mubz%22%20and%20ability.name%20%3D%20%22Brambles%22)%20or%20supportedActor.name%20%3D%20%22Mubz%22&view=events&start=532522&end=579620) (id 203958)
-
+- `Tear Open Wounds` (id 391786) -- also does not reattribute `Shifting Sands`, see above
+- `Tear` (id 391356) -- also does not reattribute `Shifting Sands`, see above
 
 ## Special cases
 

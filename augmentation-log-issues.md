@@ -5,7 +5,7 @@
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s`).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: Nov 28**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
+**Last updated: Nov 29**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
 
 # FAQ
 
@@ -155,8 +155,9 @@ We'll try to provide examples for each but this list grew over a couple of month
 - `Soulreave` (id 409605) and `Soulrip` (id 409604) -- both components of Aberrus T30 so not terribly important at this point
 - `Sanguine Blades` (id 423193)
 - `Poisoned Edges` (id 409483)
-- `Caustic Splatter` (id 421979)
+- ~~`Caustic Splatter` (id 421979)~~ reattributes as of Nov 29
 - `Sudden Demise` (id 343769)
+- ~~`Envenomous Explosion` (id 426581)~~ reattributes as of Nov 29 
 
 ### Hunter
 - ~~`Beast Cleave` (id 118459)~~ reattributes since Nov 22
@@ -248,8 +249,8 @@ We'll try to provide examples for each but this list grew over a couple of month
 ### Druid
 - `Feral Frenzy` (id 274838) [is not reattributing its bleed. the initial hit works](https://www.warcraftlogs.com/reports/QgNV8PZ6KxMCFyvD#fight=50&type=damage-done&pins=0%24Separate%24%23244F4B%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24174431619.0.0.Druid%24false%24395152%5E0%24Separate%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24174431619.0.0.Druid%24false%24413984%5E0%24Separate%24%23a04D8A%24casts%240%240.0.0.Any%24174431619.0.0.Druid%24true%240.0.0.Any%24false%24274837%5E2%24Off%24%23DF5353%24expression%24(source.name%20%3D%20%22Guiltyas%22%20and%20ability.name%20%3D%20%22Feral%20Frenzy%22)%20or%20supportedActor.name%20%3D%20%22Guiltyas%22&view=events&start=5028349&end=5034926&eventstart=5029901). it's a bit harder to spot but note how after each non-tick event, an `Ebon Might` reattribution event is present for the same millisecond, but for the ticks, there's none. also note that it's not possible to limit reattribution to a specific ability, so its showing other damage reattribution in here too, meaning that the next `Ebon Might` event that is delayed by e.g. 50 milliseconds at `01:48.488` is from another damage source. the matching EM event should be at `01:48.434` like `Shifting Sands` and `Prescience` are.
 - [`Brambles`](https://www.warcraftlogs.com/reports/kwZ6XztvhKa4Gj81#fight=3&type=damage-done&pull=1&pins=0%24Separate%24%23244F4B%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24207209715.0.0.Druid%24false%24395152%5E2%24Off%24%23909049%24expression%24(source.name%20%3D%20%22Mubz%22%20and%20ability.name%20%3D%20%22Brambles%22)%20or%20supportedActor.name%20%3D%20%22Mubz%22&view=events&start=532522&end=579620) (id 203958)
-- `Tear Open Wounds` (id 391786) -- also does not reattribute `Shifting Sands`, see above
-- `Tear` (id 391356) -- also does not reattribute `Shifting Sands`, see above
+- `Tear Open Wounds` (id 391786) -- also does not reattribute `Ebon Might`, see above
+- `Tear` (id 391356) -- also does not reattribute `Ebon Might`, see above
 
 ## Special cases
 

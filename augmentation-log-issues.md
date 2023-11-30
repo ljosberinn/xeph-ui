@@ -5,7 +5,7 @@
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s`).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: Nov 29**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
+**Last updated: Nov 30**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
 
 # FAQ
 
@@ -125,7 +125,7 @@ Thanks to all the folks helping spotting these and reporting them.
   - it'll claim up to 100% of the healing done
     - e.g. note [`Ebon Might` taking 100% of this `Lifebloom`](https://www.warcraftlogs.com/reports/V6dqjXHTyWGR8QMZ#fight=3&type=healing&translate=true&pins=2%24Off%24%23244F4B%24expression%24((ability.name%20%3D%20%22Lifebloom%22%20and%20source.name%20%3D%20%22%E8%8E%AB%E5%84%8D%E5%84%8D%22)%20or%20supportedActor.name%20%3D%20%22%E8%8E%AB%E5%84%8D%E5%84%8D%22)%20and%20effectiveHealing%20%3E%200&view=events&start=219857&end=222827)
   - for examples, just check [the Aberrus Augmentation leaderboard for Healing](https://www.warcraftlogs.com/zone/rankings/33#class=Evoker&spec=Augmentation&partition=4&metric=hps), e.g. [this log](https://www.warcraftlogs.com/reports/V6dqjXHTyWGR8QMZ#fight=3&type=healing&translate=true)
-- `Breath of Eons` [sometimes doesn't extend `Ebon Might`](https://www.warcraftlogs.com/reports/Q4cz7XTKg9F1BZGM#fight=57&pull=14&type=summary&start=42619579&end=42626637&pins=0%24Separate%24%23244F4B%24casts%240%240.0.0.Any%24176244533.0.0.Evoker%24true%240.0.0.Any%24false%24403631%5E0%24Separate%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%240.0.0.Any%24false%24395152%5E2%24Off%24%23a04D8A%24expression%24ability.name%20in%20(%22Breath%20of%20Eons%22,%20%22Ebon%20Might%22)%20and%20type%20not%20in%20(%22heal%22,%20%22damage%22)&view=events)
+- ~~`Breath of Eons` [sometimes doesn't extend `Ebon Might`](https://www.warcraftlogs.com/reports/Q4cz7XTKg9F1BZGM#fight=57&pull=14&type=summary&start=42619579&end=42626637&pins=0%24Separate%24%23244F4B%24casts%240%240.0.0.Any%24176244533.0.0.Evoker%24true%240.0.0.Any%24false%24403631%5E0%24Separate%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%240.0.0.Any%24false%24395152%5E2%24Off%24%23a04D8A%24expression%24ability.name%20in%20(%22Breath%20of%20Eons%22,%20%22Ebon%20Might%22)%20and%20type%20not%20in%20(%22heal%22,%20%22damage%22)&view=events)~~ fixed Nov 29
 
 ### Empty Support Events
 
@@ -212,9 +212,9 @@ We'll try to provide examples for each but this list grew over a couple of month
 - [`Flametongue Attack`](https://www.warcraftlogs.com/reports/Q4cz7XTKg9F1BZGM#fight=41&type=damage-done&pins=0%24Separate%24%23244F4B%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24175883852.0.0.Shaman%24false%24395152%5E2%24Off%24%23909049%24expression%24(source.name%20%3D%20%22Avesone%22%20and%20ability.name%20%3D%20%22Flametongue%20Attack%22)%20or%20supportedActor.name%20%3D%20%22Avesone%22&start=31890610&end=31923888&view=events) (id 10444)
 
 ### Hunter
-- [`Kill Command`](https://www.warcraftlogs.com/reports/GJAgTzhHRf6pVcbk#fight=10&type=damage-done&start=1190659&end=1193759&source=24&view=events&ability=83381&pins=0%24Off%24%23244F4B%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%240.0.0.Any%24false%24395152%5E0%24Off%24%23909049%24damage%240%240.0.0.Any%240.0.0.Any%24true%240.0.0.Any%24false%24395152%5E2%24Off%24%23a04D8A%24expression%24supportedActor.name%20%3D%20%22Jabl%22%20or%20source.name%20in%20(%22Jabl%22,%20%22Bloodgullet%22,%20%22Thickboy%22)&by=ability) (id 83381)
+- ~~[`Kill Command`](https://www.warcraftlogs.com/reports/GJAgTzhHRf6pVcbk#fight=10&type=damage-done&start=1190659&end=1193759&source=24&view=events&ability=83381&pins=0%24Off%24%23244F4B%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%240.0.0.Any%24false%24395152%5E0%24Off%24%23909049%24damage%240%240.0.0.Any%240.0.0.Any%24true%240.0.0.Any%24false%24395152%5E2%24Off%24%23a04D8A%24expression%24supportedActor.name%20%3D%20%22Jabl%22%20or%20source.name%20in%20(%22Jabl%22,%20%22Bloodgullet%22,%20%22Thickboy%22)&by=ability) (id 83381)~~
   - `Kill Command` sourced to BM / Survival hunter reattribute since Nov 21
-  - `Kill Command` sourced to `Dire Beasts` doesn't reattribute yet
+  - `Kill Command` sourced to `Dire Beasts` reattributes since Nov 29
 - ~~`Claw`~~ fixed on or before Nov 21
 - `Kill Cleave` can stop reattributing `Ebon Might` for the remainder of a key (and presumably similarily in raid until zoning out) if the main pet dies and gets rezzed
   - note how [here](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=damage-done&source=15) Catwag has no reattribution on Kill Cleave from `EM`

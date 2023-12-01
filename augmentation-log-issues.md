@@ -5,7 +5,7 @@
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s`).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: Nov 30**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
+**Last updated: Dec 1**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
 
 # FAQ
 
@@ -157,7 +157,8 @@ We'll try to provide examples for each but this list grew over a couple of month
 - `Poisoned Edges` (id 409483)
 - ~~`Caustic Splatter` (id 421979)~~ reattributes as of Nov 29
 - `Sudden Demise` (id 343769)
-- ~~`Envenomous Explosion` (id 426581)~~ reattributes as of Nov 29 
+- ~~`Envenomous Explosion` (id 426581)~~ reattributes as of Nov 29
+- `Shadow Eviscerate` (id 424491)
 
 ### Hunter
 - ~~`Beast Cleave` (id 118459)~~ reattributes since Nov 22
@@ -220,6 +221,8 @@ We'll try to provide examples for each but this list grew over a couple of month
   - note how [here](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=damage-done&source=15) Catwag has no reattribution on Kill Cleave from `EM`
   - [plenty of reattribution from Foxwag](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=damage-done&source=14) which [died sec 18](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=summary&pins=2%24Off%24%23244F4B%24expression%24type%20%3D%20"death"&view=events) and [got rezzed 2s later](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=casts&view=events&source=12&ability=982)
   - it [does work the next key again however](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=11&type=damage-done&source=12)
+- bm hunters can underattribute regardless of above fixes when the main pet loses its internal reattribution status somehow
+  - sounds obscure but the devs are aware
 
 ### Druid
 - `Tear Open Wounds` (id 391786) -- also does not reattribute `Shifting Sands`, see below
@@ -240,6 +243,9 @@ We'll try to provide examples for each but this list grew over a couple of month
 ### Shaman
 - `Earthquake` (id 77478)
 
+### Rogue
+- `Shadow Rupture` (id 424493) only reattributes `Prescience`
+
 ## Abilities not reattributing Shifting Sands
 
 ### Paladin
@@ -251,6 +257,9 @@ We'll try to provide examples for each but this list grew over a couple of month
 - [`Brambles`](https://www.warcraftlogs.com/reports/kwZ6XztvhKa4Gj81#fight=3&type=damage-done&pull=1&pins=0%24Separate%24%23244F4B%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24207209715.0.0.Druid%24false%24395152%5E2%24Off%24%23909049%24expression%24(source.name%20%3D%20%22Mubz%22%20and%20ability.name%20%3D%20%22Brambles%22)%20or%20supportedActor.name%20%3D%20%22Mubz%22&view=events&start=532522&end=579620) (id 203958)
 - `Tear Open Wounds` (id 391786) -- also does not reattribute `Ebon Might`, see above
 - `Tear` (id 391356) -- also does not reattribute `Ebon Might`, see above
+
+### Rogue
+- `Shadow Rupture` (id 424493) only reattributes `Prescience`, see above
 
 ## Special cases
 

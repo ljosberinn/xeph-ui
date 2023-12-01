@@ -39,9 +39,11 @@ Thanks to all the folks helping spotting these and reporting them.
   
   ![image](https://user-images.githubusercontent.com/29307652/281191638-5bba54ab-d0ba-4289-b462-931a4dd6764e.png)
   
-  - now this is a bit more tricky. each ability that reattributes should have a reattributing event basically _directly_ after the initial event. there may be minor delay but usually they are share the same timestamp.
+  - now this is a bit more tricky. each ability that reattributes should have a reattributing event basically _directly_ or very close after the initial event. there may be minor delay but usually they are share the same timestamp.
   
-  - **do note that certain things are expected to not reattribute, most notably all non-class/spec specific spells shouldn't, e.g. trinkets or embellishments**
+  - **do note that certain things are expected to not reattribute:
+    - embellishments and trinkets don't scale with main stat, so no `Ebon Might` reattribution
+    - abilities that are guaranteed to crit e.g. during `Combustion` or `Lava Burst` should not reattribute `Prescience`
   
 </details>
 

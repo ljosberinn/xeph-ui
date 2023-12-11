@@ -5,7 +5,48 @@
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s`).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: Dec 1**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
+**Last updated: Dec 11**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
+
+- [FAQ](#faq)
+- [Reattribution problems](#reattribution-problems)
+  * [General bugs](#general-bugs)
+    + [Empty Support Events](#empty-support-events)
+  * [Abilities not reattributing anything](#abilities-not-reattributing-anything)
+    + [Racials](#racials)
+    + [Warrior](#warrior)
+    + [Rogue](#rogue)
+    + [Hunter](#hunter)
+    + [Demon Hunter](#demon-hunter)
+    + [Warlock](#warlock)
+    + [Shaman](#shaman)
+    + [Druid](#druid)
+    + [Monk](#monk)
+    + [Mage](#mage)
+    + [Priest](#priest)
+    + [Shaman](#shaman-1)
+    + [Paladin](#paladin)
+    + [Other](#other)
+  * [Abilities not reattributing Ebon Might](#abilities-not-reattributing-ebon-might)
+    + [Warrior](#warrior-1)
+    + [Shaman](#shaman-2)
+    + [Hunter](#hunter-1)
+    + [Druid](#druid-1)
+    + [Demon Hunter](#demon-hunter-1)
+    + [Death Knight](#death-knight)
+    + [Warlock](#warlock-1)
+    + [Paladin](#paladin-1)
+    + [Shaman](#shaman-3)
+    + [Rogue](#rogue-1)
+    + [Warrior](#warrior-2)
+  * [Abilities not reattributing Shifting Sands](#abilities-not-reattributing-shifting-sands)
+    + [Paladin](#paladin-2)
+    + [Warrior](#warrior-3)
+    + [Druid](#druid-2)
+    + [Rogue](#rogue-2)
+  * [Special cases](#special-cases)
+    + [Priest](#priest-1)
+    + [Warlock](#warlock-2)
+    + [Hunter](#hunter-2)
 
 # FAQ
 
@@ -170,13 +211,15 @@ We'll try to provide examples for each but this list grew over a couple of month
 - [`Soulscar`](https://www.warcraftlogs.com/reports/GJAgTzhHRf6pVcbk#fight=22&type=damage-done&source=3&pins=0%24Separate%24%23244F4B%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24684609.0.0.DemonHunter%24false%24395152%5E0%24Separate%24%23909049%24damage%240%240.0.0.Any%24684609.0.0.DemonHunter%24true%240.0.0.Any%24false%24390181%5E2%24Off%24%23a04D8A%24expression%24supportedActor.name%20%3D%20%22Senkets%C3%BC%22%20or%20source.name%20%3D%20%22Senkets%C3%BC%22&view=events&start=3146230&end=3149231) (id 390181)
 - [`Ragefire`](https://www.warcraftlogs.com/reports/GJAgTzhHRf6pVcbk#fight=22&type=damage-done&source=3&pins=0%24Separate%24%23244F4B%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24684609.0.0.DemonHunter%24false%24395152%5E0%24Separate%24%23909049%24damage%240%240.0.0.Any%24684609.0.0.DemonHunter%24true%240.0.0.Any%24false%24390197%5E2%24Off%24%23a04D8A%24expression%24supportedActor.name%20%3D%20%22Senkets%C3%BC%22%20or%20source.name%20%3D%20%22Senkets%C3%BC%22&view=events&start=3158592&end=3161593) (id 390197)
 - ~~[`Chaotic Disposition`](https://www.warcraftlogs.com/reports/GJAgTzhHRf6pVcbk#fight=15&type=damage-done&source=3&pins=0%24Separate%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24693120.0.0.DemonHunter%24false%24395152%5E0%24Separate%24%23909049%24damage%240%240.0.0.Any%24693120.0.0.DemonHunter%24true%240.0.0.Any%24false%24428493%5E2%24Off%24%23a04D8A%24expression%24supportedActor.name%20%3D%20%22Neosferus%22%20or%20source.name%20%3D%20%22Neosferus%22&start=1901054&end=1907738&ability=395152&view=events) (id 428493)~~ has been reworked into a buff instead
+- `The Hunt` (id 370971) - healing
+- `Charred Warblades` (id 213011) - healing
 
 ### Warlock
 - [`Dimensional Cinder`](https://www.warcraftlogs.com/reports/GJAgTzhHRf6pVcbk#fight=22&type=damage-done&source=3&pins=0%24Separate%24%23244F4B%24damage%240%240.0.0.Any%24694020.0.0.Warlock%24true%240.0.0.Any%24false%24427285%5E0%24Separate%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24694020.0.0.Warlock%24false%24395152%5E0%24Separate%24%23a04D8A%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24694020.0.0.Warlock%24false%24410089%5E2%24Off%24%23DF5353%24expression%24supportedActor.name%20%3D%20%22Romchutwo%22%20or%20source.name%20%3D%20%22Romchutwo%22&view=events&start=3149342&end=3152342) (id 427285)
 
 ### Shaman
 - `Lightning Rod`
-- `Earthquake`
+- `Ancestral Guidance` (id 114911)
 
 ### Druid
 - [`Frenzied Assault`](https://www.warcraftlogs.com/reports/GJAgTzhHRf6pVcbk#fight=22&type=damage-done&source=3&pins=0%24Separate%24%23244F4B%24damage%240%240.0.0.Any%24614276.0.0.Druid%24true%240.0.0.Any%24false%24391140%5E0%24Off%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24614276.0.0.Druid%24false%24395152%5E0%24Off%24%23a04D8A%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24614276.0.0.Druid%24false%24413984%5E2%24Off%24%23DF5353%24expression%24supportedActor.name%20%3D%20%22Acessa%22%20%20or%20source.name%20%3D%20%22Acessa%22&view=events&start=3151735&end=3154735) (id 391140)
@@ -188,23 +231,38 @@ We'll try to provide examples for each but this list grew over a couple of month
 - `Charred Passions` (id 386959)
 - `Charred Dreams` (id 425299)
 - melee hits as Mistweaver
+- note that these below may be reattributing `Shifting Sands` and it's based on a key log where naturally no sands were on the mw
+- `Ancient Teachings` (ids 388024, 388025)
+- `Chi Harmony` (id 423458)
+- `Ancient Protection` (id 429271)
+- `Soothing Mist` (id 115175)
 
 ### Mage
 - `Glacial Blast` (id 424120) -- should NOT reattribute `Prescience` but `Ebon Might` and `Shifting Sands`
 
 ### Priest
 - melee as disc priest -- for completeness sake I suppose...
+- `Vampiric Embrace` (id 15290) - healing
+- `Devouring Plague` (id 335467) - healing
+- `Vampiric Touch` (id 34914) - healing
+- `Mindgames` (ids 375902, 375904) - healing
+- `Halo` (id 390971) - healing
+- `Binding Heal` (id 368276)
+- `Sanctuary` (id 208771)
 
 ### Shaman
 - `Lava Slag` (id 427729) T31 4pc
 - melee for Elemental -- for completeness sake
 
 ### Paladin
-- `Cleansing Flame` (id 425261) T31 4pc
+- `Cleansing Flame` (ids 425261, 425262) T31 4pc
 - `Shield of Vengeance` (id 184689) -- unsure if this should reattribtue `Ebon Might`, but it certainly scales with vers and should reattribute `Shifting Sands`
+- `Blessed Hammer` (id 229976) doesn't reattribute healing
+- `Bulwark of Order` (id 209388)
 
 ### Other
 - `Timestrike` (id 419737) does not reattribute anything
+- `Leech` is not reattributing anything but is arguably low priority
 
 ## Abilities not reattributing Ebon Might
 
@@ -248,11 +306,17 @@ We'll try to provide examples for each but this list grew over a couple of month
 ### Rogue
 - `Shadow Rupture` (id 424493) only reattributes `Prescience`
 
+### Warrior
+- `Fervid Bite` (id 425534) only reattributes `Prescience`, see below
+
 ## Abilities not reattributing Shifting Sands
 
 ### Paladin
 - `Shield of Vengeance` (id 184689)
 - [`Hammer of Wrath`](https://www.warcraftlogs.com/reports/Q4cz7XTKg9F1BZGM#fight=10&type=damage-done&source=295) (id 24275)
+
+### Warrior
+- `Fervid Bite` (id 425534) only reattributes `Prescience`, see above
 
 ### Druid
 - `Feral Frenzy` (id 274838) [is not reattributing its bleed. the initial hit works](https://www.warcraftlogs.com/reports/QgNV8PZ6KxMCFyvD#fight=50&type=damage-done&pins=0%24Separate%24%23244F4B%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24174431619.0.0.Druid%24false%24395152%5E0%24Separate%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24174431619.0.0.Druid%24false%24413984%5E0%24Separate%24%23a04D8A%24casts%240%240.0.0.Any%24174431619.0.0.Druid%24true%240.0.0.Any%24false%24274837%5E2%24Off%24%23DF5353%24expression%24(source.name%20%3D%20%22Guiltyas%22%20and%20ability.name%20%3D%20%22Feral%20Frenzy%22)%20or%20supportedActor.name%20%3D%20%22Guiltyas%22&view=events&start=5028349&end=5034926&eventstart=5029901). it's a bit harder to spot but note how after each non-tick event, an `Ebon Might` reattribution event is present for the same millisecond, but for the ticks, there's none. also note that it's not possible to limit reattribution to a specific ability, so its showing other damage reattribution in here too, meaning that the next `Ebon Might` event that is delayed by e.g. 50 milliseconds at `01:48.488` is from another damage source. the matching EM event should be at `01:48.434` like `Shifting Sands` and `Prescience` are.

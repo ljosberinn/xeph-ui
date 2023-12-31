@@ -3,16 +3,18 @@ aura_env.active = false
 aura_env.nextFrame = nil
 aura_env.dirtyIndices = {}
 
-aura_env.queue = function()
+function aura_env.queue()
     if aura_env.nextFrame then
         return
     end
+
+    local customEventName, id = aura_env.customEventName, aura_env.id
 
     aura_env.nextFrame =
         C_Timer.NewTimer(
         0,
         function()
-            WeakAuras.ScanEvents(aura_env.customEventName, aura_env.id)
+            WeakAuras.ScanEvents(customEventName, id)
         end
     )
 end
@@ -102,9 +104,10 @@ local hasBuffsOrDebuffs = false
 local hasHeal = false
 local hasPeriodicHealing = false
 local hasPeriodicDamage = false
+local hasSummons = false
 
-aura_env.setup = function()
-    cache = {}
+function aura_env.setup()
+    table.wipe(cache)
     resetKeyMap()
     aura_env.active = false
 
@@ -226,6 +229,14 @@ aura_env.setup = function()
         return count
     end
 
+    --- @param specId number
+    --- @return boolean
+    local function isSpecWithSummons(specId)
+        -- for now, only warlocks are dedicatedly supported
+        -- may have to extend for special trinkets in the future
+        return specId == 265 or specId == 266 or specId == 267
+    end
+
     for _, ability in pairs(aura_env.config.abilities) do
         if thisSpellShouldLoad(ability) then
             local icon = resolveIcon(ability)
@@ -275,6 +286,10 @@ aura_env.setup = function()
             if ability.debuffs[1].id > 0 then
                 hasDebuffs = true
                 hasBuffsOrDebuffs = true
+            end
+
+            if not hasSummons and isSpecWithSummons(currentSpecId) then
+                hasSummons = true
             end
 
             --- @type CacheEntry
@@ -375,7 +390,7 @@ end
 --- @param tbl table<integer, boolean>
 --- @param force boolean
 --- @return boolean
-aura_env.expireOutdatedData = function(tbl, force)
+function aura_env.expireOutdatedData(tbl, force)
     local hasChanges = false
     local now = GetTime()
 
@@ -391,7 +406,7 @@ end
 
 --- @param spellId number
 --- @return boolean
-aura_env.onSpellCastSuccess = function(spellId)
+function aura_env.onSpellCastSuccess(spellId)
     local keysToAdditionallyReset = keyMaps.cast[spellId] or {}
 
     local copy = {}
@@ -407,19 +422,19 @@ aura_env.onSpellCastSuccess = function(spellId)
 end
 
 --- @type table<string, boolean>
-local unknownGuidIsMyPet = {}
+local guidIsMyPet = {}
 
 --- @param guid string
 --- @return boolean
 local function isMyPet(guid)
-    if unknownGuidIsMyPet[guid] ~= nil then
-        return unknownGuidIsMyPet[guid]
+    if guidIsMyPet[guid] ~= nil then
+        return guidIsMyPet[guid]
     end
 
     local tooltipData = C_TooltipInfo.GetHyperlink("unit:" .. guid)
 
     if not tooltipData then
-        unknownGuidIsMyPet[guid] = false
+        guidIsMyPet[guid] = false
         return false
     end
 
@@ -429,20 +444,20 @@ local function isMyPet(guid)
         -- special case for Sub Rogue Secret Technique. These units are not pets,
         -- have no _formal_ tooltip but can still be queried
         if line.type == Enum.TooltipDataLineType.UnitName and line.unitToken == "player" then
-            unknownGuidIsMyPet[guid] = true
+            guidIsMyPet[guid] = true
 
             return true
         end
 
         if line.type == Enum.TooltipDataLineType.UnitOwner then
             local result = line.guid == WeakAuras.myGUID
-            unknownGuidIsMyPet[guid] = result
+            guidIsMyPet[guid] = result
 
             return result
         end
     end
 
-    unknownGuidIsMyPet[guid] = false
+    guidIsMyPet[guid] = false
 
     return false
 end
@@ -717,7 +732,63 @@ local function handleSpellMissed(...)
         spellId,
         nil,
         nil,
-        amount
+        amount,
+        0
+    )
+end
+
+--- @return boolean
+local function handleSpellSummon(...)
+    local _, _, _, sourceGUID, _, _, _, targetGUID = ...
+
+    if sourceGUID ~= WeakAuras.myGUID then
+        return false
+    end
+
+    guidIsMyPet[targetGUID] = true
+
+    return false
+end
+
+--- @return boolean
+local function handleSpellAbsorb(...)
+    local _, _, _, _, _, _, _, targetGUID, _, _, _, _, _, _, sourceGUID, _, _, _, spellId, _, _, amount = ...
+
+    if not amount then -- melees do not include inflicting cast info
+        amount = select(19, ...)
+    end
+
+    if sourceGUID ~= WeakAuras.myGUID then
+        return false
+    end
+
+    local unit = UnitTokenFromGUID(targetGUID)
+
+    if not unit then
+        return false
+    end
+
+    if not UnitIsFriend("player", unit) then
+        return false
+    end
+
+    return handleHealEvent(
+        nil,
+        nil,
+        nil,
+        sourceGUID,
+        nil,
+        nil,
+        nil,
+        targetGUID,
+        nil,
+        nil,
+        nil,
+        spellId,
+        nil,
+        nil,
+        amount,
+        0
     )
 end
 
@@ -783,11 +854,21 @@ aura_env.cleuMap = {
         end
 
         return handleSpellMissed(...)
+    end,
+    ["SPELL_SUMMON"] = function(...)
+        if not hasSummons then
+            return false
+        end
+
+        return handleSpellSummon(...)
+    end,
+    ["SPELL_ABSORBED"] = function(...)
+        return handleSpellAbsorb(...)
     end
 }
 --- @param index number
 --- @return number, number
-aura_env.getDisplayDataForIndex = function(index)
+function aura_env.getDisplayDataForIndex(index)
     return cache[index].total, cache[index].icon
 end
 
@@ -796,7 +877,7 @@ end
 --- however, many enemies don't die event-wise, so it's safer and more performant
 --- to just assume whenever you leave combat, we can drop all seen debuff stacks
 --- @return boolean
-aura_env.onPlayerRegenEnabled = function()
+function aura_env.onPlayerRegenEnabled()
     if not hasDebuffs then
         return false
     end

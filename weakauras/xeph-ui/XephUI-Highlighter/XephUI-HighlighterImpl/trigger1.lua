@@ -1,4 +1,4 @@
--- CLEU:SPELL_MISSED, CLEU:SPELL_PERIODIC_MISSED, CLEU:SPELL_AURA_REMOVED, CLEU:SPELL_AURA_APPLIED, CLEU:SPELL_DAMAGE, CLEU:SPELL_HEAL, CLEU:SPELL_PERIODIC_DAMAGE, CLEU:SPELL_PERIODIC_HEAL, UNIT_SPELLCAST_SUCCEEDED:player, XEPHUI_Highlighter, CLEU:SPELL_AURA_APPLIED_DOSE, CLEU:SPELL_AURA_REMOVED_DOSE, PLAYER_REGEN_ENABLED
+-- CLEU:SPELL_ABSORBED:SPELL_MISSED:SPELL_PERIODIC_MISSED:SPELL_AURA_REMOVED:SPELL_AURA_APPLIED:SPELL_DAMAGE:SPELL_HEAL:SPELL_PERIODIC_DAMAGE:SPELL_PERIODIC_HEAL:SPELL_AURA_APPLIED_DOSE:SPELL_AURA_REMOVED_DOSE:SPELL_SUMMON, UNIT_SPELLCAST_SUCCEEDED:player, XEPHUI_Highlighter, PLAYER_REGEN_ENABLED
 
 --- @class HighlighterState
 --- @field show boolean
@@ -81,7 +81,7 @@ function (states, event, ...)
             elseif total > 0 then
                 hasChanges = true
 
-                states[index] = {
+                states[index] = {   
                     show = true,
                     changed = true,
                     stacks = total,

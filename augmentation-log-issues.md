@@ -5,12 +5,18 @@
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s`).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: Dec 11**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
+**Last updated: Jan 10**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
 
 - [FAQ](#faq)
 - [Reattribution problems](#reattribution-problems)
   * [General bugs](#general-bugs)
+    + [Full Absorbs do not reattribute](#full-absorbs-do-not-reattribute)
+    + [Negative Reattribution](#negative-reattribution)
+    + [Friendly Fire can reattribute](#friendly-fire-can-reattribute)
+    + [Healing Reattribution is often broken for any hot](#healing-reattribution-is-often-broken-for-any-hot)
+    + [Reattribution does not factor in throughput-increasing non-player originating auras](#reattribution-does-not-factor-in-throughput-increasing-non-player-originating-auras)
     + [Empty Support Events](#empty-support-events)
+    + [Other](#other)
   * [Abilities not reattributing anything](#abilities-not-reattributing-anything)
     + [Racials](#racials)
     + [Warrior](#warrior)
@@ -25,7 +31,7 @@ Thanks to all the folks helping spotting these and reporting them.
     + [Priest](#priest)
     + [Shaman](#shaman-1)
     + [Paladin](#paladin)
-    + [Other](#other)
+    + [Other](#other-1)
   * [Abilities not reattributing Ebon Might](#abilities-not-reattributing-ebon-might)
     + [Warrior](#warrior-1)
     + [Shaman](#shaman-2)
@@ -43,10 +49,11 @@ Thanks to all the folks helping spotting these and reporting them.
     + [Warrior](#warrior-3)
     + [Druid](#druid-2)
     + [Rogue](#rogue-2)
+    + [Hunter](#hunter-2)
   * [Special cases](#special-cases)
     + [Priest](#priest-1)
     + [Warlock](#warlock-2)
-    + [Hunter](#hunter-2)
+    + [Hunter](#hunter-3)
 
 # FAQ
 
@@ -154,21 +161,27 @@ Thanks to all the folks helping spotting these and reporting them.
 
 ## General bugs
 
+### Full Absorbs do not reattribute
 - [`Ebon Might`, `Shifting Sands` and `Prescience` do not reattribute anything if the origin damage is fully absorbed](https://www.warcraftlogs.com/reports/23ncHaKrhQRzVvMW#fight=41&type=damage-done&pull=9&source=2&target=433)
   - note how in that log the mentioned abilities do 0 damage despite [considerable uptime](https://www.warcraftlogs.com/reports/23ncHaKrhQRzVvMW#fight=41&type=auras&pull=9&pins=2%24Off%24%23244F4B%24expression%24ability.name%20in%20(%22Prescience%22,%20%22Ebon%20Might%22,%20%22Shifting%20Sands%22)&options=2)
-  -  this was [fixed prior](https://www.warcraftlogs.com/reports/YKkcZCRqwrfJHyVL#fight=2&type=damage-done&pull=14&translate=true&source=44) and reintroduced on July 26
+  -  this was [fixed prior](https://www.warcraftlogs.com/reports/pT1jJ9bCA4fx6vg3#fight=49&type=damage-done&pull=9&source=1) but reintroduced on July 26
   -  `Inferno's Blessing` and `Fate Mirror` work
-- `Prescience` sometimes claims the _entire_ damage of the origin ability for a short period of time
+### Negative Reattribution
 - [in large pulls, support events may write negative values](https://www.warcraftlogs.com/reports/23ncHaKrhQRzVvMW#fight=47&type=damage-done&pins=2%24Off%24%23244F4B%24expression%24effectiveDamage%20%3C%200&view=events), presumably until leaving combat
   - note that this seem in fact to be directly related to the pull size. we've only seen it on e.g. the first pull of Neltharion's Lair or pulls with many lashers in Brackenhide Hollow between 1st and 2nd boss
   - another good example here on [`Tindral Sageswift`](https://www.warcraftlogs.com/reports/Q4cz7XTKg9F1BZGM#fight=41&type=damage-done&pins=2%24Off%24%23244F4B%24expression%24effectiveDamage%20%3C%200&view=events)
+
+### Friendly Fire can reattribute  
 - [trinket friendly fire on yourself reattributes](https://www.warcraftlogs.com/reports/zCdypcK83xaLvfnh#fight=67&type=summary&view=events&start=11609328&end=11613883&pins=2%24Off%24%23244F4B%24expression%24(target.name%20%3D%20%22Gigadb%22%20or%20supportedActor.name%20%3D%20%22Gigadb%22)%20and%20ability.id%20in%20(401394,%20413984)%20and%20target.name%20!%3D%20%22Magmorax%22), e.g. Echo of Neltharion trinkets or `Vessel of Searing Shadows`
-- environmental damage may reattribute
+- environmental damage may reattribute (needs reproduction example)
+
+### Healing Reattribution is often broken for any hot
 - healing attribution is broken for any hot
   - it'll claim up to 100% of the healing done
     - e.g. note [`Ebon Might` taking 100% of this `Lifebloom`](https://www.warcraftlogs.com/reports/V6dqjXHTyWGR8QMZ#fight=3&type=healing&translate=true&pins=2%24Off%24%23244F4B%24expression%24((ability.name%20%3D%20%22Lifebloom%22%20and%20source.name%20%3D%20%22%E8%8E%AB%E5%84%8D%E5%84%8D%22)%20or%20supportedActor.name%20%3D%20%22%E8%8E%AB%E5%84%8D%E5%84%8D%22)%20and%20effectiveHealing%20%3E%200&view=events&start=219857&end=222827)
   - for examples, just check [the Aberrus Augmentation leaderboard for Healing](https://www.warcraftlogs.com/zone/rankings/33#class=Evoker&spec=Augmentation&partition=4&metric=hps), e.g. [this log](https://www.warcraftlogs.com/reports/V6dqjXHTyWGR8QMZ#fight=3&type=healing&translate=true)
-- ~~`Breath of Eons` [sometimes doesn't extend `Ebon Might`](https://www.warcraftlogs.com/reports/Q4cz7XTKg9F1BZGM#fight=57&pull=14&type=summary&start=42619579&end=42626637&pins=0%24Separate%24%23244F4B%24casts%240%240.0.0.Any%24176244533.0.0.Evoker%24true%240.0.0.Any%24false%24403631%5E0%24Separate%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%240.0.0.Any%24false%24395152%5E2%24Off%24%23a04D8A%24expression%24ability.name%20in%20(%22Breath%20of%20Eons%22,%20%22Ebon%20Might%22)%20and%20type%20not%20in%20(%22heal%22,%20%22damage%22)&view=events)~~ fixed Nov 29
+
+### Reattribution does not factor in throughput-increasing non-player originating auras
 - player buffs and debuffs increasing throughput such as orbs on Smolderon, P2 of last boss Throne of the Tides, P2 of last boss Black Rook Hold are not factored into reattribution events of `Shifting Sands`, meaning too little throughput is subtracted from buffed targets
 
 ### Empty Support Events
@@ -183,6 +196,11 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 
 ![image](https://user-images.githubusercontent.com/29307652/278869767-2e4e5e6b-9f30-4c5c-991a-073a8e12a1a5.png)
 
+### Other
+- `Prescience` sometimes claims the _entire_ damage of the origin ability for a short period of time
+- ~~`Breath of Eons` [sometimes doesn't extend `Ebon Might`](https://www.warcraftlogs.com/reports/Q4cz7XTKg9F1BZGM#fight=57&pull=14&type=summary&start=42619579&end=42626637&pins=0%24Separate%24%23244F4B%24casts%240%240.0.0.Any%24176244533.0.0.Evoker%24true%240.0.0.Any%24false%24403631%5E0%24Separate%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%240.0.0.Any%24false%24395152%5E2%24Off%24%23a04D8A%24expression%24ability.name%20in%20(%22Breath%20of%20Eons%22,%20%22Ebon%20Might%22)%20and%20type%20not%20in%20(%22heal%22,%20%22damage%22)&view=events)~~ fixed Nov 29
+- ~~`Prescience` can claim damage even if the origin damage wasn't actually a crit. Discovered Dec 15, but present since July 25. [example](https://www.warcraftlogs.com/reports/Hd38L4fCYXjZ7yVR#fight=8&type=damage-done&pins=2%24Off%24%23244F4B%24expression%24ability.name%20%3D%20%22Prescience%22%20and%20isCritical%20%3D%20false&view=events)~~ false positive! this is intentional for special cases such as a crit triggering `Blade Flurry`/`Ignite`/`Caustic Splatter`/`Sanguine Blades`-like abilities that don't crit. `Prescience` will then tax appropriately, but as non-crit
+
 ## Abilities not reattributing anything
 
 We'll try to provide examples for each but this list grew over a couple of months so bear with us while we don't have examples for all.
@@ -194,10 +212,10 @@ We'll try to provide examples for each but this list grew over a couple of month
 - `Finishing Wound` (id 426284)
 
 ### Rogue
-- `Blade Flurry` (id 22482)
-- [`Shadow Blades`](https://www.warcraftlogs.com/reports/GJAgTzhHRf6pVcbk#fight=22&type=damage-done&source=3&pins=0%24Separate%24%23244F4B%24damage%240%240.0.0.Any%24682167.0.0.Rogue%24true%240.0.0.Any%24false%24279043%5E0%24Separate%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24682167.0.0.Rogue%24false%24395152%5E0%24Separate%24%23a04D8A%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24682167.0.0.Rogue%24false%24410089%5E0%24Separate%24%23DF5353%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24682167.0.0.Rogue%24false%24413984%5E2%24Off%24rgb(78%25,%2061%25,%2043%25)%24expression%24supportedActor.name%20%3D%20%22Zaese%22%20or%20source.name%20%3D%20%22Zaese%22&start=3149318&end=3152319&view=events) (id 279043)
+- ~~`Blade Flurry` (id 22482)~~ reattributes as of Dec 13
+- ~~[`Shadow Blades`](https://www.warcraftlogs.com/reports/GJAgTzhHRf6pVcbk#fight=22&type=damage-done&source=3&pins=0%24Separate%24%23244F4B%24damage%240%240.0.0.Any%24682167.0.0.Rogue%24true%240.0.0.Any%24false%24279043%5E0%24Separate%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24682167.0.0.Rogue%24false%24395152%5E0%24Separate%24%23a04D8A%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24682167.0.0.Rogue%24false%24410089%5E0%24Separate%24%23DF5353%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24682167.0.0.Rogue%24false%24413984%5E2%24Off%24rgb(78%25,%2061%25,%2043%25)%24expression%24supportedActor.name%20%3D%20%22Zaese%22%20or%20source.name%20%3D%20%22Zaese%22&start=3149318&end=3152319&view=events) (id 279043)~~ reattributes as of Dec 13
 - `Soulreave` (id 409605) and `Soulrip` (id 409604) -- both components of Aberrus T30 so not terribly important at this point
-- `Sanguine Blades` (id 423193)
+- ~~`Sanguine Blades` (id 423193)~~ reattributes as of Dec 13
 - `Poisoned Edges` (id 409483)
 - ~~`Caustic Splatter` (id 421979)~~ reattributes as of Nov 29
 - `Sudden Demise` (id 343769)
@@ -280,7 +298,7 @@ We'll try to provide examples for each but this list grew over a couple of month
 - ~~`Claw`~~ fixed on or before Nov 21
 - `Kill Cleave` can stop reattributing `Ebon Might` for the remainder of a key (and presumably similarily in raid until zoning out) if the main pet dies and gets rezzed
   - note how [here](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=damage-done&source=15) Catwag has no reattribution on Kill Cleave from `EM`
-  - [plenty of reattribution from Foxwag](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=damage-done&source=14) which [died sec 18](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=summary&pins=2%24Off%24%23244F4B%24expression%24type%20%3D%20"death"&view=events) and [got rezzed 2s later](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=casts&view=events&source=12&ability=982)
+  - [plenty of reattribution from Foxwag](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=damage-done&source=14) which [died sec 18](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=summary&pins=2%24Off%24%23244F4B%24expression%24type%20%3D%20"death"&view=events) and [got rezzed 4s later](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=casts&view=events&source=12&ability=982)
   - it [does work the next key again however](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=11&type=damage-done&source=12)
 - bm hunters can underattribute regardless of above fixes when the main pet loses its internal reattribution status somehow
   - sounds obscure but the devs are aware
@@ -327,6 +345,13 @@ We'll try to provide examples for each but this list grew over a couple of month
 
 ### Rogue
 - `Shadow Rupture` (id 424493) only reattributes `Prescience`, see above
+
+### Hunter
+- there seem to be general reattribution problems for BM hunters with SS.
+  - in [this log](https://www.warcraftlogs.com/reports/AnPVdrXc13DW4Rxa#fight=10&type=auras&translate=true&ability=413984), Havoc and BM have roughly the same uptime (9% difference)
+  - yet Havoc - which at this time is still heavily underattributing due to `Ragefire` and `Soulscar` not reattributing anything - gains 22.98k dps from SS, while the Hunter gains only 14.23k (~38% difference)
+  - both do gain roughly the same from `Ebon Might`: Hunter 14.91k <-> Havoc 15.66k
+  - note that the culprit seem to be pet-sourced abilities. reattribution for damage sourced to the hunter has usually `Shifting Sands` dominating, but for pets its always behind `Ebon Might`
 
 ## Special cases
 

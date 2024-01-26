@@ -2,8 +2,8 @@ function (modTable)
     if not Plater.AddPerformanceUnits then
         return
     end
-    
-    local units = {        
+
+    local units = {
         -- Raids
         [189706] = true, --Chaotic Essence
         [189707] = true, -- Chaotic mote
@@ -13,24 +13,22 @@ function (modTable)
         [191714] = true, -- Seeking Stormling -- Raszageth
         [210231] = true, -- Tainted Lasher -- Gnarlroot
         [211306] = true, -- Fiery Veins -- Tindral Sageswift
-        
-        
+        [214441] = true, -- Scorched Treant, Tindral
         -- Dungeons
         [196642] = false, -- Hungry Lasher (Boss add)
         [197398] = false, -- Hungry Lasher
         [208994] = true, -- Infected Lasher
         [189363] = true, -- Infected Lasher
         [96247] = true, -- Vileshard Crawler
-        [100529] = true, -- Hatespawn Slime
-        [84401] = true, -- Swift Sproutling
-        
+        [100991] = true -- Strangling Roots
+
         --Testing
-        [198594] = false, -- Testing target dummy
-        [161890] = false, -- testing
+        --[198594] = false, -- Testing target dummy
+        --[161890] = false, -- testing
     }
-    
+
     for unit, flag in pairs(units) do
-        if  flag then
+        if flag then
             if flag and modTable.config.performance then
                 Plater.AddPerformanceUnits(unit)
             else
@@ -44,27 +42,3 @@ function (modTable)
         end
     end
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

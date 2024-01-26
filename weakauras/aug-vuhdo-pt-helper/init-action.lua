@@ -2,6 +2,7 @@ local vuhdo = VUHDO_slashCmd
 
 aura_env.customEventName = "XEPHUI_AUG_VUHDO_MANUAL_OVERRIDE_UPDATE"
 aura_env.active = vuhdo ~= nil
+local isAug = GetSpecialization() == 3
 
 --- @type table<string, number>
 aura_env.nameToSpecIdMap = {}
@@ -94,54 +95,53 @@ aura_env.onPlayerSpecChange = function(event)
     local specId = GetSpecialization()
 
     if specId == 3 then
+        isAug = true
         aura_env.setup(event)
         return
     end
+
+    isAug = false
 
     lastPrivateTanks = nil
     aura_env.log("clearing private tanks. reason: no longer aug")
     vuhdo("pt clear")
 end
 
-local function maybeRefreshOmniCD()
-    if not OmniCD or not OmniCD[1] or not OmniCD[1].Party then
-        return
-    end
-
-    aura_env.log("force-refreshing OmniCD")
-
-    OmniCD[1].Party:Test()
-
-    C_Timer.After(
-        0.1,
-        function()
-            OmniCD[1].Party:Test()
-        end
-    )
+aura_env.onLoginOrReload = function()
+    isAug = GetSpecialization() == 3
 end
+
+--- @type cbObject | nil
+aura_env.timer = nil
 
 --- @param event string
 --- @param names table<number, string>
 local function setupPrivateTanks(event, names)
     local nextPrivateTanks = table.concat(names, ",")
 
-    if nextPrivateTanks == lastPrivateTanks then
+    if nextPrivateTanks == lastPrivateTanks and event ~= "OPTIONS" then
         aura_env.log("setup identical to previous. skipping")
         return
     end
 
     lastPrivateTanks = nextPrivateTanks
 
-    local eventExplanationMap = {
-        ["PLAYER_ENTERING_WORLD"] = "login or reload",
-        ["READY_CHECK"] = "ready check",
-        [aura_env.customEventName] = "manual override seen",
-        ["UNIT_SPEC_CHANGED"] = "spec update received",
-        ["OPTIONS"] = "WeakAuras open",
-        ["GROUP_ROSTER_UPDATE"] = "roster change"
-    }
+    if aura_env.config.dev.log then
+        local eventExplanationMap = {
+            ["WA_DELAYED_PLAYER_ENTERING_WORLD"] = "login or reload",
+            ["READY_CHECK"] = "ready check",
+            [aura_env.customEventName] = "manual override seen",
+            ["UNIT_SPEC_CHANGED"] = "spec update received",
+            ["GROUP_ROSTER_UPDATE"] = "roster change"
+        }
 
-    aura_env.log("clearing private tanks. reason: " .. (eventExplanationMap[event] or event))
+        aura_env.log("clearing private tanks. reason: " .. (eventExplanationMap[event] or event))
+    end
+
+    if aura_env.timer and not aura_env.timer:IsCancelled() then
+        aura_env.timer:Cancel()
+    end
+
     vuhdo("pt clear")
 
     if nextPrivateTanks == "" then
@@ -152,23 +152,26 @@ local function setupPrivateTanks(event, names)
     lastArguments = nextPrivateTanks
 
     aura_env.log("Setting up private tanks:")
+    if aura_env.config.dev.log then
+        for _, name in pairs(names) do
+            local specId = aura_env.nameToSpecIdMap[name]
+            local str = name
+            if specId then
+                local _, specName, _, icon, _, className = GetSpecializationInfoByID(specId)
+                str = aura_env.formattedSpecIconWithName(specName, icon, className, name)
+            end
 
-    for _, name in pairs(names) do
-        local specId = aura_env.nameToSpecIdMap[name]
-        local str = name
-        if specId then
-            local _, specName, _, icon, _, className = GetSpecializationInfoByID(specId)
-            str = aura_env.formattedSpecIconWithName(specName, icon, className, name)
+            aura_env.log("--> " .. str)
         end
-
-        aura_env.log("--> " .. str)
     end
 
-    vuhdo("pt " .. nextPrivateTanks)
-
-    if event == "GROUP_ROSTER_UPDATE" and IsInRaid() then
-        maybeRefreshOmniCD()
-    end
+    aura_env.timer =
+        C_Timer.NewTimer(
+        1,
+        function()
+            vuhdo("pt " .. nextPrivateTanks)
+        end
+    )
 end
 
 --- @param tbl table<number, string>
@@ -196,18 +199,6 @@ end
 
 --- @param event string
 local function doGroupUpdate(event)
-    local bannedSpecs = {
-        [1473] = true, -- augmentation evoker
-        -- healers
-        [105] = true,
-        [1468] = true,
-        [270] = true,
-        [65] = true,
-        [256] = true,
-        [257] = true,
-        [264] = true
-    }
-
     --- @type table<number, string>
     local players = {}
     --- @type table<string, string>
@@ -220,16 +211,20 @@ local function doGroupUpdate(event)
             if name then
                 unitNameToTokenMap[name] = unit
             end
+
             local specId = aura_env.nameToSpecIdMap[name]
+            local mayAdd = not specId or specId ~= 1473
 
-            local mayAdd = false
+            if mayAdd then
+                local role = UnitGroupRolesAssigned(unit)
 
-            if not specId or bannedSpecs[specId] == nil then
-                mayAdd = true
-            end
+                if role == "TANK" and not aura_env.config.group.includeTank then
+                    mayAdd = false
+                end
 
-            if UnitGroupRolesAssigned(unit) == "TANK" and not aura_env.config.group.includeTank then
-                mayAdd = false
+                if mayAdd and role == "HEALER" and not aura_env.config.group.includeHealer then
+                    mayAdd = false
+                end
             end
 
             if mayAdd then
@@ -262,45 +257,57 @@ local function doRaidUpdate(event)
 
     -- THIS LIST NEEDS TO BE KEPT IN SYNC WITH CUSTOM OPTIONS
     local specializationIds = {
-        250, -- dk blood
-        251, -- dk frost
-        252, -- dk unholy
-        577, -- dh havoc
-        581, -- dh vengeance
-        102, -- druid balance
-        103, -- druid feral
-        104, -- druid guardian
-        105, -- druid restoration
-        1467, -- evoker devastation
-        1468, -- evoker preservation
-        1473, -- evoker augmentation
-        253, -- hunter bm
-        254, -- hunter mm
-        255, -- hunter survival
-        62, -- mage arcane
-        63, -- mage fire
-        64, -- mage frost
-        268, -- monk brew
-        269, -- monk ww
-        270, -- monk mw
-        65, -- pala holy
-        66, -- pala prot
-        70, -- pala ret
-        256, -- priest disc
-        257, -- priest holy
-        258, -- priest shadow
-        259, -- rogue assa
-        260, -- rogue outlaw
-        261, -- rogue sub
-        262, -- shaman elemental
-        263, -- shaman enhancement
-        264, -- shaman resto
-        265, -- wl affl
-        266, -- wl demo
-        267, -- wl destru
-        71, -- warr arms
-        72, -- warr fury
-        73 -- warr prot
+        250, -- dk blood 1
+        251, -- dk frost 2
+        252, -- dk unholy 3
+        --
+        577, -- dh havoc 4
+        581, -- dh vengeance 5
+        --
+        102, -- druid balance 6
+        103, -- druid feral 7
+        104, -- druid guardian 8
+        105, -- druid restoration 9
+        --
+        1467, -- evoker devastation 10
+        1468, -- evoker preservation 11
+        1473, -- evoker augmentation 12
+        --
+        253, -- hunter bm 13
+        254, -- hunter mm 14
+        255, -- hunter survival 15
+        --
+        62, -- mage arcane 16
+        63, -- mage fire 17
+        64, -- mage frost 18
+        --
+        268, -- monk brew 19
+        270, -- monk mw 20
+        269, -- monk ww 21
+        --
+        65, -- pala holy 22
+        66, -- pala prot 23
+        70, -- pala ret 24
+        --
+        256, -- priest disc 25
+        257, -- priest holy 26
+        258, -- priest shadow 27
+        --
+        259, -- rogue assa 28
+        260, -- rogue outlaw 29
+        261, -- rogue sub 30
+        --
+        262, -- shaman elemental 31
+        263, -- shaman enhancement 32
+        264, -- shaman resto 33
+        --
+        265, -- wl affl 34
+        266, -- wl demo 35
+        267, -- wl destru 36
+        --
+        71, -- warr arms 37
+        72, -- warr fury 38
+        73 -- warr prot 39
     }
 
     for unit in WA_IterateGroupMembers() do
@@ -318,20 +325,16 @@ local function doRaidUpdate(event)
     local playerInstanceId = select(4, UnitPosition("player"))
 
     for _, dataset in pairs(aura_env.config.raid.priority) do
-        if playersSeen[dataset.name] == nil then
+        if dataset.active and playersSeen[dataset.name] == nil then
             local token = unitNameToTokenMap[dataset.name]
             if token and UnitIsConnected(token) then
                 local wantedSpecId = specializationIds[dataset.spec]
                 local observedSpecId = aura_env.nameToSpecIdMap[dataset.name]
 
                 if observedSpecId == wantedSpecId then
-                    if select(4, UnitPosition(token)) == playerInstanceId then
-                        local targetTable =
-                            dataset.priority == 3 and highPriority or dataset.priority == 2 and mediumPriority or
-                            lowPriority
-                        targetTable[#targetTable + 1] = dataset.name
-                        playersSeen[dataset.name] = true
-                    else
+                    local isPhasedOrZoned = select(4, UnitPosition(token)) ~= playerInstanceId
+
+                    if isPhasedOrZoned and aura_env.config.dev.log then
                         local _, specName, _, icon = GetSpecializationInfoByID(wantedSpecId)
                         local className = UnitClassBase(token)
 
@@ -339,6 +342,12 @@ local function doRaidUpdate(event)
                             aura_env.formattedSpecIconWithName(specName, icon, className, dataset.name) ..
                                 " matches criteria but is in a different zone/phase and will be skipped."
                         )
+                    else
+                        local targetTable =
+                            dataset.priority == 3 and highPriority or dataset.priority == 2 and mediumPriority or
+                            lowPriority
+                        targetTable[#targetTable + 1] = dataset.name
+                        playersSeen[dataset.name] = true
                     end
                 end
             end
@@ -358,6 +367,10 @@ end
 
 --- @param event string
 aura_env.setup = function(event)
+    if not isAug then
+        return
+    end
+
     if IsInRaid() then
         doRaidUpdate(event)
     elseif IsInGroup() then

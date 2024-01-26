@@ -6,6 +6,27 @@
         "aura_env",
         "WeakAuras",
         "TooltipUtil",
-        "WA_GetUnitBuff"
+        "WA_GetUnitBuff",
+        "message",
+        "SAY",
+        "AbbreviateLargeNumbers",
+        "PLAYER",
+        "class",
+        "COMBAT_LOG",
+        "COMBAT",
+        "SlashCmdList",
+        "OPTIONS",
+        "RAID",
+        "UnitTokenFromGUID",
+        "UnitName",
+        "GetInspectSpecialization",
+        "CanInspect",
+        "math",
+        "GetTime",
+        "READY_CHECK",
+        "show",
+        "DEFAULT_CHAT_FRAME",
+        "UnitAura",
+        "UnitBuff"
     ]
 }

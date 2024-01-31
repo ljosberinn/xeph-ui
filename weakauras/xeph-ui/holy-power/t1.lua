@@ -53,7 +53,7 @@ function f(states, event, ...)
                 if nextValue < aura_env.currentHolyPower then
                     progressData.index = nextValue + 1
                 else
-                    progressData.index = i == 5 and 5 or nextValue + 1
+                    progressData.index = (i == 5 or nextValue == 5) and 5 or nextValue + 1
                 end
 
                 states[i].progressType = "static"

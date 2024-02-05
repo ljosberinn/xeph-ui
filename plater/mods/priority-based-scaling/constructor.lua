@@ -27,6 +27,7 @@ function (modTable)
             [136541] = 3, -- Bile Oozeling
             [131847] = 2, -- Waycrest Reveler
             [135048] = 2, -- Gorestained Piglet (Drustvar Villager)
+            [131585] = 3, -- Enthralled Guard
         }
         local darkheartThicket = {
             [100529] = 2, -- Hatespawn Slime
@@ -44,7 +45,8 @@ function (modTable)
             [102781] = 3 -- Fel Bat Pup
         }
         local dotiFall = {
-            [204536] = 3 -- Blight Chunk
+            [204536] = 3, -- Blight Chunk
+            [206065] = 3, -- Interval
         }
         local throneOfTheTides = {
             [40923] = 3 -- Unstable Corruption

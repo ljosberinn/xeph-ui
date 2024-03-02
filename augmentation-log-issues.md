@@ -5,7 +5,7 @@
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s`).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: Jan 24**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
+**Last updated: Feb 16**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
 
 - [FAQ](#faq)
 - [Reattribution problems](#reattribution-problems)
@@ -363,3 +363,11 @@ We'll try to provide examples for each but this list grew over a couple of month
 
 ### Hunter
 - `Master Marksman`(id 269576) seems to be underattributing heavily; [example log](https://www.warcraftlogs.com/reports/PVnpY12WzgNr83RT#fight=last&type=damage-done&source=106), only 297/6282 (~4.7%) are reattributed
+
+### Death Knight
+- `Gargoyle Strike` (id 51963) seems to be unterattributing `Shifting Sands` heavily:
+  - `Ebon Might` takes 7.2%
+  - `Shifting Sands` takes 1.3%
+  - `Prescience` takes 4.1%
+  
+  ![image](https://gist.github.com/assets/29307652/7ca6a036-6018-4b42-b70d-60e8cf97014f)

@@ -1,4 +1,4 @@
--- UNIT_SPELLCAST_START:focus, UNIT_SPELLCAST_DELAYED:focus, UNIT_SPELLCAST_STOP:focus, UNIT_SPELLCAST_CHANNEL_START:focus, UNIT_SPELLCAST_CHANNEL_UPDATE:focus, UNIT_SPELLCAST_CHANNEL_STOP:focus, UNIT_SPELLCAST_INTERRUPTIBLE:focus, UNIT_SPELLCAST_NOT_INTERRUPTIBLE:focus, UNIT_SPELLCAST_INTERRUPTED:focus, UNIT_SPELLCAST_EMPOWER_START:focus, UNIT_SPELLCAST_EMPOWER_STOP:focus
+-- TRIGGER:2
 
 --- @class FocusKickState
 --- @field show boolean
@@ -10,23 +10,93 @@
 --- @field spellId number
 --- @field duration number
 --- @field remaining number
---- @field interruptible boolean
 --- @field name string
 --- @field additionalProgress table<number, { min: number; max: number }> | nil
 --- @field interruptOnCooldown boolean
---- @field isChannel boolean
+--- @field unit string | nil
+--- @field castType "cast" | "channel"
+--- @field raidMark number | nil
+--- @field raidMarkIndex number | nil
+--- @field class string | nil
+--- @field stage number | nil
+--- @field stageTotal number | nil
+--- @field sourceName string | nil
+--- @field sourceUnit string | nil
+--- @field sourceRealm string | nil
+--- @field destName string | nil
+--- @field destUnit string | nil
+--- @field destRealm string | nil
 
 --- @param states table<"", FocusKickState>
---- @param event "UNIT_SPELLCAST_START" | "UNIT_SPELLCAST_DELAYED" | "UNIT_SPELLCAST_STOP" | "UNIT_SPELLCAST_CHANNEL_START" | "UNIT_SPELLCAST_CHANNEL_UPDATE" | "UNIT_SPELLCAST_CHANNEL_STOP" | "UNIT_SPELLCAST_INTERRUPTIBLE" | "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" | "UNIT_SPELLCAST_INTERRUPTED" | "UNIT_SPELLCAST_EMPOWER_START" | "UNIT_SPELLCAST_EMPOWER_STOP"
-function (states, event)
-    if not UnitExists("focus") or UnitIsFriend("player", "focus") then
-        return false
-    end
+--- @param event "TRIGGER"
+function f(states, event, updatedTriggerNumber, updatedTriggerStates)
+    if event == "TRIGGER" and updatedTriggerNumber == 2 then
+        local state = updatedTriggerStates[""]
 
-    local handler = aura_env.handlers[event]
+        if not state then
+            if not states[""] or not states[""].show then
+                return false
+            end
 
-    if handler then
-        return handler(states)
+            states[""].show = false
+            states[""].changed = true
+
+            return true
+        end
+
+        if not states[""] then
+            states[""] = {
+                changed = true,
+                show = true,
+                autoHide = false,
+                progressType = "timed"
+            }
+        end
+
+        for k, v in pairs(state) do
+            if aura_env.allowedKeys[k] then
+                states[""][k] = v
+            end
+        end
+
+        if state.stageTotal ~= nil and state.stageTotal > 0 then
+            local empowerHoldAtMaxTime = GetUnitEmpowerHoldAtMaxTime("focus")
+            -- endTime on empowered abilities does not account for holding at max
+            local endTime = state.expirationTime * 1000 + empowerHoldAtMaxTime
+            local expirationTime = endTime / 1000
+            states[""].expirationTime = expirationTime
+            states[""].remaining = expirationTime - GetTime()
+            states[""].duration = state.duration + (empowerHoldAtMaxTime / 1000)
+            states[""].castType = "cast"
+        end
+
+        local interruptCastTime, interruptCooldown = GetSpellCooldown(aura_env.config.interruptSpellId)
+        states[""].interruptOnCooldown = interruptCooldown > 0
+
+        if not state.interruptible or not states[""].interruptOnCooldown then
+            aura_env.hideTick()
+            return true
+        end
+
+        local interruptReadyAt = interruptCastTime + interruptCooldown
+
+        if interruptReadyAt > state.expirationTime - aura_env.config.interruptThreshold then
+            aura_env.hideTick()
+            return true
+        end
+
+        local max = states[""].expirationTime - interruptReadyAt
+
+        states[""].additionalProgress = {
+            {
+                min = 0,
+                max = max
+            }
+        }
+
+        aura_env.updateTickPlacement(states[""].duration - max)
+
+        return true
     end
 
     return false

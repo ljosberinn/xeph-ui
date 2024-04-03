@@ -1,10 +1,37 @@
 aura_env.active = false
 aura_env.customEventName = "XEPHUI_PRESCIENCE_T31"
 
-do
-    local equipped = 0
+--- @return boolean
+function aura_env.checkGear()
+    local function hasAtLeastTwoEquipped(tbl)
+        local equipped = 0
 
-    local items = {
+        for _, id in pairs(tbl) do
+            if C_Item.IsEquippedItem(id) then
+                equipped = equipped + 1
+
+                if equipped == 2 then
+                    return true
+                end
+            end
+        end
+
+        return false
+    end
+
+    local awakened = {
+        217176, -- chest
+        217177, -- gloves
+        217178, -- head
+        217179, -- legs
+        217180 -- shoulders
+    }
+
+    if hasAtLeastTwoEquipped(awakened) then
+        return true
+    end
+
+    local amirdrassil = {
         207225, -- shoulder
         207226, -- legs
         207227, -- head
@@ -12,19 +39,13 @@ do
         207230 -- chest
     }
 
-    for _, id in pairs(items) do
-        if IsEquippedItem(id) then
-            equipped = equipped + 1
-        end
-    end
-
-    aura_env.active = equipped >= 2
+    return hasAtLeastTwoEquipped(amirdrassil)
 end
 
 aura_env.timer = nil
 --- @param unit string
 --- @param count number
-aura_env.queue = function(unit, count)
+function aura_env.queue(unit, count)
     if count == 6 then
         return
     end
@@ -44,7 +65,7 @@ end
 
 --- @param states table<"", T31_PrescienceState>
 --- @param duration number
-aura_env.performUpdate = function(states, duration)
+function aura_env.performUpdate(states, duration)
     if not states[""] then
         states[""] = {
             stacks = 0,
@@ -57,4 +78,12 @@ aura_env.performUpdate = function(states, duration)
 
     states[""].stacks = duration > 30 and 0 or states[""].stacks + 1
     states[""].changed = true
+end
+
+function aura_env.reset(states)
+    if states[""] ~= nil and states[""].stacks > 0 then
+        states[""].changed = true
+        states[""].stacks = 0
+        states[""].show = false
+    end
 end

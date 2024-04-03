@@ -1,4 +1,4 @@
--- CLEU:SPELL_AURA_APPLIED, CLEU:SPELL_AURA_REFRESH, TRIGGER:2, PLAYER_DEAD, XEPHUI_PRESCIENCE_T31
+-- CLEU:SPELL_AURA_APPLIED, CLEU:SPELL_AURA_REFRESH, PLAYER_DEAD, XEPHUI_PRESCIENCE_T31, TRIGGER:3, TRIGGER:4
 --- @class T31_PrescienceState
 --- @field show boolean
 --- @field changed boolean
@@ -7,27 +7,21 @@
 --- @field progressType "static"
 
 --- @param states table<"", T31_PrescienceState>
---- @param event "OPTIONS" | "STATUS" | "COMBAT_LOG_EVENT_UNFILTERED" | "PLAYER_DEAD" | "XEPHUI_PRESCIENCE_T31"
+--- @param event "OPTIONS" | "STATUS" | "COMBAT_LOG_EVENT_UNFILTERED" | "PLAYER_DEAD" | "XEPHUI_PRESCIENCE_T31" | "TRIGGER"
 --- @return boolean
 function (states, event, ...)
     if event == "TRIGGER" then
-        local updatedTriggerStates = select(2, ...)
-
-        if updatedTriggerStates then
-            for _, state in pairs(updatedTriggerStates) do
-                aura_env.active = state.equipped >= 2
-            end
-        end
+        aura_env.active = aura_env.checkGear()
     end
 
     if not aura_env.active then
+        aura_env.reset(states)
+
         return false
     end
 
-    if event == "PLAYER_DEAD" and states[""] ~= nil then
-        states[""].changed = states[""].stacks ~= 0
-        states[""].stacks = 0
-        states[""].show = false
+    if event == "PLAYER_DEAD" then
+        aura_env.reset(states)
 
         return true
     end

@@ -50,7 +50,7 @@ function (event, ...)
             UnitExists(unit) and not UnitIsDead(unit) and not UnitPhaseReason(unit) and
             WeakAuras.myGUID ~= UnitGUID(unit) and
             select(4, UnitPosition(unit)) == playerInstanceId and
-            IsItemInRange(21519, unit)
+            IsSpellInRange(aura_env.verdantEmbraceSpellInfo, unit)
             then
                 closePlayers = closePlayers + 1
                 

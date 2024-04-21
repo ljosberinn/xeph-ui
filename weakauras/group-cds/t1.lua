@@ -11,157 +11,157 @@
 --- @param states table<number, GroupCDsState>
 --- @param event "STATUS" | "OPTIONS" | "UNIT_SPELLCAST_SUCCEEDED" | "COMBAT_LOG_EVENT_UNFILTERED" | "XEPHUI_CD_CHECK"
 --- @return boolean
-function (states, event, ...)
-    if event == "UNIT_SPELLCAST_SUCCEEDED" then
-        local unit, castGUID, spellId = ...
+function f(states, event, ...)
+	if event == "UNIT_SPELLCAST_SUCCEEDED" then
+		local unit, castGUID, spellId = ...
 
-        if unit == "player" then
-            return false
-        end
+		if unit == "player" then
+			return false
+		end
 
-        local duration = aura_env.trackedCasts[spellId]
+		local duration = aura_env.trackedCasts[spellId]
 
-        if not duration then
-            return false
-        end
+		if not duration or not unit or not UnitIsFriend("player", unit) then
+			return false
+		end
 
-        if not UnitIsFriend("player", unit) then
-            return false
-        end
+		local name, icon = aura_env.getSpellInfo(spellId)
 
-        local icon = select(3, GetSpellInfo(spellId))
+		aura_env.maybeTextToSpeech(name, duration)
 
-        states[castGUID] = {
-            show = true,
-            changed = true,
-            duration = duration,
-            expirationTime = GetTime() + duration,
-            autoHide = true,
-            progressType = "timed",
-            icon = icon
-        }
+		states[castGUID] = {
+			show = true,
+			changed = true,
+			duration = duration,
+			expirationTime = GetTime() + duration,
+			autoHide = true,
+			progressType = "timed",
+			icon = icon,
+		}
 
-        return true
-    end
+		return true
+	end
 
-    if event == "COMBAT_LOG_EVENT_UNFILTERED" then
-        local _, subEvent, _, sourceGUID, _, _, _, targetGUID, _, _, _, spellId = ...
+	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
+		local _, subEvent, _, sourceGUID, _, _, _, targetGUID, _, _, _, spellId = ...
 
-        if not aura_env.trackedBuffs[spellId] then
-            return false
-        end
+		if not aura_env.trackedBuffs[spellId] then
+			return false
+		end
 
-        local guidToUse, unit = aura_env.getBuffedPlayerGuid(spellId, sourceGUID, targetGUID)
+		local guidToUse, unit = aura_env.getBuffedPlayerGuid(spellId, sourceGUID, targetGUID)
 
-        if not guidToUse or not unit or guidToUse == WeakAuras.myGUID then
-            return false
-        end
+		if not guidToUse or not unit or guidToUse == WeakAuras.myGUID then
+			return false
+		end
 
-        local duration, expirationTime, icon = aura_env.getAuraMeta(unit, spellId)
+		local duration, expirationTime, icon, name = aura_env.getAuraMeta(unit, spellId)
 
-        if duration == 0 or expirationTime == 0 or icon == 0 then
-            return false
-        end
+		if duration == 0 or expirationTime == 0 or icon == 0 then
+			return false
+		end
 
-        local key = aura_env.createKey(guidToUse, spellId)
+		local key = aura_env.createKey(guidToUse, spellId)
 
-        if subEvent == "SPELL_AURA_APPLIED" then
-            states[key] = {
-                show = true,
-                changed = true,
-                duration = duration,
-                expirationTime = expirationTime,
-                autoHide = true,
-                progressType = "timed",
-                icon = icon
-            }
+		if subEvent == "SPELL_AURA_APPLIED" then
+			aura_env.maybeTextToSpeech(name, duration)
 
-            aura_env.enqueuePoll(unit, guidToUse, spellId, key)
+			states[key] = {
+				show = true,
+				changed = true,
+				duration = duration,
+				expirationTime = expirationTime,
+				autoHide = true,
+				progressType = "timed",
+				icon = icon,
+			}
 
-            return true
-        end
+			aura_env.enqueuePoll(unit, guidToUse, spellId, key)
 
-        if subEvent == "SPELL_AURA_REFRESH" then
-            if not states[key] then
-                return false
-            end
+			return true
+		end
 
-            local changed = states[key].duration ~= duration or states[key].expirationTime ~= duration
+		if subEvent == "SPELL_AURA_REFRESH" then
+			if not states[key] then
+				return false
+			end
 
-            if not changed then
-                return false
-            end
+			local changed = states[key].duration ~= duration or states[key].expirationTime ~= duration
 
-            states[key].changed = true
-            states[key].duration = duration
-            states[key].expirationTime = expirationTime
+			if not changed then
+				return false
+			end
 
-            aura_env.enqueuePoll(unit, guidToUse, spellId, key)
+			states[key].changed = true
+			states[key].duration = duration
+			states[key].expirationTime = expirationTime
 
-            return true
-        end
+			aura_env.enqueuePoll(unit, guidToUse, spellId, key)
 
-        if subEvent == "SPELL_AURA_REMOVED" then
-            if not states[key] then
-                return false
-            end
+			return true
+		end
 
-            states[key].show = false
-            states[key].changed = true
+		if subEvent == "SPELL_AURA_REMOVED" then
+			if not states[key] then
+				return false
+			end
 
-            aura_env.clearTickerFor(key)
+			states[key].show = false
+			states[key].changed = true
 
-            return true
-        end
+			aura_env.clearTickerFor(key)
 
-        return false
-    end
+			return true
+		end
 
-    if event == aura_env.customEventName then
-        local id, unit, guid, spellId = ...
+		return false
+	end
 
-        if id ~= aura_env.id then
-            return false
-        end
+	if event == aura_env.customEventName then
+		local id, unit, guid, spellId = ...
 
-        local key = aura_env.createKey(guid, spellId)
+		if id ~= aura_env.id then
+			return false
+		end
 
-        if not states[key] then
-            return false
-        end
+		local key = aura_env.createKey(guid, spellId)
 
-        if UnitIsDead(unit) then
-            -- might already be hidden via SPELL_AURA_REMOVED
-            if states[key].show == false then
-                return false
-            end
+		if not states[key] then
+			return false
+		end
 
-            states[key].show = false
-            states[key].changed = true
+		if UnitIsDead(unit) then
+			-- might already be hidden via SPELL_AURA_REMOVED
+			if states[key].show == false then
+				return false
+			end
 
-            aura_env.clearTickerFor(key)
+			states[key].show = false
+			states[key].changed = true
 
-            return true
-        end
+			aura_env.clearTickerFor(key)
 
-        local duration, expirationTime, icon = aura_env.getAuraMeta(unit, spellId)
+			return true
+		end
 
-        if duration == 0 or expirationTime == 0 or icon == 0 then
-            return false
-        end
+		local duration, expirationTime, icon = aura_env.getAuraMeta(unit, spellId)
 
-        local changed = states[key].duration ~= duration or states[key].expirationTime ~= duration
+		if duration == 0 or expirationTime == 0 or icon == 0 then
+			return false
+		end
 
-        if not changed then
-            return false
-        end
+		local changed = states[key].duration ~= duration or states[key].expirationTime ~= duration
 
-        states[key].changed = true
-        states[key].duration = duration
-        states[key].expirationTime = expirationTime
+		if not changed then
+			return false
+		end
 
-        return true
-    end
+		states[key].changed = true
+		states[key].duration = duration
+		states[key].expirationTime = expirationTime
 
-    return false
+		return true
+	end
+
+	return false
 end

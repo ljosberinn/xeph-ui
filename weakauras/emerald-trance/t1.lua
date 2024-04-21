@@ -8,77 +8,80 @@
 --- @field progressType "static"
 
 --- @param states table<number, EmeraldTranceState>
---- @param event "OPTIONS" | "STATUS" | "COMBAT_LOG_EVENT_UNFILTERED" | "XEPHUI_EMERALD_TRANCE"
+--- @param event "OPTIONS" | "STATUS" | "COMBAT_LOG_EVENT_UNFILTERED" | "XEPHUI_EMERALD_TRANCE" | "TRIGGER"
 --- @return boolean
 function (states, event, ...)
-    if event == "COMBAT_LOG_EVENT_UNFILTERED" then
-        local subEvent = select(2, ...)
+	if event == "TRIGGER" then
+		local updatedTriggerStates = select(2, ...)
 
-        if subEvent == "SPELL_AURA_APPLIED" then
-            local _, _, _, sourceGUID, _, _, _, _, _, _, _, spellId = ...
+		if updatedTriggerStates then
+			for _, state in pairs(updatedTriggerStates) do
+				aura_env.active = state.equipped >= 4
+			end
+		end
+	end
 
-            if sourceGUID ~= WeakAuras.myGUID or spellId ~= aura_env.emeraldTranecBuffId then
-                return false
-            end
+	if not aura_env.active then
+		return false
+	end
 
-            local duration = select(5, WA_GetUnitBuff("player", aura_env.emeraldTranecBuffId))
-            aura_env.iterations = math.floor(duration / 5)
-            aura_env.currentIteration = 1
+	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
+		local _, subEvent, _, sourceGUID, _, _, _, _, _, _, _, spellId = ...
 
-            states[""] = {
-                show = true,
-                changed = true,
-                progressType = "timed",
-                autoHide = true,
-                expirationTime = GetTime() + 5,
-                duration = 5
-            }
+		if sourceGUID ~= WeakAuras.myGUID or spellId ~= aura_env.emeraldTranceBuffId then
+			return false
+		end
 
-            aura_env.queue()
+		if subEvent == "SPELL_AURA_APPLIED" then
+			local duration = select(5, WA_GetUnitBuff("player", aura_env.emeraldTranceBuffId)) or 0
 
-            return true
-        end
+			if duration == nil or duration == 0 then
+				return false
+			end
 
-        if subEvent == "SPELL_AURA_REMOVED" then
-            local _, _, _, sourceGUID, _, _, _, _, _, _, _, spellId = ...
+			states[""] = {
+				show = true,
+				changed = true,
+				progressType = "timed",
+				autoHide = true,
+				expirationTime = GetTime() + duration,
+				duration = duration,
+				stacks = math.floor(duration / 5),
+			}
 
-            if sourceGUID ~= WeakAuras.myGUID or spellId ~= aura_env.emeraldTranecBuffId or not states[""] then
-                return false
-            end
+			aura_env.queue()
 
-            states[""].show = false
-            states[""].changed = true
+			return true
+		end
 
-            return true
-        end
-    end
+		if subEvent == "SPELL_AURA_REMOVED" and states[""] then
+			states[""].show = false
+			states[""].changed = true
 
-    if event == aura_env.customEventName then
-        local id = ...
+			return true
+		end
 
-        if id ~= aura_env.id then
-            return false
-        end
+		return false
+	end
 
-        aura_env.timer = nil
+	if event == aura_env.customEventName then
+		local id = ...
 
-        aura_env.currentIteration = aura_env.currentIteration + 1
+		aura_env.timer = nil
 
-        states[""] = {
-            show = true,
-            changed = true,
-            progressType = "timed",
-            autoHide = true,
-            expirationTime = GetTime() + 5,
-            duration = 5
-        }
+		if id ~= aura_env.id or not states[""] then
+			return false
+		end
 
-        if aura_env.currentIteration + 1 <= aura_env.iterations then
-            aura_env.queue()
-        end
+		if states[""].stacks >= 1 then
+			states[""].stacks = states[""].stacks - 1
+			states[""].changed = true
 
-        return true
-    end
+			aura_env.queue()
+		end
 
-    return false
+		return true
+	end
+
+	return false
 end

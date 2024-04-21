@@ -29,75 +29,86 @@
 
 --- @param states table<"", FocusKickState>
 --- @param event "TRIGGER"
-function f(states, event, updatedTriggerNumber, updatedTriggerStates)
-    if event == "TRIGGER" and updatedTriggerNumber == 2 then
-        local state = updatedTriggerStates[""]
+function (states, event, updatedTriggerNumber, updatedTriggerStates)
+	if event == "TRIGGER" and updatedTriggerNumber == 2 then
+		local state = updatedTriggerStates[""]
 
-        if not state then
-            if not states[""] or not states[""].show then
-                return false
-            end
+		if not state then
+			if not states[""] or not states[""].show then
+				return false
+			end
 
-            states[""].show = false
-            states[""].changed = true
+			states[""].show = false
+			states[""].changed = true
 
-            return true
-        end
+			return true
+		end
 
-        if not states[""] then
-            states[""] = {
-                changed = true,
-                show = true,
-                autoHide = false,
-                progressType = "timed"
-            }
-        end
+		if not states[""] then
+			states[""] = {
+				changed = true,
+				show = true,
+				autoHide = false,
+				progressType = "timed",
+			}
+		end
 
-        for k, v in pairs(state) do
-            if aura_env.allowedKeys[k] then
-                states[""][k] = v
-            end
-        end
+		if WeakAuras.GetPlayerReaction("focus") == "friendly" then
+			if states[""].show then
+				states[""].show = false
+				states[""].changed = true
+				return true
+			end
 
-        if state.stageTotal ~= nil and state.stageTotal > 0 then
-            local empowerHoldAtMaxTime = GetUnitEmpowerHoldAtMaxTime("focus")
-            -- endTime on empowered abilities does not account for holding at max
-            local endTime = state.expirationTime * 1000 + empowerHoldAtMaxTime
-            local expirationTime = endTime / 1000
-            states[""].expirationTime = expirationTime
-            states[""].remaining = expirationTime - GetTime()
-            states[""].duration = state.duration + (empowerHoldAtMaxTime / 1000)
-            states[""].castType = "cast"
-        end
+			return false
+		end
 
-        local interruptCastTime, interruptCooldown = GetSpellCooldown(aura_env.config.interruptSpellId)
-        states[""].interruptOnCooldown = interruptCooldown > 0
+		for k, v in pairs(state) do
+			if aura_env.allowedKeys[k] then
+				states[""][k] = v
+			end
+		end
 
-        if not state.interruptible or not states[""].interruptOnCooldown then
-            aura_env.hideTick()
-            return true
-        end
+		if state.stageTotal ~= nil and state.stageTotal > 0 then
+			local empowerHoldAtMaxTime = GetUnitEmpowerHoldAtMaxTime("focus")
+			-- endTime on empowered abilities does not account for holding at max
+			local endTime = state.expirationTime * 1000 + empowerHoldAtMaxTime
+			local expirationTime = endTime / 1000
+			states[""].expirationTime = expirationTime
+			states[""].remaining = expirationTime - GetTime()
+			states[""].duration = state.duration + (empowerHoldAtMaxTime / 1000)
+			states[""].castType = "cast"
+		end
 
-        local interruptReadyAt = interruptCastTime + interruptCooldown
+		local GetSpellCooldown = C_Spell.GetSpellCooldown or GetSpellCooldown
+		local interruptCastTime, interruptCooldown = GetSpellCooldown(aura_env.config.interruptSpellId)
+		states[""].interruptOnCooldown = interruptCooldown > 0
 
-        if interruptReadyAt > state.expirationTime - aura_env.config.interruptThreshold then
-            aura_env.hideTick()
-            return true
-        end
+		if not state.interruptible or not states[""].interruptOnCooldown then
+			aura_env.hideTick()
+			return true
+		end
 
-        local max = states[""].expirationTime - interruptReadyAt
+		local interruptReadyAt = interruptCastTime + interruptCooldown
 
-        states[""].additionalProgress = {
-            {
-                min = 0,
-                max = max
-            }
-        }
+		if interruptReadyAt > state.expirationTime - aura_env.config.interruptThreshold then
+			aura_env.hideTick()
+			return true
+		end
 
-        aura_env.updateTickPlacement(states[""].duration - max)
+		local max = states[""].expirationTime - interruptReadyAt
 
-        return true
-    end
+		states[""].additionalProgress = {
+			{
+				min = 0,
+				max = max,
+			},
+		}
 
-    return false
+		aura_env.updateTickPlacement(states[""].duration - max)
+
+		return true
+	end
+
+	return false
 end

@@ -14,6 +14,33 @@
 --- @param event "COMBAT_LOG_EVENT_UNFILTERED" | "STATUS" | "OPTIONS" | "UNIT_SPELLCAST_SUCCEEDED" | "XEPHUI_Highlighter" | "PLAYER_REGEN_ENABLED"
 --- @return boolean
 function (states, event, ...)
+
+    if WeakAuras.IsOptionsOpen() then
+        states["a"] = {
+            show = true,
+            changed = true,
+            stacks = math.random(25000, 2500000),
+            icon = 5199630,
+            duration = 5,
+            expirationTime = GetTime() + 5,
+            progressType = "timed",
+            autoHide = true,
+        }
+
+        states["b"] = {
+            show = true,
+            changed = true,
+            stacks = math.random(25000, 2500000),
+            icon = 4622458,
+            duration = 5,
+            expirationTime = GetTime() + 5,
+            progressType = "timed",
+            autoHide = true,
+        }
+
+        return true
+    end
+
     if not aura_env.active then
         return false
     end
@@ -64,7 +91,7 @@ function (states, event, ...)
             local total, icon = aura_env.getDisplayDataForIndex(index)
 
             if states[index] then
-                if states[index].stacks ~= total then
+                if not aura_env.isExpired(now, index) and states[index].stacks ~= total then
                     hasChanges = true
 
                     states[index].changed = true
@@ -81,7 +108,7 @@ function (states, event, ...)
             elseif total > 0 then
                 hasChanges = true
 
-                states[index] = {   
+                states[index] = {
                     show = true,
                     changed = true,
                     stacks = total,

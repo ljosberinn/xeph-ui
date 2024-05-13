@@ -17,11 +17,13 @@ function aura_env.isExtender(id)
 	return extenders[id] ~= nil
 end
 
+local GetSpellInfo = C_Spell.GetSpellInfo or GetSpellInfo
+
 --- @param id number
 --- @return number
 function aura_env.getCastTime(id)
 	if id == eruptionCastId then
-		return select(4, C_Spell.GetSpellInfo and C_Spell.GetSpellInfo(id) or GetSpellInfo(id)) / 1000
+		return select(4, GetSpellInfo(id)) / 1000
 	end
 
 	return GetUnitEmpowerMinHoldTime("player") / 1000

@@ -1,34 +1,44 @@
----@param event "STATUS"|"OPTIONS"|"UNIT_SPELLCAST_START"|"UNIT_SPELLCAST_CHANNEL_START"|"UNIT_SPELLCAST_FAILED"|"UNIT_SPELLCAST_FAILED_QUIET"|"UNIT_SPELLCAST_CHANNEL_STOP"
-function (states, event, unit, castGUID, spellId)
+---@param event "STATUS"|"OPTIONS"|"UNIT_SPELLCAST_START"|"UNIT_SPELLCAST_CHANNEL_START"|"UNIT_SPELLCAST_FAILED"|"UNIT_SPELLCAST_FAILED_QUIET"|"UNIT_SPELLCAST_CHANNEL_STOP"|"COMBAT_LOG_EVENT_UNFILTERED"
+function (states, event, ...)
+
+	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
+		local subEvent = select(2, event)
+
+		if subEvent == "SPELL_CAST_START" then
+			-- do sourceFlags comparison for hostility
+		end
+
+		return false
+	end
+
+	local unit, castGUID, spellId = ...
+
 	if not unit then
 		return false
 	end
 
-	if aura_env.spells[spellId] ~= true then
+	local castTime = aura_env.spells[spellId]
+
+	if castTime == nil then
 		return false
 	end
-
-	if string.find(unit, "nameplate") == nil then
-		return false
-	end
-
-	local spellName, spellIcon, castTime
 
 	if not castGUID then
 		castGUID = unit .. "|" .. spellId
 	end
 
 	if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" then
+		local spellName, spellIcon
+
 		if event == "UNIT_SPELLCAST_CHANNEL_START" then
-			local name, _, icon, _, endTimeMs = UnitChannelInfo(unit)
+			local name, _, icon = UnitChannelInfo(unit)
 			spellName = name
 			spellIcon = icon
-			castTime = endTimeMs / 1000 - GetTime()
-            print(spellName, castTime)
 		elseif event == "UNIT_SPELLCAST_START" then
-			local GetSpellInfo = C_Spell.GetSpellInfo or GetSpellInfo
-			spellName, _, spellIcon, castTime = GetSpellInfo(spellId)
-            castTime = castTime / 1000
+			local infoFn = C_Spell.GetSpellInfo or GetSpellInfo
+			local name, _, icon = infoFn(spellId)
+			spellName = name
+			spellIcon = icon
 		end
 
 		states[castGUID] = {

@@ -77,25 +77,14 @@ function aura_env.maybeAddToDetails(
 	)
 end
 
-function aura_env.onFinishMessage()
-	if aura_env.progress.total == 0 then
-		return
-	end
-
-	aura_env.sendMessage(
-		format(
-			"%s executed a total of %s enemies for %s damage.",
-			aura_env.trinketLink,
-			aura_env.progress.unitCount,
-			AbbreviateNumbers(aura_env.progress.total)
-		)
-	)
-end
+local chatOutputChannel = aura_env.config.chatOutput == 1 and "SAY"
+	or aura_env.config.chatOutput == 2 and "EMOTE"
+	or nil
 
 ---@param message string
 function aura_env.sendMessage(message)
-	if aura_env.config.sayEnabled and IsInInstance() then
-		SendChatMessage(message, "SAY")
+	if chatOutputChannel and IsInInstance() then
+		SendChatMessage(message, chatOutputChannel)
 	else
 		print(message)
 	end

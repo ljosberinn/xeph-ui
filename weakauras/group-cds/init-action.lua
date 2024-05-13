@@ -17,7 +17,7 @@ for _, cast in pairs(aura_env.config.casts) do
 	end
 end
 
-local spellInfoFn = C_Spell.GetSpellInfo and C_Spell.GetSpellInfo or GetSpellInfo
+local spellInfoFn = C_Spell.GetSpellInfo or GetSpellInfo
 
 ---@param spellId number
 ---@return string, number

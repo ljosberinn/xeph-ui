@@ -1,5 +1,5 @@
--- CLEU:SPELL_AURA_APPLIED:SPELL_INSTAKILL, UNIT_HEALTH, CHALLENGE_MODE_START, CHALLENGE_MODE_COMPLETED, ENCOUNTER_START, ENCOUNTER_END
----@param event "COMBAT_LOG_EVENT_UNFILTERED" | "UNIT_HEALTH" | "CHALLENGE_MODE_START" | "CHALLENGE_MODE_COMPLETED" | "ENCOUNTER_START" | "ENCOUNTER_END"
+-- CLEU:SPELL_AURA_APPLIED:SPELL_INSTAKILL, UNIT_HEALTH
+---@param event "COMBAT_LOG_EVENT_UNFILTERED" | "UNIT_HEALTH"
 function f(event, ...)
 	-- whenever an afflicted target takes damage, update health.
 	-- this is the costly part of the aura as we have to track how much
@@ -7,46 +7,13 @@ function f(event, ...)
 	-- precisely 5% but when the dot ticks the next time _below_ 5%
 	if event == "UNIT_HEALTH" then
 		local unit = ...
+		local guid = UnitGUID(unit)
 
-		if aura_env.debuffedEnemies[unit] == nil then
+		if not guid or aura_env.debuffedEnemies[guid] == nil then
 			return false
 		end
 
-		aura_env.debuffedEnemies[unit] = UnitHealth(unit)
-
-		return false
-	end
-
-	if event == "CHALLENGE_MODE_START" then
-		aura_env.progress.total = 0
-		aura_env.progress.unitCount = 0
-
-		return false
-	end
-
-	if event == "CHALLENGE_MODE_COMPLETED" then
-		aura_env.onFinishMessage()
-
-		return false
-	end
-
-	if event == "ENCOUNTER_START" then
-		if C_ChallengeMode.IsChallengeModeActive() then
-			return false
-		end
-
-		aura_env.progress.total = 0
-		aura_env.progress.unitCount = 0
-
-		return false
-	end
-
-	if event == "ENCOUNTER_END" then
-		if C_ChallengeMode.IsChallengeModeActive() then
-			return false
-		end
-
-		aura_env.onFinishMessage()
+		aura_env.debuffedEnemies[guid] = UnitHealth(unit)
 
 		return false
 	end
@@ -58,17 +25,18 @@ function f(event, ...)
 		if subEvent == "SPELL_AURA_APPLIED" then
 			local _, _, _, _, _, _, _, targetGUID, _, _, _, spellId = ...
 
-			if spellId ~= aura_env.debuffId then
+			-- ignore diff debuffs & enemies that are already tracked
+			if spellId ~= aura_env.debuffId or aura_env.debuffedEnemies[targetGUID] ~= nil then
 				return false
 			end
 
 			local token = UnitTokenFromGUID(targetGUID)
 
-			if not token or aura_env.debuffedEnemies[token] ~= nil then
+			if not token then
 				return false
 			end
 
-			aura_env.debuffedEnemies[token] = UnitHealth(token)
+			aura_env.debuffedEnemies[targetGUID] = UnitHealth(token)
 
 			return false
 		end
@@ -78,17 +46,11 @@ function f(event, ...)
 			local timestamp, _, _, sourceGUID, sourceName, sourceFlags, _, targetGUID, targetName, targetFlags, targetRaidFlags, spellId, spellName, spellType =
 				...
 
-			if spellId ~= aura_env.executeId then
+			if spellId ~= aura_env.executeId or aura_env.debuffedEnemies[targetGUID] == nil then
 				return false
 			end
 
-			local token = UnitTokenFromGUID(targetGUID)
-
-			if not token or aura_env.debuffedEnemies[token] == nil then
-				return false
-			end
-
-			local executeValue = aura_env.debuffedEnemies[token]
+			local executeValue = aura_env.debuffedEnemies[targetGUID]
 
 			if not executeValue then
 				return false
@@ -115,7 +77,13 @@ function f(event, ...)
 
 			aura_env.progress.total = aura_env.progress.total + executeValue
 			aura_env.progress.unitCount = aura_env.progress.unitCount + 1
-			aura_env.debuffedEnemies[token] = nil
+			aura_env.debuffedEnemies[targetGUID] = nil
+
+			local token = UnitTokenFromGUID(targetGUID)
+
+			if not token then
+				return false
+			end
 
 			aura_env.sendMessage(
 				format("%s executed %s for %s.", aura_env.trinketLink, UnitName(token), AbbreviateNumbers(executeValue))
@@ -123,7 +91,7 @@ function f(event, ...)
 		end
 	end
 
-	if event == "PLAYER_REGEN_ENABLED" then
+	if event == "PLAYER_REGEN_ENABLED" and not UnitIsDead("player") then
 		table.wipe(aura_env.debuffedEnemies)
 
 		return false

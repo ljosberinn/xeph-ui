@@ -38,6 +38,8 @@ function (self, unitId, unitFrame, envTable)
         [184125] = 1, -- Chrono-Lord Deios,
         -- Doti lower
         [198933] = 90, -- Iridikron, technically 85 but you care only until 90
+        [198997] = 80, -- Blight of Galakrond
+        [201792] = 50, -- Ahnzon
     }
 
     -- text settings:

@@ -59,11 +59,22 @@ aura_env.ignorelist = {
 	[408385] = true, -- Crusading Strikes
 }
 
+aura_env.empowers = {
+	[357208] = 3, -- FB
+	[382266] = 4, -- FB font
+	[359073] = 3, -- ES
+	[382411] = 4, -- ES font
+	[396286] = 3, -- Upheaval
+	[408092] = 4, -- Upheaval font
+	[355936] = 3, -- Dream Breath
+	[382614] = 4, -- Dream Breath font
+	[367226] = 3, -- Spiritbloom
+	[382731] = 4, -- Spiritbloom font
+}
+
 for _, spell in pairs(aura_env.config.ignorelist) do
 	aura_env.ignorelist[spell.id] = true
 end
-
-aura_env.logHistory = {}
 
 aura_env.spellcasts = 0
 

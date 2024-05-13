@@ -1,4 +1,4 @@
--- UNIT_POWER_UPDATE:player, UNIT_SPELLCAST_CHANNEL_START:player, UNIT_SPELLCAST_CHANNEL_STOP:player, CLEU:SPELL_EMPOWER_START, CLEU:SPELL_EMPOWER_INTERRUPT, CLEU:SPELL_EMPOWER_END, CLEU:SPELL_CAST_START, CLEU:SPELL_CAST_SUCCESS, CLEU:SPELL_CAST_FAILED, PLAYER_DEAD
+-- UNIT_POWER_UPDATE:player, UNIT_SPELLCAST_CHANNEL_START:player, UNIT_SPELLCAST_CHANNEL_STOP:player, CLEU:SPELL_EMPOWER_START:SPELL_EMPOWER_INTERRUPT:SPELL_EMPOWER_END:SPELL_CAST_START:SPELL_CAST_SUCCESS:SPELL_CAST_FAILED:SPELL_PERIODIC_DAMAGE, PLAYER_DEAD, UNIT_SPELLCAST_SUCCEEDED:player
 --- @class State
 --- @field show boolean
 --- @field changed boolean
@@ -18,7 +18,7 @@
 --- @field remaining number | nil
 
 --- @param states table<number, State>
---- @param event "STATUS" | "OPTIONS" | "COMBAT_LOG_EVENT_UNFILTERED" | "UNIT_POWER_UPDATE" | "UNIT_SPELLCAST_CHANNEL_START" | "UNIT_SPELLCAST_CHANNEL_STOP" | "PLAYER_DEAD"
+--- @param event "STATUS" | "OPTIONS" | "COMBAT_LOG_EVENT_UNFILTERED" | "UNIT_POWER_UPDATE" | "UNIT_SPELLCAST_CHANNEL_START" | "UNIT_SPELLCAST_CHANNEL_STOP" | "PLAYER_DEAD" | "UNIT_SPELLCAST_SUCCEEDED"
 --- @return boolean
 function f(states, event, ...)
 	if event == "PLAYER_DEAD" then
@@ -36,6 +36,61 @@ function f(states, event, ...)
 		end
 
 		return hasChanges
+	end
+
+	if event == "UNIT_SPELLCAST_SUCCEEDED" then
+		if not aura_env.isEvoker then
+			return false
+		end
+
+		local unit, _, spellId = ...
+
+		if unit ~= "player" or not spellId or aura_env.empowers[spellId] == nil then
+			return false
+		end
+
+		local previousCast = states[aura_env.spellcasts - 1]
+
+		if previousCast ~= nil and previousCast.spellId == spellId then
+			return false
+		end
+
+		local now = GetTime()
+		local name, _, icon = aura_env.getSpellInfo(spellId)
+
+		-- unpause everything paused
+		for _, state in pairs(states) do
+			if state.paused then
+				state.paused = false
+				state.changed = true
+				state.desaturated = false
+				state.remaining = now - state.start
+			end
+		end
+
+		local specialNumber = aura_env.empowers[spellId]
+
+		states[aura_env.spellcasts] = {
+			show = true,
+			changed = true,
+			name = name,
+			icon = icon,
+			progressType = "timed",
+			duration = aura_env.config.general.duration,
+			expirationTime = now + aura_env.config.general.duration,
+			autoHide = true,
+			spellId = spellId,
+			paused = false,
+			start = now,
+			desaturated = false,
+			specialNumber = specialNumber,
+			interrupted = false,
+			isPet = false,
+		}
+
+		aura_env.spellcasts = aura_env.spellcasts + 1
+
+		return true
 	end
 
 	if event == "UNIT_SPELLCAST_CHANNEL_START" then
@@ -124,6 +179,24 @@ function f(states, event, ...)
 
 		if not subEvent or aura_env.ignorelist[spellId] ~= nil or not aura_env.isBasicallyMe(sourceGUID) then
 			return false
+		end
+
+		if subEvent == "SPELL_PERIODIC_DAMAGE" then
+			-- disintegrate
+			if not aura_env.isEvoker or spellId ~= 356995 then
+				return false
+			end
+
+			local previousCast = states[aura_env.spellcasts - 1]
+
+			if not previousCast then
+				return false
+			end
+
+			previousCast.specialNumber = previousCast.specialNumber + 1
+			previousCast.changed = true
+
+			return true
 		end
 
 		if subEvent == "SPELL_CAST_START" then

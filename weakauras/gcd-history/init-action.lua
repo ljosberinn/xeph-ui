@@ -42,17 +42,21 @@ aura_env.ignorelist = {
 	[225919] = true, -- Fracture
 	[225921] = true, -- Fracture
 	[228354] = true, -- Flurry
+	[228537] = true, -- Shattered Souls
 	[228597] = true, -- Frostbolt
 	[272790] = true, -- Frenzy; BM hunter buff
 	[276245] = true, -- Env; envenom buff
+	[346665] = true, -- Throw Glaive
 	[361195] = true, -- Verdant Embrace friendly heal
 	[361509] = true, -- Living Flame friendly heal
+	[367230] = true, -- Spiritbloom
 	[370966] = true, -- The Hunt Impact (DH Class Tree Talent)
 	[383313] = true, -- Abomination Limb periodical
 	[385060] = true, -- Odyn's Fury
 	[385061] = true, -- Odyn's Fury
 	[385062] = true, -- Odyn's Fury
 	[385954] = true, -- Shield Charge
+	[408385] = true, -- Crusading Strikes
 }
 
 for _, spell in pairs(aura_env.config.ignorelist) do
@@ -72,6 +76,16 @@ aura_env.attachComboPointsToNext = false
 
 aura_env.getComboPoints = function()
 	return UnitPower("player", Enum.PowerType.ComboPoints)
+end
+
+---@param spellId number
+---@return string, string, number, number, number, number, number, number
+function aura_env.getSpellInfo(spellId)
+	if C_Spell.GetSpellInfo then
+		return C_Spell.GetSpellInfo(spellId)
+	end
+
+	return GetSpellInfo(spellId)
 end
 
 do

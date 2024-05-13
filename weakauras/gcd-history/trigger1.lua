@@ -20,7 +20,7 @@
 --- @param states table<number, State>
 --- @param event "STATUS" | "OPTIONS" | "COMBAT_LOG_EVENT_UNFILTERED" | "UNIT_POWER_UPDATE" | "UNIT_SPELLCAST_CHANNEL_START" | "UNIT_SPELLCAST_CHANNEL_STOP" | "PLAYER_DEAD"
 --- @return boolean
-function (states, event, ...)
+function f(states, event, ...)
 	if event == "PLAYER_DEAD" then
 		local hasChanges = false
 		local now = GetTime()
@@ -84,6 +84,7 @@ function (states, event, ...)
 			desaturated = true,
 			specialNumber = 0,
 			interrupted = false,
+			isPet = false,
 		}
 
 		aura_env.spellcasts = aura_env.spellcasts + 1
@@ -350,8 +351,22 @@ function (states, event, ...)
 				return false
 			end
 
-			previousCast.changed = true
-			previousCast.interrupted = true
+			local now = GetTime()
+			local previousIndex = aura_env.spellcasts - 1
+
+			-- unpause everything paused
+			for index, state in pairs(states) do
+				if state.paused then
+					state.paused = false
+					state.changed = true
+					state.desaturated = false
+					state.remaining = now - state.start
+
+					if index == previousIndex then
+						state.interrupted = true
+					end
+				end
+			end
 
 			return true
 		end

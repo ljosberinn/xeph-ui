@@ -5,12 +5,12 @@
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s`).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: Feb 16**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
+**Last updated: May 8**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions)
 
 - [FAQ](#faq)
 - [Reattribution problems](#reattribution-problems)
   * [General bugs](#general-bugs)
-    + [Full Absorbs do not reattribute](#full-absorbs-do-not-reattribute)
+    + ~~[Full Absorbs do not reattribute](#full-absorbs-do-not-reattribute)~~ **fixed as of Patch 10.2.7**
     + [Negative Reattribution](#negative-reattribution)
     + [Friendly Fire can reattribute](#friendly-fire-can-reattribute)
     + [Healing Reattribution is often broken for any hot](#healing-reattribution-is-often-broken-for-any-hot)
@@ -161,7 +161,7 @@ Thanks to all the folks helping spotting these and reporting them.
 
 ## General bugs
 
-### Full Absorbs do not reattribute
+### Full Absorbs do not reattribute **fixed as of Patch 10.2.7**
 - [`Ebon Might`, `Shifting Sands` and `Prescience` do not reattribute anything if the origin damage is fully absorbed](https://www.warcraftlogs.com/reports/23ncHaKrhQRzVvMW#fight=41&type=damage-done&pull=9&source=2&target=433)
   - note how in that log the mentioned abilities do 0 damage despite [considerable uptime](https://www.warcraftlogs.com/reports/23ncHaKrhQRzVvMW#fight=41&type=auras&pull=9&pins=2%24Off%24%23244F4B%24expression%24ability.name%20in%20(%22Prescience%22,%20%22Ebon%20Might%22,%20%22Shifting%20Sands%22)&options=2)
   -  this was [fixed prior](https://www.warcraftlogs.com/reports/pT1jJ9bCA4fx6vg3#fight=49&type=damage-done&pull=9&source=1) but reintroduced on July 26
@@ -241,9 +241,9 @@ We'll try to provide examples for each but this list grew over a couple of month
 - `Ancestral Guidance` (id 114911)
 
 ### Druid
-- [`Frenzied Assault`](https://www.warcraftlogs.com/reports/GJAgTzhHRf6pVcbk#fight=22&type=damage-done&source=3&pins=0%24Separate%24%23244F4B%24damage%240%240.0.0.Any%24614276.0.0.Druid%24true%240.0.0.Any%24false%24391140%5E0%24Off%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24614276.0.0.Druid%24false%24395152%5E0%24Off%24%23a04D8A%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24614276.0.0.Druid%24false%24413984%5E2%24Off%24%23DF5353%24expression%24supportedActor.name%20%3D%20%22Acessa%22%20%20or%20source.name%20%3D%20%22Acessa%22&view=events&start=3151735&end=3154735) (id 391140)
+- ~~[`Frenzied Assault`](https://www.warcraftlogs.com/reports/GJAgTzhHRf6pVcbk#fight=22&type=damage-done&source=3&pins=0%24Separate%24%23244F4B%24damage%240%240.0.0.Any%24614276.0.0.Druid%24true%240.0.0.Any%24false%24391140%5E0%24Off%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24614276.0.0.Druid%24false%24395152%5E0%24Off%24%23a04D8A%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24614276.0.0.Druid%24false%24413984%5E2%24Off%24%23DF5353%24expression%24supportedActor.name%20%3D%20%22Acessa%22%20%20or%20source.name%20%3D%20%22Acessa%22&view=events&start=3151735&end=3154735) (id 391140)~~ **partially** fixed in the week of April 14. The buff source is logging incorrectly, so it appears as if the druid was buffing themselves with whichever Aug buffs they were buffed at the time.
+- ~~[`Burning Frenzy`](https://www.warcraftlogs.com/reports/GJAgTzhHRf6pVcbk#fight=22&type=damage-done&source=3&pins=0%24Separate%24%23244F4B%24damage%240%240.0.0.Any%24614276.0.0.Druid%24true%240.0.0.Any%24false%24422779%5E0%24Off%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24614276.0.0.Druid%24false%24395152%5E0%24Off%24%23a04D8A%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24614276.0.0.Druid%24false%24413984%5E2%24Off%24%23DF5353%24expression%24supportedActor.name%20%3D%20%22Acessa%22%20or%20source.name%20%3D%20%22Acessa%22&view=events&start=3151804&end=3154805) (id 422779)~~ **partially** fixed in the week of April 14. The buff source is logging incorrectly, so it appears as if the druid was buffing themselves with whichever Aug buffs they were buffed at the time.
 - [`Tear`](https://www.warcraftlogs.com/reports/GJAgTzhHRf6pVcbk#fight=22&type=damage-done&source=3&pins=0%24Separate%24%23244F4B%24damage%240%240.0.0.Any%24614276.0.0.Druid%24true%240.0.0.Any%24false%24391356%5E0%24Separate%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24614276.0.0.Druid%24false%24395152%5E0%24Separate%24%23a04D8A%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24614276.0.0.Druid%24false%24413984%5E2%24Off%24%23DF5353%24expression%24supportedActor.name%20%3D%20%22Acessa%22%20or%20source.name%20%3D%20%22Acessa%22&view=events&start=3167893&end=3170894&eventstart=3169134) (id 391356)
-- [`Burning Frenzy`](https://www.warcraftlogs.com/reports/GJAgTzhHRf6pVcbk#fight=22&type=damage-done&source=3&pins=0%24Separate%24%23244F4B%24damage%240%240.0.0.Any%24614276.0.0.Druid%24true%240.0.0.Any%24false%24422779%5E0%24Off%24%23909049%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24614276.0.0.Druid%24false%24395152%5E0%24Off%24%23a04D8A%24auras-gained%240%240.0.0.Any%240.0.0.Any%24true%24614276.0.0.Druid%24false%24413984%5E2%24Off%24%23DF5353%24expression%24supportedActor.name%20%3D%20%22Acessa%22%20or%20source.name%20%3D%20%22Acessa%22&view=events&start=3151804&end=3154805) (id 422779)
 
 ### Monk
 - `Boneduest Brew` (id 325217)

@@ -1,4 +1,11 @@
-function f(event)
+function f(event, ...)
+	if event == "CURRENCY_DISPLAY_UPDATE" then
+		local currencyType, quantity, quantityChange, quantityGainSource, quantityLostSource = ...
+		print(currencyType, quantity, quantityChange, quantityGainSource, quantityLostSource)
+
+		return false
+	end
+
 	if event == "PLAYER_EQUIPMENT_CHANGED" then
 		for i = 1, #aura_env.itemSlots do
 			local slot = aura_env.itemSlots[i]

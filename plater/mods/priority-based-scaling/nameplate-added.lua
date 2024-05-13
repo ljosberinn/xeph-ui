@@ -1,19 +1,17 @@
 function (self, unitId, unitFrame, envTable, modTable)
-    local npcID = unitFrame.namePlateNpcId or modTable.parseGUID(unitId)
+	if not modTable.config.scale then
+		return
+	end
 
-    if not npcID then
-        return
-    end
+	local npcID = unitFrame.namePlateNpcId or modTable.parseGUID(unitId)
 
-    local prio = modTable["npcIDs"][npcID]
+	if not npcID then
+		return
+	end
 
-    if not prio then
-        return
-    end
+	local scale = modTable["npcIDs"][npcID]
 
-    local targetScale = modTable.getScale(prio)
-
-    if targetScale then
-        Plater.SetNameplateScale(unitFrame, targetScale)
-    end
+	if scale then
+		Plater.SetNameplateScale(unitFrame, scale)
+	end
 end

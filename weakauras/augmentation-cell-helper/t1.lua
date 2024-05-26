@@ -30,9 +30,10 @@ function f(_, event, ...)
 		end
 
 		local specId = WeakAuras.SpecForUnit(unit)
-		aura_env.tokenToSpecIdMap[unit] = specId
 
-		if specId then
+		if specId and specId ~= aura_env.tokenToSpecIdMap[unit] then
+			aura_env.tokenToSpecIdMap[unit] = specId
+
 			local _, specName, _, icon = GetSpecializationInfoByID(specId)
 			local className = UnitClassBase(unit)
 			local name = UnitName(unit)
@@ -68,16 +69,20 @@ function f(_, event, ...)
 			for unit in WA_IterateGroupMembers() do
 				if not UnitIsUnit(unit, "player") then
 					local specId = WeakAuras.SpecForUnit(unit)
-					aura_env.tokenToSpecIdMap[unit] = specId
 
 					if specId then
-						local _, specName, _, icon = GetSpecializationInfoByID(specId)
-						local className = UnitClassBase(unit)
-						local name = UnitName(unit)
+						if specId ~= aura_env.tokenToSpecIdMap[unit] then
+							aura_env.tokenToSpecIdMap[unit] = specId
 
-						aura_env.log(
-							"received spec for " .. aura_env.formattedSpecIconWithName(specName, icon, className, name)
-						)
+							local _, specName, _, icon = GetSpecializationInfoByID(specId)
+							local className = UnitClassBase(unit)
+							local name = UnitName(unit)
+
+							aura_env.log(
+								"received spec for "
+									.. aura_env.formattedSpecIconWithName(specName, icon, className, name)
+							)
+						end
 					else
 						aura_env.log("could not determine spec for unit " .. unit .. " (" .. UnitName(unit) .. ")")
 					end

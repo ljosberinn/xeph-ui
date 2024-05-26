@@ -28,6 +28,8 @@ if Cell and CellDB then
 		hooksecurefunc(Cell.funcs, "UpdateLayout", callback)
 	end
 
+	callback()
+
 	-- see Cell/RaidFrames/Groups/SpotlightFrame
 	for i, button in pairs({ CellSpotlightAssignmentMenu:GetChildren() }) do
 		if i == 5 then
@@ -39,11 +41,6 @@ if Cell and CellDB then
 			break
 		end
 	end
-end
-
-if aura_env.config.dev.log then
-	WeakAuras.ScanEvents("UNIT_SPEC_CHANGED", "raid1")
-	WeakAuras.ScanEvents("UNIT_SPEC_CHANGED", "raid2")
 end
 
 local function clearSpotlights()
@@ -114,6 +111,11 @@ end
 --- @param event string
 --- @param tokens table<number, string>
 local function setupSpotlight(event, tokens)
+	if InCombatLockdown() then
+		aura_env.log(event, "not doing anything, in combat")
+		return
+	end
+
 	local nextSpotlightGroup = table.concat(tokens, ",")
 
 	if nextSpotlightGroup == lastSpotlightGroup and event ~= "OPTIONS" then

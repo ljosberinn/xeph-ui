@@ -29,7 +29,7 @@
 
 --- @param states table<"", FocusKickState>
 --- @param event "TRIGGER"
-function (states, event, updatedTriggerNumber, updatedTriggerStates)
+function f(states, event, updatedTriggerNumber, updatedTriggerStates)
 	if event == "TRIGGER" and updatedTriggerNumber == 2 then
 		local state = updatedTriggerStates[""]
 

@@ -17,13 +17,24 @@ function aura_env.isExtender(id)
 	return extenders[id] ~= nil
 end
 
-local GetSpellInfo = C_Spell.GetSpellInfo or GetSpellInfo
+local function getCastTime(spellId)
+	if WeakAuras.GetSpellInfo then
+		return select(4, WeakAuras.GetSpellInfo(spellId))
+	end
+
+	if C_Spell.GetSpellInfo then
+		local info = C_Spell.GetSpellInfo(spellId)
+		return info.castTime
+	end
+
+	return select(4, GetSpellInfo(spellId))
+end
 
 --- @param id number
 --- @return number
 function aura_env.getCastTime(id)
 	if id == eruptionCastId then
-		return select(4, GetSpellInfo(id)) / 1000
+		return getCastTime(id) / 1000
 	end
 
 	return GetUnitEmpowerMinHoldTime("player") / 1000
@@ -31,15 +42,9 @@ end
 
 --- @return number
 function aura_env.getExpirationTime()
-	for i = 1, 255 do
-		local _, _, _, _, _, expirationTime, _, _, _, spellId, _, _, _, _, _ = UnitAura("player", i, "HELPFUL PLAYER")
+	local auraData = C_UnitAuras.GetPlayerAuraBySpellID(395296)
 
-		if spellId == 395296 then
-			return expirationTime
-		end
-	end
-
-	return 0
+	return auraData and auraData.expirationTime or 0
 end
 
 aura_env.customEventName = "XEPHUI_AugmentationCastCheck"

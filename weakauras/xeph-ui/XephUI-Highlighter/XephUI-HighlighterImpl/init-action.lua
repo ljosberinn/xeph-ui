@@ -157,8 +157,16 @@ function aura_env.setup()
 		[39] = 73,
 	}
 
-	local GetSpellInfo = C_Spell.GetSpellInfo or GetSpellInfo
 	local function getIcon(id)
+		if WeakAuras.GetSpellInfo then
+			return select(3, WeakAuras.GetSpellInfo(id))
+		end
+
+		if C_Spell.GetSpellInfo then
+			local info = C_Spell.GetSpellInfo(id)
+			return info.icon
+		end
+
 		return select(3, GetSpellInfo(id))
 	end
 

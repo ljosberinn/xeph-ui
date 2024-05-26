@@ -20,10 +20,10 @@ end
 local spellInfoFn = C_Spell.GetSpellInfo or GetSpellInfo
 
 ---@param spellId number
----@return string, number
+---@return string, number, number
 function aura_env.getSpellInfo(spellId)
-	local name, _, icon = spellInfoFn(spellId)
-	return name, icon
+	local name, _, icon, castTime = spellInfoFn(spellId)
+	return name, icon, castTime
 end
 
 --- @param unit string

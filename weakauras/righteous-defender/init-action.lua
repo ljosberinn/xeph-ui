@@ -15,11 +15,19 @@ function aura_env.isSpender(id)
 	return id == wogCastId or id == sotrCastId or id == intercessionCastId
 end
 
+local function getSpellCooldown(spellId)
+	if C_Spell.GetSpellCooldown then
+		return C_Spell.GetSpellCooldown(spellId).duration
+	end
+
+	return select(2, GetSpellCooldown(spellId))
+end
+
 ---@return boolean
 function aura_env.goakOrWingsOnCd()
-	return select(2, GetSpellCooldown(31884)) > 0 -- avenging wrath
-		or select(2, GetSpellCooldown(86659)) > 0 -- default goak
-		or select(2, GetSpellCooldown(212641)) > 0 -- glyphed goak
+	return getSpellCooldown(31884) > 0 -- avenging wrath
+		or getSpellCooldown(86659) > 0 -- default goak
+		or getSpellCooldown(212641) > 0 -- glyphed goak
 end
 
 ---@param id number

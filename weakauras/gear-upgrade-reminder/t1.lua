@@ -1,66 +1,30 @@
 function f(event, ...)
-    if event == "TRIGGER" then       
-        if not ... then
-            return false
-        end
-        
-        local updatedTriggerNumber, updatedTriggerStates = ...
-        
-        for _,trigger in pairs(updatedTriggerStates) do
-            if trigger and trigger.triggernum == 2 and trigger.value and trigger.value >= 1800 then
-                local msg = format("You have %s flightstones, consider spending some before overcapping!", trigger.value)
-                print(msg)
-                return false
-            end            
-        end
-        
-        return false      
-    end
-    
-    if event == "PLAYER_EQUIPMENT_CHANGED" then
-        for i = 1, #aura_env.itemSlots do
-            local slot = aura_env.itemSlots[i]
-            local itemLoc = ItemLocation:CreateFromEquipmentSlot(slot)
-            
-            if itemLoc:IsValid() then
-                local currentItemLevel = C_Item.GetCurrentItemLevel(itemLoc)
-                
-                if currentItemLevel >= 454 then
-                    local itemLink = C_Item.GetItemLink(itemLoc)
-                    
-                    if itemLink then
-                        local itemLinkValues = StringSplitIntoTable(":", itemLink)
-                        local numBonusIDs = itemLinkValues[14]
-                        numBonusIDs = numBonusIDs and tonumber(numBonusIDs) or 0
-                        local bonusIds = numBonusIDs > 0 and { unpack(itemLinkValues, 15, 15 + numBonusIDs - 1) } or {}
-                        local upgradeTrack = aura_env.getUpgradeTrack(bonusIds)
-                        
-                        if upgradeTrack and currentItemLevel < upgradeTrack.max then
-                            local redundancySlot = C_ItemUpgrade.GetHighWatermarkSlotForItem(C_Item.GetItemID(itemLoc))
-                            
-                            local characterWatermark, accountWatermark =
-                            C_ItemUpgrade.GetHighWatermarkForSlot(redundancySlot)
-                            
-                            local watermark = characterWatermark < accountWatermark and characterWatermark
-                            or accountWatermark
-                            
-                            local finalIlvlToCompareWith = upgradeTrack.max < watermark and upgradeTrack.max
-                            or watermark
-                            
-                            if currentItemLevel < finalIlvlToCompareWith then
-                                local msg = format(
-                                    "%s can be upgraded to item level %d without using crests!",
-                                    itemLink,
-                                    finalIlvlToCompareWith
-                                )
-                                
-                                print(msg)
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
+	if event == "TRIGGER" then
+		if not ... then
+			return false
+		end
 
+		local _, updatedTriggerStates = ...
+
+		for _, trigger in pairs(updatedTriggerStates) do
+			if
+				trigger
+				and trigger.triggernum == 2
+				and trigger.value
+				and trigger.value >= 1800
+				and aura_env.doUpgradeCheck() > 0
+			then
+				local msg =
+					format("You have %s flightstones, consider spending some before overcapping!", trigger.value)
+				print(msg)
+				return false
+			end
+		end
+
+		return false
+	end
+
+	if event == "PLAYER_EQUIPMENT_CHANGED" then
+		aura_env.doUpgradeCheck()
+	end
+end

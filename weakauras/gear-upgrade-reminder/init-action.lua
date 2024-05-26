@@ -1,4 +1,4 @@
-aura_env.itemSlots = {
+local itemSlots = {
 	INVSLOT_HEAD,
 	INVSLOT_NECK,
 	INVSLOT_SHOULDER,
@@ -106,7 +106,7 @@ local function isCraftedBonusId(id)
 		or id == 10249 -- Awakened Crafted
 end
 
-function aura_env.getUpgradeTrack(bonusIds)
+local function getUpgradeTrack(bonusIds)
 	for i = 1, #bonusIds do
 		local id = tonumber(bonusIds[i])
 
@@ -120,4 +120,56 @@ function aura_env.getUpgradeTrack(bonusIds)
 			return tiers[key]
 		end
 	end
+end
+
+---@return number
+function aura_env.doUpgradeCheck()
+	local found = 0
+
+	for i = 1, #itemSlots do
+		local slot = itemSlots[i]
+		local itemLoc = ItemLocation:CreateFromEquipmentSlot(slot)
+
+		if itemLoc:IsValid() then
+			local currentItemLevel = C_Item.GetCurrentItemLevel(itemLoc)
+
+			if currentItemLevel >= 454 then
+				local itemLink = C_Item.GetItemLink(itemLoc)
+
+				if itemLink then
+					local itemLinkValues = StringSplitIntoTable(":", itemLink)
+					local numBonusIDs = itemLinkValues[14]
+					numBonusIDs = numBonusIDs and tonumber(numBonusIDs) or 0
+					local bonusIds = numBonusIDs > 0 and { unpack(itemLinkValues, 15, 15 + numBonusIDs - 1) } or {}
+					local upgradeTrack = getUpgradeTrack(bonusIds)
+
+					if upgradeTrack and currentItemLevel < upgradeTrack.max then
+						local redundancySlot = slot == INVSLOT_OFFHAND and Enum.ItemRedundancySlot.Offhand
+							or C_ItemUpgrade.GetHighWatermarkSlotForItem(C_Item.GetItemID(itemLoc))
+
+						local characterWatermark, accountWatermark =
+							C_ItemUpgrade.GetHighWatermarkForSlot(redundancySlot)
+
+						local watermark = characterWatermark < accountWatermark and characterWatermark
+							or accountWatermark
+
+						local finalIlvlToCompareWith = upgradeTrack.max < watermark and upgradeTrack.max or watermark
+
+						if currentItemLevel < finalIlvlToCompareWith then
+							found = found + 1
+							local msg = format(
+								"%s can be upgraded to item level %d without using crests!",
+								itemLink,
+								finalIlvlToCompareWith
+							)
+
+							print(msg)
+						end
+					end
+				end
+			end
+		end
+	end
+
+	return found
 end

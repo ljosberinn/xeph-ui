@@ -1,19 +1,29 @@
 aura_env.importantSpellIds = {}
 
-local GetSpellInfo = C_Spell.GetSpellInfo or GetSpellInfo
-
 if aura_env.config.interruptSpellId == 0 or not IsSpellKnown(aura_env.config.interruptSpellId) then
-	local name = aura_env.config.interruptSpellId == 0 and nil or GetSpellInfo(aura_env.config.interruptSpellId)
+	local name = nil
+
+	if aura_env.config.interruptSpellId ~= nil then
+		local id = aura_env.config.interruptSpellId
+		if WeakAuras.GetSpellInfo then
+			name = WeakAuras.GetSpellInfo(id)
+		elseif C_Spell.GetSpellInfo then
+			local info = C_Spell.GetSpellInfo(id)
+			name = info.name
+		else
+			name = GetSpellInfo(id)
+		end
+	end
+
 	local label = name and name or "Spell doesn't exist"
-	print(
-		"["
-			.. aura_env.id
-			.. "] The given spell id of '"
-			.. aura_env.config.interruptSpellId
-			.. "' ("
-			.. label
-			.. ") is not a spell you currently know."
+
+	local str = format(
+		"[%s] The given spell id of '%d' (%s) is not a spell you currently know.",
+		aura_env.id,
+		aura_env.config.interruptSpellId,
+		label
 	)
+	print(str)
 end
 
 if Plater and Plater.db and Plater.db.profile and Plater.db.profile.script_data then
@@ -22,6 +32,7 @@ if Plater and Plater.db and Plater.db.profile and Plater.db.profile.script_data 
 			for _, id in pairs(script.SpellIds) do
 				aura_env.importantSpellIds[id] = true
 			end
+			break
 		end
 	end
 end
@@ -73,4 +84,15 @@ function aura_env.hideTick()
 	if tick then
 		tick:SetVisible(false)
 	end
+end
+
+---@return number, number
+function aura_env.getInterruptCooldown()
+	if C_Spell.GetSpellCooldown then
+		local spellCd = C_Spell.GetSpellCooldown(aura_env.config.interruptSpellId)
+		return spellCd.duration, spellCd.startTime
+	end
+
+	local interruptCastTime, interruptCd = GetSpellCooldown(aura_env.config.interruptSpellId)
+	return interruptCd, interruptCastTime
 end

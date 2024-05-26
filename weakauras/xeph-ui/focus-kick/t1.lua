@@ -69,6 +69,8 @@ function f(states, event, updatedTriggerNumber, updatedTriggerStates)
 			end
 		end
 
+		states[""].destName = UnitName("focus-target")
+
 		if state.stageTotal ~= nil and state.stageTotal > 0 then
 			local empowerHoldAtMaxTime = GetUnitEmpowerHoldAtMaxTime("focus")
 			-- endTime on empowered abilities does not account for holding at max
@@ -80,8 +82,7 @@ function f(states, event, updatedTriggerNumber, updatedTriggerStates)
 			states[""].castType = "cast"
 		end
 
-		local GetSpellCooldown = C_Spell.GetSpellCooldown or GetSpellCooldown
-		local interruptCastTime, interruptCooldown = GetSpellCooldown(aura_env.config.interruptSpellId)
+		local interruptCooldown, interruptCastTimestamp = aura_env.getInterruptCooldown()
 		states[""].interruptOnCooldown = interruptCooldown > 0
 
 		if not state.interruptible or not states[""].interruptOnCooldown then
@@ -89,7 +90,7 @@ function f(states, event, updatedTriggerNumber, updatedTriggerStates)
 			return true
 		end
 
-		local interruptReadyAt = interruptCastTime + interruptCooldown
+		local interruptReadyAt = interruptCastTimestamp + interruptCooldown
 
 		if interruptReadyAt > state.expirationTime - aura_env.config.interruptThreshold then
 			aura_env.hideTick()

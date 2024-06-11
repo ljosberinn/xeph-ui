@@ -56,7 +56,7 @@ function f(states, event, ...)
 		end
 
 		local now = GetTime()
-		local name, _, icon = aura_env.getSpellInfo(spellId)
+		local name, icon = aura_env.getSpellMeta(spellId)
 
 		-- unpause everything paused
 		for _, state in pairs(states) do
@@ -119,7 +119,7 @@ function f(states, event, ...)
 		local _, _, _, channelStartTime, channelEndTime = UnitChannelInfo("player")
 		local castTime = channelEndTime - channelStartTime
 		local castTimeInSeconds = castTime / 1000
-		local name, _, icon = aura_env.getSpellInfo(spellId)
+		local name, icon = aura_env.getSpellMeta(spellId)
 
 		local now = GetTime()
 		local duration = aura_env.config.general.duration + castTimeInSeconds
@@ -171,13 +171,17 @@ function f(states, event, ...)
 	end
 
 	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
-		local _, subEvent, _, sourceGUID, _, _, _, _, _, _, _, spellId, _, _, stage = ...
+		local _, subEvent, _, sourceGUID, _, sourceFlags, _, _, _, _, _, spellId, _, _, stage = ...
 		--- @cast subEvent "SPELL_EMPOWER_START" | "SPELL_EMPOWER_INTERRUPT" | "SPELL_EMPOWER_END" | "SPELL_CAST_START" | "SPELL_CAST_SUCCESS" | "SPELL_CAST_FAILED"
 		--- @cast sourceGUID string
 		--- @cast spellId number
 		--- @cast stage number
 
-		if not subEvent or aura_env.ignorelist[spellId] ~= nil or not aura_env.isBasicallyMe(sourceGUID) then
+		if
+			not subEvent
+			or aura_env.ignorelist[spellId] ~= nil
+			or not aura_env.isBasicallyMe(sourceGUID, sourceFlags)
+		then
 			return false
 		end
 
@@ -201,7 +205,7 @@ function f(states, event, ...)
 
 		if subEvent == "SPELL_CAST_START" then
 			local now = GetTime()
-			local name, _, icon, castTime = aura_env.getSpellInfo(spellId)
+			local name, icon, castTime = aura_env.getSpellMeta(spellId)
 			local paused = false
 
 			if castTime == 0 then
@@ -259,7 +263,7 @@ function f(states, event, ...)
 		end
 
 		if subEvent == "SPELL_CAST_SUCCESS" then
-			local name, _, icon, castTime = aura_env.getSpellInfo(spellId)
+			local name, icon, castTime = aura_env.getSpellMeta(spellId)
 
 			if castTime > 0 then
 				local now = GetTime()
@@ -311,9 +315,8 @@ function f(states, event, ...)
 
 			local specialNumber = 0
 
-			if aura_env.isRogue and aura_env.attachComboPointsToNext then
+			if aura_env.isRogue and aura_env.rogueSpenders[spellId] then
 				specialNumber = aura_env.lastComboPoints
-				aura_env.attachComboPointsToNext = false
 			end
 
 			states[aura_env.spellcasts] = {
@@ -390,7 +393,7 @@ function f(states, event, ...)
 		if subEvent == "SPELL_EMPOWER_START" then
 			local now = GetTime()
 			local _, _, _, channelStartTime, channelEndTime = UnitChannelInfo("player")
-			local name, _, icon = aura_env.getSpellInfo(spellId)
+			local name, icon = aura_env.getSpellMeta(spellId)
 			local castTimeInSeconds = (channelEndTime - channelStartTime) / 1000
 			local duration = aura_env.config.general.duration + castTimeInSeconds
 
@@ -484,7 +487,6 @@ function f(states, event, ...)
 
 		aura_env.lastComboPoints = aura_env.currentComboPoints
 		aura_env.currentComboPoints = next
-		aura_env.attachComboPointsToNext = aura_env.currentComboPoints < aura_env.lastComboPoints
 
 		return false
 	end

@@ -59,19 +59,6 @@ aura_env.ignorelist = {
 	[408385] = true, -- Crusading Strikes
 }
 
-aura_env.empowers = {
-	[357208] = 3, -- FB
-	[382266] = 4, -- FB font
-	[359073] = 3, -- ES
-	[382411] = 4, -- ES font
-	[396286] = 3, -- Upheaval
-	[408092] = 4, -- Upheaval font
-	[355936] = 3, -- Dream Breath
-	[382614] = 4, -- Dream Breath font
-	[367226] = 3, -- Spiritbloom
-	[382731] = 4, -- Spiritbloom font
-}
-
 for _, spell in pairs(aura_env.config.ignorelist) do
 	aura_env.ignorelist[spell.id] = true
 end
@@ -83,31 +70,69 @@ aura_env.isEvoker = false
 
 aura_env.lastComboPoints = 0
 aura_env.currentComboPoints = 0
-aura_env.attachComboPointsToNext = false
 
-aura_env.getComboPoints = function()
+aura_env.empowers = {}
+aura_env.rogueSpenders = {}
+
+function aura_env.getComboPoints()
 	return UnitPower("player", Enum.PowerType.ComboPoints)
 end
 
 ---@param spellId number
----@return string, string, number, number, number, number, number, number
-function aura_env.getSpellInfo(spellId)
+---@return string, number, number
+function aura_env.getSpellMeta(spellId)
 	if C_Spell.GetSpellInfo then
-		return C_Spell.GetSpellInfo(spellId)
+		local info = C_Spell.GetSpellInfo(spellId)
+		if not info.icon then
+			info.icon = C_Spell.GetSpellTexture(spellId)
+		end
+
+		return info.name, info.icon, info.castTime
 	end
 
-	return GetSpellInfo(spellId)
+	local name, _, icon, castTime = GetSpellInfo(spellId)
+	return name, icon, castTime
 end
 
 do
 	local id = select(3, C_PlayerInfo.GetClass({ unit = "player" }))
 
-	aura_env.isEvoker = id == 13
+	if id == 13 then
+		aura_env.isEvoker = true
 
-	if id == 4 then
+		aura_env.empowers = {
+			[357208] = 3, -- FB
+			[382266] = 4, -- FB font
+			[359073] = 3, -- ES
+			[382411] = 4, -- ES font
+			[396286] = 3, -- Upheaval
+			[408092] = 4, -- Upheaval font
+			[355936] = 3, -- Dream Breath
+			[382614] = 4, -- Dream Breath font
+			[367226] = 3, -- Spiritbloom
+			[382731] = 4, -- Spiritbloom font
+		}
+	elseif id == 4 then
 		aura_env.isRogue = true
 		aura_env.currentComboPoints = aura_env.getComboPoints()
 		aura_env.lastComboPoints = aura_env.currentComboPoints
+
+		aura_env.rogueSpenders = {
+			-- common
+			[1943] = true, -- rupture
+			[315496] = true, -- slice and dice
+			[408] = true, -- kidney shot
+			-- assa
+			[32645] = true, -- envenom
+			[121411] = true, -- crimson tempest
+			-- sub
+			[196819] = true, -- eviscerate
+			[280719] = true, -- secret technique
+			[319175] = true, -- black powder
+			-- outlaw
+			[2098] = true, -- dispatch
+			[315341] = true, -- between the eyes
+		}
 	end
 end
 
@@ -115,52 +140,26 @@ end
 local unknownGuidIsMyPet = {}
 
 --- @param guid string
+--- @param sourceFlags number
 --- @return boolean
-local function isMyPet(guid)
-	if unknownGuidIsMyPet[guid] ~= nil then
-		return unknownGuidIsMyPet[guid]
+local function isMyPet(guid, sourceFlags)
+	if unknownGuidIsMyPet[guid] == nil then
+		unknownGuidIsMyPet[guid] = CombatLog_Object_IsA(sourceFlags, COMBATLOG_FILTER_MY_PET)
 	end
 
-	local tooltipData = C_TooltipInfo.GetHyperlink("unit:" .. guid)
-
-	if not tooltipData then
-		unknownGuidIsMyPet[guid] = false
-		return false
-	end
-
-	for _, line in ipairs(tooltipData.lines) do
-		TooltipUtil.SurfaceArgs(line)
-
-		-- special case for Sub Rogue Secret Technique. These units are not pets,
-		-- have no _formal_ tooltip but can still be queried
-		if line.type == Enum.TooltipDataLineType.UnitName and line.unitToken == "player" then
-			unknownGuidIsMyPet[guid] = true
-
-			return true
-		end
-
-		if line.type == Enum.TooltipDataLineType.UnitOwner then
-			local result = line.guid == WeakAuras.myGUID
-			unknownGuidIsMyPet[guid] = result
-
-			return result
-		end
-	end
-
-	unknownGuidIsMyPet[guid] = false
-
-	return false
+	return unknownGuidIsMyPet[guid]
 end
 
 --- @param guid string
+--- @param sourceFlags number
 --- @return boolean
-aura_env.isBasicallyMe = function(guid)
+function aura_env.isBasicallyMe(guid, sourceFlags)
 	if guid == WeakAuras.myGUID then
 		return true
 	end
 
 	if aura_env.config.petActions then
-		return isMyPet(guid)
+		return isMyPet(guid, sourceFlags)
 	end
 
 	return false
@@ -168,6 +167,6 @@ end
 
 --- @param guid string
 --- @return boolean
-aura_env.isPet = function(guid)
+function aura_env.isPet(guid)
 	return aura_env.config.petActions and unknownGuidIsMyPet[guid] == true or false
 end

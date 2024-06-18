@@ -1,16 +1,17 @@
--- UNIT_SPELLCAST_SUCCEEDED, CLEU:SPELL_AURA_APPLIED, CLEU:SPELL_AURA_REFRESH, CLEU:SPELL_AURA_REMOVED, XEPHUI_CD_CHECK
---- @class GroupCDsState
---- @field show boolean
---- @field changed boolean
---- @field duration number
---- @field expirationTime number
---- @field autoHide boolean
---- @field progressType "timed"
---- @field icon number
+-- UNIT_SPELLCAST_SUCCEEDED, CLEU:SPELL_AURA_APPLIED:SPELL_AURA_REFRESH:SPELL_AURA_REMOVED:UNIT_DIED, XEPHUI_CD_CHECK
+---@class GroupCDsState
+---@field show boolean
+---@field changed boolean
+---@field duration number
+---@field expirationTime number
+---@field autoHide boolean
+---@field progressType "timed"
+---@field icon number
+---@field unit string
 
---- @param states table<number, GroupCDsState>
---- @param event "STATUS" | "OPTIONS" | "UNIT_SPELLCAST_SUCCEEDED" | "COMBAT_LOG_EVENT_UNFILTERED" | "XEPHUI_CD_CHECK"
---- @return boolean
+---@param states table<number, GroupCDsState>
+---@param event "STATUS" | "OPTIONS" | "UNIT_SPELLCAST_SUCCEEDED" | "COMBAT_LOG_EVENT_UNFILTERED" | "XEPHUI_CD_CHECK"
+---@return boolean
 function f(states, event, ...)
 	if event == "UNIT_SPELLCAST_SUCCEEDED" then
 		local unit, castGUID, spellId = ...
@@ -37,6 +38,7 @@ function f(states, event, ...)
 			autoHide = true,
 			progressType = "timed",
 			icon = icon,
+			unit = unit,
 		}
 
 		return true
@@ -44,6 +46,28 @@ function f(states, event, ...)
 
 	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
 		local _, subEvent, _, sourceGUID, _, _, _, targetGUID, _, _, _, spellId = ...
+
+		-- players dying during summons would incorrectly linger upon death
+		-- as there's no buff removal present to be tracked
+		if subEvent == "UNIT_DIED" then
+			local unit = UnitTokenFromGUID(targetGUID)
+
+			if not unit or not UnitIsFriend("player", unit) then
+				return false
+			end
+
+			local hasChanges = false
+
+			for _, state in pairs(states) do
+				if state.show and state.unit == unit then
+					state.show = false
+					state.changed = true
+					hasChanges = true
+				end
+			end
+
+			return hasChanges
+		end
 
 		if not aura_env.trackedBuffs[spellId] then
 			return false
@@ -74,6 +98,7 @@ function f(states, event, ...)
 				autoHide = true,
 				progressType = "timed",
 				icon = icon,
+				unit = unit,
 			}
 
 			aura_env.enqueuePoll(unit, guidToUse, spellId, key)

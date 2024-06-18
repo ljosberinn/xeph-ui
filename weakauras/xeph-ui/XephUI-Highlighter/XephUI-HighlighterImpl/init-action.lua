@@ -24,6 +24,8 @@ end
 --- @field buffTrigger number
 --- @field buffAllowList table<number, boolean> list of spells that are allowed to count for this trigger
 --- @field buffAllowListLength number
+--- @field buffConsumedBy number
+--- @field buffRecentlyConsumed boolean
 --- @field debuffTargets table<string, number> map of guid, stacks
 --- @field debuffAmplifier number by how much % per stack this ability increases values
 --- @field debuffTrigger number
@@ -158,13 +160,8 @@ function aura_env.setup()
 	}
 
 	local function getIcon(id)
-		if WeakAuras.GetSpellInfo then
-			return select(3, WeakAuras.GetSpellInfo(id))
-		end
-
-		if C_Spell.GetSpellInfo then
-			local info = C_Spell.GetSpellInfo(id)
-			return info.icon
+		if C_Spell.GetSpellTexture then
+			return C_Spell.GetSpellTexture(id)
 		end
 
 		return select(3, GetSpellInfo(id))
@@ -306,6 +303,8 @@ function aura_env.setup()
 				buffAllowList = buffAllowList,
 				buffAllowListLength = getLength(buffAllowList),
 				buffTargets = {},
+				buffConsumedBy = ability.buffs[1].consumedBy,
+				buffRecentlyConsumed = false,
 				debuffAmplifier = ability.debuffs[1].amplification,
 				debuffTrigger = ability.debuffs[1].id,
 				debuffAllowList = debuffAllowList,
@@ -410,7 +409,7 @@ end
 function aura_env.isExpired(now, key)
 	return cache[key].total > 0
 		and cache[key].lastModified ~= nil
-		and now > cache[key].lastModified + aura_env.config.duration
+		and now > (cache[key].lastModified + aura_env.config.duration)
 end
 
 --- @param spellId number
@@ -427,6 +426,14 @@ function aura_env.onSpellCastSuccess(spellId)
 	local expiredOnCastKeys = aura_env.expireOutdatedData(copy, true)
 	local expiredOutdatedKeys = aura_env.expireOutdatedData(aura_env.dirtyIndices, false)
 
+	if hasBuffs then
+		for _, ability in pairs(cache) do
+			if ability.buffRecentlyConsumed then
+				ability.buffRecentlyConsumed = false
+			end
+		end
+	end
+
 	return expiredOnCastKeys or expiredOutdatedKeys or false
 end
 
@@ -434,63 +441,40 @@ end
 local guidIsMyPet = {}
 
 --- @param guid string
+--- @param sourceFlags number
 --- @return boolean
-local function isMyPet(guid)
-	if guidIsMyPet[guid] ~= nil then
-		return guidIsMyPet[guid]
+local function isMyPet(guid, sourceFlags)
+	if guidIsMyPet[guid] == nil then
+		guidIsMyPet[guid] = CombatLog_Object_IsA(sourceFlags, COMBATLOG_FILTER_MY_PET)
 	end
 
-	local tooltipData = C_TooltipInfo.GetHyperlink("unit:" .. guid)
-
-	if not tooltipData then
-		guidIsMyPet[guid] = false
-		return false
-	end
-
-	for _, line in ipairs(tooltipData.lines) do
-		TooltipUtil.SurfaceArgs(line)
-
-		-- special case for Sub Rogue Secret Technique. These units are not pets,
-		-- have no _formal_ tooltip but can still be queried
-		if line.type == Enum.TooltipDataLineType.UnitName and line.unitToken == "player" then
-			guidIsMyPet[guid] = true
-
-			return true
-		end
-
-		if line.type == Enum.TooltipDataLineType.UnitOwner then
-			local result = line.guid == WeakAuras.myGUID
-			guidIsMyPet[guid] = result
-
-			return result
-		end
-	end
-
-	guidIsMyPet[guid] = false
-
-	return false
+	return guidIsMyPet[guid]
 end
 
 --- @param guid string
+--- @param sourceFlags number
 --- @return boolean
-local function isBasicallyMe(guid)
-	return guid == WeakAuras.myGUID or isMyPet(guid) or false
+local function isBasicallyMe(guid, sourceFlags)
+	return guid == WeakAuras.myGUID or isMyPet(guid, sourceFlags) or false
 end
 
 --- @param key number
 --- @param sourceGUID string
+--- @param sourceFlags number
 --- @param targetGUID string
 --- @param spellId number
 --- @param kind "heal" | "damage"
 --- @return boolean, number
-local function validateAndDetermineAmplification(key, sourceGUID, targetGUID, spellId, kind)
+local function validateAndDetermineAmplification(key, sourceGUID, sourceFlags, targetGUID, spellId, kind)
 	local ability = cache[key]
 
 	if ability.buffTrigger > 0 then
 		if
-			ability.buffTargets[sourceGUID] == nil
-			or ability.buffAllowListLength == 0
-			or ability.buffAllowList[spellId] ~= true
+			(
+				ability.buffTargets[sourceGUID] == nil
+				or ability.buffAllowListLength == 0
+				or ability.buffAllowList[spellId] ~= true
+			) and not ability.buffRecentlyConsumed
 		then
 			return false, 0
 		end
@@ -526,7 +510,7 @@ local function validateAndDetermineAmplification(key, sourceGUID, targetGUID, sp
 		return false, 0
 	end
 
-	if ability.ownOnly and not isBasicallyMe(sourceGUID) then
+	if ability.ownOnly and not isBasicallyMe(sourceGUID, sourceFlags) then
 		return false, 0
 	end
 
@@ -565,7 +549,7 @@ local function handleDamageEvent(...)
 		return false
 	end
 
-	local _, _, _, sourceGUID, _, _, _, targetGUID, _, _, _, spellId, _, _, amount, _, _, _, _, absorbed = ...
+	local _, _, _, sourceGUID, _, sourceFlags, _, targetGUID, _, _, _, spellId, _, _, amount, _, _, _, _, absorbed = ...
 
 	local keys = keyMaps.damage[spellId]
 
@@ -577,7 +561,7 @@ local function handleDamageEvent(...)
 
 	for _, key in pairs(keys) do
 		local mayProceed, amplification =
-			validateAndDetermineAmplification(key, sourceGUID, targetGUID, spellId, "damage")
+			validateAndDetermineAmplification(key, sourceGUID, sourceFlags, targetGUID, spellId, "damage")
 
 		if mayProceed then
 			local total = calculateTotal(amount + (absorbed or 0), amplification)
@@ -595,7 +579,7 @@ end
 
 --- @return boolean
 local function handleHealEvent(...)
-	local _, _, _, sourceGUID, _, _, _, targetGUID, _, _, _, spellId, _, _, amount, overheal = ...
+	local _, _, _, sourceGUID, _, sourceFlags, _, targetGUID, _, _, _, spellId, _, _, amount, overheal = ...
 
 	local keys = keyMaps.heal[spellId]
 
@@ -607,7 +591,7 @@ local function handleHealEvent(...)
 
 	for _, key in pairs(keys) do
 		local mayProceed, amplification =
-			validateAndDetermineAmplification(key, sourceGUID, targetGUID, spellId, "heal")
+			validateAndDetermineAmplification(key, sourceGUID, sourceFlags, targetGUID, spellId, "heal")
 
 		if mayProceed then
 			local total = calculateTotal(amount - overheal, amplification)
@@ -645,6 +629,10 @@ local function handleAuraApplication(...)
 
 		for _, key in pairs(keys) do
 			cache[key].buffTargets[targetGUID] = stacks
+
+			if cache[key].buffRecentlyConsumed then
+				cache[key].buffRecentlyConsumed = false
+			end
 		end
 	end
 
@@ -692,6 +680,10 @@ local function handleAuraRemoval(...)
 		for _, key in pairs(keys) do
 			if cache[key].buffTargets[targetGUID] then
 				cache[key].buffTargets[targetGUID] = stacks
+
+				if cache[key].buffConsumedBy > 0 then
+					cache[key].buffRecentlyConsumed = true
+				end
 			end
 		end
 
@@ -877,6 +869,7 @@ aura_env.cleuMap = {
 		return handleSpellAbsorb(...)
 	end,
 }
+
 --- @param index number
 --- @return number, number
 function aura_env.getDisplayDataForIndex(index)

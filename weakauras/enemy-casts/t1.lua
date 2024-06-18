@@ -35,8 +35,18 @@ function (states, event, ...)
 			spellName = name
 			spellIcon = icon
 		elseif event == "UNIT_SPELLCAST_START" then
-			local infoFn = C_Spell.GetSpellInfo or GetSpellInfo
-			local name, _, icon = infoFn(spellId)
+			local name = nil
+			local icon = nil
+			if C_Spell.GetSpellInfo then
+				local info = C_Spell.GetSpellInfo(spellId)
+				name = info.name
+				icon = info.icon
+			else
+				local n, _, i = GetSpellInfo(spellId)
+				name = n
+				icon = i
+			end
+
 			spellName = name
 			spellIcon = icon
 		end

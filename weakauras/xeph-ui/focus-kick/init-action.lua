@@ -5,11 +5,8 @@ if aura_env.config.interruptSpellId == 0 or not IsSpellKnown(aura_env.config.int
 
 	if aura_env.config.interruptSpellId ~= nil then
 		local id = aura_env.config.interruptSpellId
-		if WeakAuras.GetSpellInfo then
-			name = WeakAuras.GetSpellInfo(id)
-		elseif C_Spell.GetSpellInfo then
-			local info = C_Spell.GetSpellInfo(id)
-			name = info.name
+		if C_Spell.GetSpellName then
+			name = C_Spell.GetSpellName(id)
 		else
 			name = GetSpellInfo(id)
 		end

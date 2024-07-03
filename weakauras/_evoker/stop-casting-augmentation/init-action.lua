@@ -18,10 +18,6 @@ function aura_env.isExtender(id)
 end
 
 local function getCastTime(spellId)
-	if WeakAuras.GetSpellInfo then
-		return select(4, WeakAuras.GetSpellInfo(spellId))
-	end
-
 	if C_Spell.GetSpellInfo then
 		local info = C_Spell.GetSpellInfo(spellId)
 		return info.castTime

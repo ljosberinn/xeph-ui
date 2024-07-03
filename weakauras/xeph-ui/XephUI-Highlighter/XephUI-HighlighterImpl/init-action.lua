@@ -10,7 +10,7 @@ function aura_env.queue()
 
 	local customEventName, id = aura_env.customEventName, aura_env.id
 
-	aura_env.nextFrame = C_Timer.NewTimer(0, function()
+	aura_env.nextFrame = C_Timer.NewTimer(0.1, function()
 		WeakAuras.ScanEvents(customEventName, id)
 	end)
 end
@@ -102,6 +102,11 @@ local hasHeal = false
 local hasPeriodicHealing = false
 local hasPeriodicDamage = false
 local hasSummons = false
+local hasReflect = false
+
+---@type table<string, table<number, number>>
+local reflects = {}
+local spellReflectKey = 0
 
 function aura_env.setup()
 	table.wipe(cache)
@@ -262,6 +267,12 @@ function aura_env.setup()
 			local damageTrigger = {}
 			for _, info in pairs(ability.damage) do
 				damageTrigger[info.id] = true
+
+				-- magic additional check for spell reflect which has no extra
+				-- damage ids since it needs to be dynamic
+				if info.id == 23920 then
+					hasReflect = currentSpecId == 71 or currentSpecId == 72 or currentSpecId == 73
+				end
 			end
 
 			--- @type table<number, boolean>
@@ -333,6 +344,10 @@ function aura_env.setup()
 		end
 
 		table.insert(tbl[trigger], index)
+
+		if trigger == 23920 then
+			spellReflectKey = index
+		end
 	end
 
 	for index, entry in pairs(cache) do
@@ -386,7 +401,7 @@ local function reset(key, now, force)
 	return hasChanges
 end
 
---- @param tbl table<integer, boolean>
+--- @param tbl table<number, boolean>
 --- @param force boolean
 --- @return boolean
 function aura_env.expireOutdatedData(tbl, force)
@@ -415,21 +430,35 @@ end
 --- @param spellId number
 --- @return boolean
 function aura_env.onSpellCastSuccess(spellId)
-	local keysToAdditionallyReset = keyMaps.cast[spellId] or {}
+	local keysToAdditionallyReset = keyMaps.cast[spellId]
+	local copy
 
-	local copy = {}
-
-	for _, index in pairs(keysToAdditionallyReset) do
-		table.insert(copy, index, true)
+	if keysToAdditionallyReset then
+		copy = {}
+		for _, index in pairs(keysToAdditionallyReset) do
+			table.insert(copy, index, true)
+		end
 	end
 
-	local expiredOnCastKeys = aura_env.expireOutdatedData(copy, true)
+	local expiredOnCastKeys = copy and aura_env.expireOutdatedData(copy, true) or false
 	local expiredOutdatedKeys = aura_env.expireOutdatedData(aura_env.dirtyIndices, false)
 
 	if hasBuffs then
 		for _, ability in pairs(cache) do
 			if ability.buffRecentlyConsumed then
 				ability.buffRecentlyConsumed = false
+			end
+		end
+	end
+
+	if hasReflect then
+		local now = GetTime()
+
+		for _, meta in pairs(reflects) do
+			for spellId, lastSeen in pairs(meta) do
+				if (now - lastSeen) >= 15 then
+					table.remove(meta, spellId)
+				end
 			end
 		end
 	end
@@ -552,9 +581,16 @@ local function handleDamageEvent(...)
 	local _, _, _, sourceGUID, _, sourceFlags, _, targetGUID, _, _, _, spellId, _, _, amount, _, _, _, _, absorbed = ...
 
 	local keys = keyMaps.damage[spellId]
+	local isReflecting = false
 
 	if not keys then
-		return false
+		if hasReflect and sourceGUID == targetGUID and reflects[sourceGUID] and reflects[sourceGUID][spellId] then
+			keys = {}
+			table.insert(keys, spellReflectKey)
+			isReflecting = true
+		else
+			return false
+		end
 	end
 
 	local hasChanges = false
@@ -563,7 +599,7 @@ local function handleDamageEvent(...)
 		local mayProceed, amplification =
 			validateAndDetermineAmplification(key, sourceGUID, sourceFlags, targetGUID, spellId, "damage")
 
-		if mayProceed then
+		if mayProceed or isReflecting then
 			local total = calculateTotal(amount + (absorbed or 0), amplification)
 
 			if total > 0 then
@@ -716,28 +752,31 @@ end
 local function handleSpellMissed(...)
 	local _, _, _, sourceGUID, _, _, _, targetGUID, _, _, _, spellId, _, _, missType, _, amount = ...
 
-	if missType ~= "ABSORB" then
-		return false
+	if missType == "ABSORB" then
+		return handleDamageEvent(
+			nil,
+			nil,
+			nil,
+			sourceGUID,
+			nil,
+			nil,
+			nil,
+			targetGUID,
+			nil,
+			nil,
+			nil,
+			spellId,
+			nil,
+			nil,
+			amount,
+			0
+		)
+	elseif missType == "REFLECT" and hasReflect and targetGUID == WeakAuras.myGUID then
+		reflects[sourceGUID] = reflects[sourceGUID] or {}
+		reflects[sourceGUID][spellId] = GetTime()
 	end
 
-	return handleDamageEvent(
-		nil,
-		nil,
-		nil,
-		sourceGUID,
-		nil,
-		nil,
-		nil,
-		targetGUID,
-		nil,
-		nil,
-		nil,
-		spellId,
-		nil,
-		nil,
-		amount,
-		0
-	)
+	return false
 end
 
 --- @return boolean
@@ -882,14 +921,16 @@ end
 --- to just assume whenever you leave combat, we can drop all seen debuff stacks
 --- @return boolean
 function aura_env.onPlayerRegenEnabled()
-	if not hasDebuffs then
-		return false
+	if hasReflect then
+		table.wipe(reflects)
 	end
 
-	for _, keys in pairs(keyMaps.debuff) do
-		for _, key in pairs(keys) do
-			for guid in pairs(cache[key].debuffTargets) do
-				cache[key].debuffTargets[guid] = nil
+	if hasDebuffs then
+		for _, keys in pairs(keyMaps.debuff) do
+			for _, key in pairs(keys) do
+				for guid in pairs(cache[key].debuffTargets) do
+					cache[key].debuffTargets[guid] = nil
+				end
 			end
 		end
 	end

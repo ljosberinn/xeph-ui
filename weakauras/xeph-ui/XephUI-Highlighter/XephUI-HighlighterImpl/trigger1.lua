@@ -89,36 +89,38 @@ function f(states, event, ...)
 		local now = GetTime()
 
 		for index in pairs(aura_env.dirtyIndices) do
-			local total, icon = aura_env.getDisplayDataForIndex(index)
+			if not aura_env.isExpired(now, index) then
+				local total, icon = aura_env.getDisplayDataForIndex(index)
 
-			if states[index] then
-				if not aura_env.isExpired(now, index) and states[index].stacks ~= total then
+				if states[index] then
+					if states[index].stacks ~= total then
+						hasChanges = true
+
+						states[index].changed = true
+						states[index].stacks = total
+
+						-- on successful spellcast, this may be empty, so expire instantly in order to hide the icon while no value is shown anyways
+						if total == 0 then
+							states[index].show = false
+							states[index].expirationTime = now
+						else
+							states[index].expirationTime = now + aura_env.config.duration
+						end
+					end
+				elseif total > 0 then
 					hasChanges = true
 
-					states[index].changed = true
-					states[index].stacks = total
-
-					-- on successful spellcast, this may be empty, so expire instantly in order to hide the icon while no value is shown anyways
-					if total == 0 then
-						states[index].show = false
-						states[index].expirationTime = now
-					else
-						states[index].expirationTime = now + aura_env.config.duration
-					end
+					states[index] = {
+						show = true,
+						changed = true,
+						stacks = total,
+						duration = aura_env.config.duration,
+						expirationTime = now + aura_env.config.duration,
+						autoHide = true,
+						progressType = "timed",
+						icon = icon,
+					}
 				end
-			elseif total > 0 then
-				hasChanges = true
-
-				states[index] = {
-					show = true,
-					changed = true,
-					stacks = total,
-					duration = aura_env.config.duration,
-					expirationTime = now + aura_env.config.duration,
-					autoHide = true,
-					progressType = "timed",
-					icon = icon,
-				}
 			end
 		end
 

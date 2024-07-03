@@ -26,6 +26,7 @@ end
 --- @return boolean
 local function UpdateState(state, changes)
 	local updated = false
+
 	for key, value in pairs(changes) do
 		if state[key] ~= value then
 			state[key] = value

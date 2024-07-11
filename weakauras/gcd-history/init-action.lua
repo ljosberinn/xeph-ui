@@ -57,6 +57,8 @@ aura_env.ignorelist = {
 	[385062] = true, -- Odyn's Fury
 	[385954] = true, -- Shield Charge
 	[408385] = true, -- Crusading Strikes
+	[429826] = true, -- Hammer of Light
+	[431398] = true, -- Empyrean Hammer
 	[456640] = true, -- Consuming Fire fake cast
 }
 

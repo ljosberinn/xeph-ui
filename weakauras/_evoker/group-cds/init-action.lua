@@ -40,7 +40,7 @@ end
 ---@param spellId number
 ---@return string, number
 function aura_env.getSpellInfo(spellId)
-	if C_Spell and C_Spell.GetSpellInfo then -- dummy War Within check
+	if C_Spell.GetSpellInfo then -- dummy War Within check
 		local name = C_Spell.GetSpellName(spellId)
 		local icon = C_Spell.GetSpellTexture(spellId)
 		return name, icon

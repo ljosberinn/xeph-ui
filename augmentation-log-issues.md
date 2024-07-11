@@ -17,26 +17,32 @@ Note this document was overhauled in June 2024 to allow a better overview. Older
   - [Empty Support Events](#empty-support-events)
 - [Per Class](#per-class)
   - [Warrior](#warrior)
-  - [Mage](#mage)
     - [The War Within](#the-war-within)
+  - [Mage](#mage)
+    - [The War Within](#the-war-within-1)
   - [Warlock](#warlock)
     - [Special Cases](#special-cases)
   - [Priest](#priest)
     - [Special Cases](#special-cases-1)
   - [Shaman](#shaman)
-  - [Rogue](#rogue)
-    - [The War Within](#the-war-within-1)
-  - [Paladin](#paladin)
-  - [Evoker](#evoker)
     - [The War Within](#the-war-within-2)
+  - [Rogue](#rogue)
+    - [The War Within](#the-war-within-3)
+  - [Paladin](#paladin)
+    - [The War Within](#the-war-within-4)
+  - [Evoker](#evoker)
+    - [The War Within](#the-war-within-5)
   - [Demon Hunter](#demon-hunter)
   - [Monk](#monk)
+    - [The War Within](#the-war-within-6)
     - [Special Cases](#special-cases-2)
   - [Death Knight](#death-knight)
-    - [The War Within](#the-war-within-3)
+    - [The War Within](#the-war-within-7)
   - [Druid](#druid)
   - [Hunter](#hunter)
-    - [The War Within](#the-war-within-4)
+    - [The War Within](#the-war-within-8)
+  - [Mage](#mage-1)
+    - [The War Within](#the-war-within-9)
     - [Special Cases](#special-cases-3)
   - [Other](#other)
 
@@ -94,6 +100,12 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 - `Fatal Mark` (id 383706) does not reattribute `Ebon Might`
 - `Fervid Bite` (id 425534) does not reattribute `Shifting Sands` or `Ebon Might`
 
+### The War Within
+
+- `Thunder Blast` (id 436793) does not reattribute anything
+  - this is via `Ground Current` hero talent
+  - note that 435222, the primary effect, does fully reattribute
+
 ## Mage
 
 - `Glacial Blast` (id 424120) -- should NOT reattribute `Prescience` but `Ebon Might` and `Shifting Sands`
@@ -131,11 +143,17 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 
 ## Shaman
 
-- `Lightning Rod`
+- `Lightning Rod` (id 197568) does not reattribute anything
 - `Ancestral Guidance` (id 114911) does not reattribute anything
 - `Lava Slag` (id 427729) T31 4pc does not reattribute anything
 - `Earthquake` (id 77478) does not reattribute `Ebon Might`
 - `Flametongue Attack`(id 10444) does not reattribute `Ebon Might`
+- `Restorative Mists` (id 114083) does not reattribute anything
+  - note that 294020 does
+
+### The War Within
+
+- `Ancestral Awakening` (id 382311) does not reattribute anything
 
 ## Rogue
 
@@ -157,11 +175,20 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 - `Bulwark of Order` (id 209388) does not reattribute anything
 - `Hammer of Wrath` (id 24275) does not reattribute `Shifting Sands`
 
+### The War Within
+
+- `Truth Prevails` (id 461529) does not reattribute anything
+  - this is the party overheal part, note that the self heal (id 461546) does reattribute
+
 ## Evoker
+
+- `Life-Givers Flame` (id 371441) does not reattribute anything
+- `Temporal Anomaly` (id 373862) only reattributes `Shifting Sands` currently
 
 ### The War Within
 
 - `Enkindle` (id 444017) does not reattribute anything
+- `Spiritbloom` (id 409895) does not reattribute anything (this is the Chronowarden hot)
 
 ## Demon Hunter
 
@@ -176,6 +203,13 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 - `Charred Passions` (id 386959) does not reattribute anything
 - `Charred Dreams` (id 425299) does not reattribute anything
 - melee hits as Mistweaver do not reattribute anything
+
+### The War Within
+
+- `Aspect of Harmony` (id 450763) does not reattribute anything
+- `Purified Spirit` (id 450820) does not reattribute anything
+- `Overwhelming Force` (id 452333) does not reattribute anything
+- `Tiger's Ferocity` (id 454508) does not reattribute anything
 
 ### Special Cases
 
@@ -196,6 +230,7 @@ Note that these below may be reattributing `Shifting Sands` and it's based on a 
 - `The Blood is Life` (id 434246) does not reattribute `Ebon Might`
 - `Reaper's Mark` (id 439594) does not reattribute anything
 - `Blood Fever` (id 440005) does not reattribute anything
+- `Shattered Frost` (id 455996) does not reattribute anything
 
 ## Druid
 
@@ -209,6 +244,13 @@ Note that these below may be reattributing `Shifting Sands` and it's based on a 
 ### The War Within
 
 - `Laceration` (id 459560) does not reattribute anything
+
+## Mage
+
+### The War Within
+
+- `Frostfire Empowerment` (id 431186) does not reattribute `Ebon Might`
+  - tooltip is misleading, this is the 11.0 set 2pc
 
 ### Special Cases
 

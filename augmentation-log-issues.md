@@ -5,36 +5,59 @@
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s` discord & twitter).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: June 19**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions).
+**Last updated: July 11**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions).
 
 Note this document was overhauled in June 2024 to allow a better overview. Older bugs and their context can be seen in the changelog linked above.
 
 - [General Bugs](#general-bugs)
-   * [Negative Reattribution](#negative-reattribution)
-   * [Friendly Fire can reattribute](#friendly-fire-can-reattribute)
-   * [Reattribution does not factor in throughput-increasing non-player originating auras](#reattribution-does-not-factor-in-throughput-increasing-non-player-originating-auras)
-   * [Empty Support Events](#empty-support-events)
+  - [Enemies with shared health reattribute an additional time](#enemies-with-shared-health-reattribute-an-additional-time)
+  - [Negative Reattribution](#negative-reattribution)
+  - [Friendly Fire can reattribute](#friendly-fire-can-reattribute)
+  - [Reattribution does not factor in throughput-increasing non-player originating auras](#reattribution-does-not-factor-in-throughput-increasing-non-player-originating-auras)
+  - [Empty Support Events](#empty-support-events)
 - [Per Class](#per-class)
-   * [Warrior](#warrior)
-   * [Mage](#mage)
-   * [Warlock](#warlock)
-      + [Special Cases](#special-cases)
-   * [Priest](#priest)
-      + [Special Cases](#special-cases-1)
-   * [Shaman](#shaman)
-   * [Rogue](#rogue)
-   * [Paladin](#paladin)
-   * [Evoker](#evoker)
-   * [Demon Hunter](#demon-hunter)
-   * [Monk](#monk)
-      + [Special Cases](#special-cases-2)
-   * [Death Knight](#death-knight)
-   * [Druid](#druid)
-   * [Hunter](#hunter)
-      + [Special Cases](#special-cases-3)
-   * [Other](#other)
+  - [Warrior](#warrior)
+  - [Mage](#mage)
+    - [The War Within](#the-war-within)
+  - [Warlock](#warlock)
+    - [Special Cases](#special-cases)
+  - [Priest](#priest)
+    - [Special Cases](#special-cases-1)
+  - [Shaman](#shaman)
+  - [Rogue](#rogue)
+    - [The War Within](#the-war-within-1)
+  - [Paladin](#paladin)
+  - [Evoker](#evoker)
+    - [The War Within](#the-war-within-2)
+  - [Demon Hunter](#demon-hunter)
+  - [Monk](#monk)
+    - [Special Cases](#special-cases-2)
+  - [Death Knight](#death-knight)
+    - [The War Within](#the-war-within-3)
+  - [Druid](#druid)
+  - [Hunter](#hunter)
+    - [The War Within](#the-war-within-4)
+    - [Special Cases](#special-cases-3)
+  - [Other](#other)
 
 # General Bugs
+
+## Enemies with shared health reattribute an additional time
+
+Given bosses with shared healthpools, the game writes support event lines for the damage mirrored to the shared health target, but sources these events to the NPC.
+
+This not only inflates the buff damage of the Aug, but also makes it appear as if the Aug buffed the bosses which does not happen.
+
+These damage events are however entirely incorrect and did not occur ingame.
+
+Examples:
+
+- Erunak Stonespeaker/Mindbender Ghur'sha (Throne of the Tides, 3rd boss; excluded on WCL end)
+  - [example link](https://www.warcraftlogs.com/reports/AjW2PHxf14pnYcwX#fight=8&type=summary&pull=11&pins=2%24Off%24%23244F4B%24expression%24supportedActor.type%20%3D%20%22npc%22&view=events)
+- Teera & Maruuk (Nokhud Offensive, 3rd boss; excluded on WCL end)
+  - [example link](https://www.warcraftlogs.com/reports/X6hQKLVW9RAtrbfP#fight=9&type=damage-done&pull=15&source=5&pins=2%24Off%24%23244F4B%24expression%24supportedActor.type%20%3D%20%22npc%22&view=events)
+- The Silken Court (Nerub'ar Palace)
+  - [example link](<https://www.warcraftlogs.com/reports/Gwyh4TrFd7gbfVxn#fight=5&type=damage-done&ability=-442204&view=events&pins=2%24Off%24%23244F4B%24expression%24effectiveDamage%20in%20(2377766,%201094996,%201529984,%20339806,%201142270,%201079850,%20146105,%20320522)>)
 
 ## Negative Reattribution
 
@@ -75,6 +98,14 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 
 - `Glacial Blast` (id 424120) -- should NOT reattribute `Prescience` but `Ebon Might` and `Shifting Sands`
 
+### The War Within
+
+- `Magi's Spark Echo` (id 458375) is not reattributing anything
+- `Embedded Arcane Splinter` (id 444736) is not reattributing anything
+  - note that `Embedded Arcane Splinter` (id 444735) _is_ fully reattributing
+- `Dematerialize` (id 461498) is only reattributing `Shifting Sands` - cannot crit, so only `Ebon Might` missing
+- `Controlled Instincts` (444720) does not reattribute anything
+
 ## Warlock
 
 - `Dimensional Cinder` (id 427285) does not reattribute anything
@@ -83,6 +114,7 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 ### Special Cases
 
 - `Prescience` does not seem to increase `Chaos Bolt` damage
+  - if it does, the damage increase does not get forwarded to the Evoker, probably because `Chaos Bolt` is a guaranteed crit and these abilities are exempted
 
 ## Priest
 
@@ -113,6 +145,11 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 - `Sudden Demise` (id 343769) does not reattribute anything
 - `Shadow Rupture` (id 424493) does not reattribute `Shifting Sands` or `Ebon Might`
 
+### The War Within
+
+- `Fate Intertwined` (id 456306) does not reattribute anything
+- `Ethereal Rampage` (id 459002) does not reattribute anything
+
 ## Paladin
 
 - `Cleansing Flame` (ids 425261, 425262) T31 4pc does not reattribute anything
@@ -121,6 +158,8 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 - `Hammer of Wrath` (id 24275) does not reattribute `Shifting Sands`
 
 ## Evoker
+
+### The War Within
 
 - `Enkindle` (id 444017) does not reattribute anything
 
@@ -149,9 +188,14 @@ Note that these below may be reattributing `Shifting Sands` and it's based on a 
 
 ## Death Knight
 
-- `Blood Fever` (id 440005) does not reattribute anything
+- `Coil of Devastation` (390271) does not reattribute `Ebon Might`
+
+### The War Within
+
+- `Infliction of Sorrow` (id 434144) does not reattribute `Ebon Might`
+- `The Blood is Life` (id 434246) does not reattribute `Ebon Might`
 - `Reaper's Mark` (id 439594) does not reattribute anything
-- `Death Coil` DoT does not reattribute `Ebon Might`
+- `Blood Fever` (id 440005) does not reattribute anything
 
 ## Druid
 
@@ -162,7 +206,9 @@ Note that these below may be reattributing `Shifting Sands` and it's based on a 
 
 ## Hunter
 
-- `Laceration (id 459560) does not reattribute anything
+### The War Within
+
+- `Laceration` (id 459560) does not reattribute anything
 
 ### Special Cases
 

@@ -115,7 +115,6 @@ function f(self, unitId, unitFrame, envTable, modTable)
 		local interruptReadyTime = 0
 		local start
 		local duration
-		local playerIsWarlock
 
 		if envTable.interruptID ~= nil then
 			start, duration = envTable.GetSpellCooldown(envTable.interruptID) --local
@@ -125,7 +124,7 @@ function f(self, unitId, unitFrame, envTable, modTable)
 		if canInterrupt then
 			if envTable.interruptID ~= nil then
 				-- Is the player a warlock?
-				playerIsWarlock = envTable.class == 9
+				local playerIsWarlock = envTable.class == 9
 
 				-- Check to see if the spell is known/talented
 				if IsSpellKnown(envTable.interruptID, playerIsWarlock) then
@@ -133,8 +132,8 @@ function f(self, unitId, unitFrame, envTable, modTable)
 						Plater.SetCastBarColor(unitFrame, envTable.optionsColorInterruptAvailable)
 					elseif
 						envTable.optionsShowSecondaryInterrupts
-						and envTable.class == 2
-						and IsSpellKnown(31935)
+						and envTable.class == 2 -- paladin
+						and IsSpellKnown(31935) -- avenger's shield
 						and not envTable.isSpellOnCooldown_IgnoreGCD(31935)
 					then
 						-- Paladin Avenger's Shield
@@ -164,31 +163,32 @@ function f(self, unitId, unitFrame, envTable, modTable)
 		if
 			envTable.optionsShowSecondaryInterrupts
 			and isTargettingMe
-			and IsSpellKnown(23920)
+			and envTable.class == 1
+			and IsSpellKnown(23920) -- spell reflect
 			and not envTable.isSpellOnCooldown_IgnoreGCD(23920)
-			and envTable.IsSpellReflectable(castBar.SpellName, castBar.SpellID)
+			and modTable.reflectableSpells[castBar.SpellID] == true
 		then
 			-- Color the bar if the spell is reflectable
 			Plater.SetCastBarColor(unitFrame, envTable.optionsColorSecondaryAvailable)
 		end
 	end
 
-	local function determineInterruptId()
-		local class = select(3, UnitClass("player"))
+	envTable.class = select(3, UnitClass("player"))
 
-		if class == 1 then -- Warrior
+	local function determineInterruptId()
+		if envTable.class == 1 then -- Warrior
 			return function()
 				return 6552 -- Pummel
 			end
 		end
 
-		if class == 2 then -- Paladin
+		if envTable.class == 2 then -- Paladin
 			return function()
 				return 96231 -- Rebuke
 			end
 		end
 
-		if class == 3 then -- Hunter
+		if envTable.class == 3 then -- Hunter
 			return function()
 				local spec = GetSpecialization()
 
@@ -200,13 +200,13 @@ function f(self, unitId, unitFrame, envTable, modTable)
 			end
 		end
 
-		if class == 4 then -- rogue
+		if envTable.class == 4 then -- rogue
 			return function()
 				return 1766 -- kick
 			end
 		end
 
-		if class == 5 then -- priest
+		if envTable.class == 5 then -- priest
 			return function()
 				local spec = GetSpecialization()
 
@@ -218,25 +218,25 @@ function f(self, unitId, unitFrame, envTable, modTable)
 			end
 		end
 
-		if class == 6 then -- death knight
+		if envTable.class == 6 then -- death knight
 			return function()
 				return 47528 -- mind freeze
 			end
 		end
 
-		if class == 7 then -- shaman
+		if envTable.class == 7 then -- shaman
 			return function()
 				return 57994
 			end
 		end
 
-		if class == 8 then -- mage
+		if envTable.class == 8 then -- mage
 			return function()
 				return 2139 -- counterspell
 			end
 		end
 
-		if class == 9 then -- warlock
+		if envTable.class == 9 then -- warlock
 			return function()
 				if IsSpellKnown(89766, true) then -- felguard: axe toss
 					return 89766
@@ -254,13 +254,13 @@ function f(self, unitId, unitFrame, envTable, modTable)
 			end
 		end
 
-		if class == 10 then -- monk
+		if envTable.class == 10 then -- monk
 			return function()
 				return 116705 -- spear hand strike
 			end
 		end
 
-		if class == 11 then -- druid
+		if envTable.class == 11 then -- druid
 			return function()
 				local spec = GetSpecialization()
 
@@ -272,13 +272,13 @@ function f(self, unitId, unitFrame, envTable, modTable)
 			end
 		end
 
-		if class == 12 then -- demon hunter
+		if envTable.class == 12 then -- demon hunter
 			return function()
 				return 183752 -- disrupt
 			end
 		end
 
-		if class == 13 then -- evoker
+		if envTable.class == 13 then -- evoker
 			return function()
 				return 351338 -- quell
 			end
@@ -286,21 +286,6 @@ function f(self, unitId, unitFrame, envTable, modTable)
 	end
 
 	envTable.GetInterruptId = determineInterruptId()
-
-	-- Checks to see if the spell being cast is reflectable. Checks for a spell name and zone ID match.
-	---@param spellName string
-	---@param spellId number
-	---@return boolean
-	function envTable.IsSpellReflectable(spellName, spellId)
-		local zoneId = C_Map.GetBestMapForUnit("player")
-		local spellNames = modTable.reflectableSpellsByZoneId[zoneId]
-
-		if not spellNames then
-			return false
-		end
-
-		return spellNames[spellName] == true
-	end
 
 	-- Checks to see if a spell is on cooldown, not counting the 1.5s cooldown from global cooldown.
 	---@param spellID number

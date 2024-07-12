@@ -1,4 +1,4 @@
-function (_, unitId, unitFrame, _, modTable)
+function f(_, unitId, unitFrame, _, modTable)
 	if not modTable.config.scale then
 		return
 	end

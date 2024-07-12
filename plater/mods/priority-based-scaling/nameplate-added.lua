@@ -1,4 +1,4 @@
-function (self, unitId, unitFrame, envTable, modTable)
+function f(self, unitId, unitFrame, envTable, modTable)
 	if not modTable.config.scale then
 		return
 	end
@@ -9,7 +9,7 @@ function (self, unitId, unitFrame, envTable, modTable)
 		return
 	end
 
-	local scale = modTable["npcIDs"][npcID]
+	local scale = modTable.npcIDs[npcID]
 
 	if scale then
 		Plater.SetNameplateScale(unitFrame, scale)

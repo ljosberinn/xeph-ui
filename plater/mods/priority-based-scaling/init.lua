@@ -4,18 +4,104 @@ function f(modTable)
 	local extrasmall = modTable.config.extraLowScale -- 0.7,
 	local larger = modTable.config.higherScale -- 1.1
 
-	modTable["npcIDs"] = {}
+	modTable.npcIDs = {}
 
 	local test = {}
 	-- raids
 	local amirdrassil = {
-		[210231] = medium, --Tainted Lasher on Gnarlroot
-		[211306] = extrasmall, -- Fiery Vines on Tindral
+		[210231] = medium, -- Tainted Lasher, Gnarlroot
+		[211306] = extrasmall, -- Fiery Vines, Tindral
+	}
+	local vault = {
+		[194991] = medium, -- Oathsworn Vanguard
+		[191714] = small, -- Seeking Stormling
+	}
+	local sepulcher = {
+		[183669] = small, -- Fiendish Soul
+	}
+	local nathria = {
+		[169925] = small, -- Begrudging Waiter
+	}
+	local nerubarPalace = {
+		[219739] = small, -- Infested Spawn
+		[220626] = medium, -- Parasite
 	}
 	-- dungeons
+	local araKara = {
+		[216336] = medium, -- Ravenous Crawler
+		[216341] = medium, -- Jabbing Flyer
+		[218325] = medium, -- Swarming Flyer
+	}
+
+	local cityOfThreads = {
+		[220199] = small, -- Battle Scarab
+		[216363] = medium, -- Reenforced drone
+		[216365] = medium, -- Carrier
+		[223357] = medium, -- Conscript
+		[216329] = small, -- Droplet
+		[220065] = small, -- Umbral Weave
+		[222700] = small, -- Umbral Weave
+		[219198] = medium, -- Ravenous Scarab
+	}
+
+	local tazavesh = {
+		[178163] = small, -- Murkbrine Shorerunner
+	}
+
+	local theaterOfPain = {
+		[163089] = small, -- Disgusting Refuse
+	}
+
+	local necroticWake = {
+		[166264] = small, -- Spare Parts
+		[166266] = small, -- Spare Parts #2
+		[171500] = small, -- Shuffling Corpse
+		[165138] = small, -- Blight bag
+		[162729] = medium, -- Patchwerk Soldier
+	}
+
+	local mistsOfTirnaScithe = {
+		[165111] = medium, -- Drust Spiteclaw
+		[167117] = small, -- Larva
+	}
+
+	local hallsOfAtonement = {
+		[167892] = medium, -- Tormented Soul
+	}
+
+	local deOtherSide = {
+		[168986] = small, -- Skeletal Raptor
+	}
+
+	local plaguefall = {
+		[168969] = small, -- Gushing Slime
+	}
+
+	local sanguineDepths = {
+		[171455] = small, -- Stonewall Gargon
+		[168457] = small, -- Stonewall Gargon
+		[166589] = small, -- Animate Weapon
+	}
+
+	local grimBatol = {
+		[224853] = small, -- Hatchling
+		[39388] = medium, -- Boss Hatchling
+	}
+
+	local sigeOfBoralus = {
+		[133990] = medium, -- Scrimshaw Gutter
+		[138002] = medium, -- Scrimshaw Gutter
+		[135258] = medium, -- Curseblade
+	}
+
+	local mechagon = {
+		[144300] = small, -- Mechagon Citizen
+	}
+
 	local atalDazar = {
 		[128435] = extrasmall, -- saurid
 	}
+
 	local waycrestManor = {
 		[131669] = extrasmall, -- Jagged Hound
 		[139269] = extrasmall, -- Gloom Horror
@@ -26,28 +112,34 @@ function f(modTable)
 		[135048] = small, -- Gorestained Piglet (Drustvar Villager)
 		[131585] = extrasmall, -- Enthralled Guard
 	}
+
 	local darkheartThicket = {
 		[100529] = small, -- Hatespawn Slime
 		[101074] = small, -- Hatespawn Whelpling
 		[100991] = small, -- Strangling Roots
 		[107288] = small, -- Vilethorn Sapling
 	}
+
 	local everbloom = {
 		[81864] = extrasmall, -- Dreadpetal
 		[84401] = small, -- Swift Sproutling
 	}
+
 	local blackRookHold = {
 		[98677] = small, -- Rook Spiderling
 		[98900] = medium, -- Wyrmtongue Trickster
 		[102781] = extrasmall, -- Fel Bat Pup
 	}
-	local dotiFall = {
+
+	local galakrondsFall = {
 		[204536] = extrasmall, -- Blight Chunk
 		[206065] = extrasmall, -- Interval
 	}
+
 	local throneOfTheTides = {
 		[40923] = extrasmall, -- Unstable Corruption
 	}
+
 	local templeOfTheJadeSerpent = {
 		[62358] = small, -- Corrupt Droplet
 		[200126] = medium, -- Fallen Waterspeaker
@@ -64,6 +156,7 @@ function f(modTable)
 		[200388] = small, -- Malformed Sha
 		[200387] = medium, -- Shambling Infester
 	}
+
 	local nokhudOffensive = {
 		[192803] = small, -- War Ohuna
 		[192794] = small, -- Nokhud Beastmaster
@@ -100,6 +193,7 @@ function f(modTable)
 		[199320] = small, -- Nokhud Warspear (RP version)
 		[199321] = small, -- Nokhud Warspear (RP version)
 	}
+
 	local courtOfStars = {
 		[105703] = small, -- Mana Wyrm,
 		[104251] = medium, -- Duskwatch Sentry
@@ -110,6 +204,7 @@ function f(modTable)
 		[104277] = small, -- Legion Hound
 		[104300] = medium, -- Shadow Mistress
 	}
+
 	local shadowmoonBurialGrounds = {
 		[75715] = medium, -- Reanimated Ritual Bones
 		[75451] = small, -- Defiled Spirit (non-casting)
@@ -117,6 +212,7 @@ function f(modTable)
 		[77006] = small, -- Corpse Skitterling
 		[76444] = small, -- Subjugated Soul
 	}
+
 	local algetharAcademy = {
 		[196642] = extrasmall, -- Hungry Lasher
 		[197398] = extrasmall, -- Hungry Lasher
@@ -131,6 +227,7 @@ function f(modTable)
 		[196202] = medium, -- Spectral Invoker
 		[196203] = small, -- Ethereal Restorer
 	}
+
 	local azureVault = {
 		[191313] = small, -- Bubbling Sapling
 		[196559] = small, -- Volatile Sapling
@@ -146,6 +243,7 @@ function f(modTable)
 		[187242] = small, -- Tarasek Looter
 		[187240] = medium, -- Draconid Breaker
 	}
+
 	local hallsOfValor = {
 		[97087] = small, -- Valajar Champion
 		[95842] = medium, -- Valajar Thundercaller
@@ -160,6 +258,7 @@ function f(modTable)
 		[96608] = small, -- Ebonclaw Worg
 		[97068] = medium, -- Storm Drake
 	}
+
 	local rubyLifePools = {
 		[188011] = small, -- Primal Terrasentry
 		[188067] = small, -- Flashfrost Chillweaver
@@ -176,6 +275,7 @@ function f(modTable)
 		[197509] = extrasmall, -- Primal Thundercloud
 		[197982] = small, -- Storm Warrior
 	}
+
 	local underrot = {
 		[131402] = small, -- Underrot Tick
 		[131436] = medium, -- Chosen Blood Matron
@@ -188,6 +288,7 @@ function f(modTable)
 		[138281] = medium, -- Faceless Corruptor
 		[137458] = small, -- Rotting Spore
 	}
+
 	local freehold = {
 		[126928] = small, -- Irontide Corsair
 		[126918] = medium, -- Irontide Crackshot
@@ -216,6 +317,7 @@ function f(modTable)
 		[127111] = medium, -- Irontide Oarsman
 		[127106] = small, -- Irontide Officer
 	}
+
 	local neltharionsLair = {
 		[96247] = extrasmall, -- Vileshard Crawler
 		[98406] = medium, -- Embershard Scorpion
@@ -235,6 +337,7 @@ function f(modTable)
 		[102430] = small, -- Tarspitter SLug
 		[102253] = small, -- Understone Demolisher
 	}
+
 	local vortexPinnacle = {
 		[205326] = small, -- Gust Soldier
 		[45477] = small, -- Gust Soldier
@@ -249,6 +352,7 @@ function f(modTable)
 		[45932] = small, -- Skyfall Star
 		[45930] = medium, -- Minister of Air
 	}
+
 	local hallsOfInfusion = {
 		[190345] = small, -- Primalist Geomancer
 		[190348] = small, -- Primalist Ravager
@@ -265,6 +369,7 @@ function f(modTable)
 		[190359] = small, -- Skulking Zealot
 		[190406] = small, -- Aqualing
 	}
+
 	local neltharus = {
 		[192787] = small, -- Qalashi Spinecrusher
 		[193293] = small, -- Qalashi Warden
@@ -278,6 +383,7 @@ function f(modTable)
 		[193291] = medium, -- Apex Blazewing
 		[194389] = small, -- Lava Spawn
 	}
+
 	local uldaman = {
 		[184134] = small, -- Scavenging Leaper
 		[184020] = small, -- Hulking Berserker
@@ -293,6 +399,7 @@ function f(modTable)
 		[184331] = medium, -- Infinite Timereaver
 		[191311] = small, -- Infinite Whelp
 	}
+
 	local brackenhideHollow = {
 		[185529] = medium, -- Bracken Warscourge
 		[185508] = small, -- Claw Fighter
@@ -307,7 +414,9 @@ function f(modTable)
 		[194745] = small, -- Rotfang Hyena
 		[186227] = small, -- Monstrous Decay
 		[189299] = extrasmall, -- Decaying Slime
-		[192481] = extrasmall, -- Decaying Slime
+		[192481] = extrasmall, -- Decaying Slime (boss adds)
+		[194330] = extrasmall, -- Decaying Slime (from big slime split)
+		[199916] = small, -- Decaying Slime
 		[194273] = extrasmall, -- Witherling
 		[187238] = extrasmall, -- Witherling
 		[187231] = small, -- Wither Biter
@@ -319,12 +428,13 @@ function f(modTable)
 		[186226] = medium, -- Fetid Rotsinger
 		[186229] = medium, -- Wilted Oak
 		[194373] = small, -- Witherling
-		[199916] = small, -- Decaying Slime
 		[190381] = larger, -- Rotburst Totem
 	}
-	local dotiRise = {
+
+	local murozondsRise = {
 		[205151] = extrasmall, -- Tyr's Vanguard
 	}
+
 	local misc = {
 		-- Fodder to the Flame demons
 		[169428] = small,
@@ -334,6 +444,7 @@ function f(modTable)
 		[169421] = small,
 		[169425] = small,
 		[168932] = small,
+		[189707] = small, -- Chaotic Motes, SL Fated affix
 	}
 
 	local maps = {
@@ -344,7 +455,7 @@ function f(modTable)
 		darkheartThicket,
 		everbloom,
 		blackRookHold,
-		dotiFall,
+		galakrondsFall,
 		throneOfTheTides,
 		templeOfTheJadeSerpent,
 		nokhudOffensive,
@@ -362,21 +473,42 @@ function f(modTable)
 		neltharus,
 		uldaman,
 		brackenhideHollow,
-		dotiRise,
+		murozondsRise,
 		misc,
+		vault,
+		sepulcher,
+		nathria,
+		nerubarPalace,
+		araKara,
+		cityOfThreads,
+		tazavesh,
+		theaterOfPain,
+		necroticWake,
+		mistsOfTirnaScithe,
+		hallsOfAtonement,
+		deOtherSide,
+		plaguefall,
+		sanguineDepths,
+		grimBatol,
+		sigeOfBoralus,
+		mechagon,
 	}
 
 	for _, map in pairs(maps) do
 		for id, priority in pairs(map) do
-			modTable["npcIDs"][id] = priority
+			modTable.npcIDs[id] = priority
 		end
 	end
 
-	modTable.isSpiteful = function(id)
+	---@param id number
+	---@return boolean
+	function modTable.isSpiteful(id)
 		return tonumber(id) == 174773
 	end
 
-	modTable.parseGUID = function(unit)
+	---@param unit string
+	---@return number|nil
+	function modTable.parseGUID(unit)
 		local guid = UnitGUID(unit)
 
 		if not guid then
@@ -388,7 +520,9 @@ function f(modTable)
 		return id and tonumber(id) or nil
 	end
 
-	modTable.spitefulTargetsPlayer = function(unitId)
+	---@param unitId string
+	---@return boolean
+	function modTable.spitefulTargetsPlayer(unitId)
 		local targetName = UnitName(unitId .. "target")
 
 		if not targetName then

@@ -8,29 +8,22 @@ function f(self, unitId, unitFrame, envTable)
 		[103822] = "Treant",
 	}
 
-	envTable.rules = {
-		["Pet"] = true,
-		["Creature"] = function(npcID)
-			return (envTable.npcs[npcID] ~= nil)
-		end,
-	}
-
-	envTable.getTypeAndID = function(guid)
+	function envTable.getTypeAndID(guid)
 		local unitType, _, _, _, _, npcID = strsplit("-", guid)
 		return unitType, tonumber(npcID or "0") or 0
 	end
 
-	envTable.shallHighlight = function(self, guid)
+	function envTable.shallHighlight(self, guid)
 		local unitType, npcID = envTable.getTypeAndID(guid)
-		if unitType then
-			local value = envTable.rules[unitType]
-			if value then
-				if type(value) == "boolean" then
-					return value
-				elseif type(value) == "function" then
-					return value(npcID)
-				end
-			end -- value
-		end -- unitType
+
+		if not unitType then
+			return false
+		end
+
+		if unitType == "Pet" then
+			return true
+		end
+
+		return envTable.npcs[npcID] ~= nil
 	end
 end

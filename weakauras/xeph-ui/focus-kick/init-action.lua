@@ -5,6 +5,7 @@ if aura_env.config.interruptSpellId == 0 or not IsSpellKnown(aura_env.config.int
 
 	if aura_env.config.interruptSpellId ~= nil then
 		local id = aura_env.config.interruptSpellId
+
 		if C_Spell.GetSpellName then
 			name = C_Spell.GetSpellName(id)
 		else
@@ -24,12 +25,21 @@ if aura_env.config.interruptSpellId == 0 or not IsSpellKnown(aura_env.config.int
 end
 
 if Plater and Plater.db and Plater.db.profile and Plater.db.profile.script_data then
+	local importantCastsScripts = {
+		["Cast - Very Important [Plater]"] = true,
+		["Important Casts - Jundies"] = true,
+	}
+
 	for _, script in pairs(Plater.db.profile.script_data) do
-		if script and script.Name == "Cast - Very Important [Plater]" then
+		if script and importantCastsScripts[script.Name] == true then
+			local count = 0
+
 			for _, id in pairs(script.SpellIds) do
 				aura_env.importantSpellIds[id] = true
+				count = count + 1
 			end
-			break
+
+			print(format("[%s] added %d spells from Plater script '%s'", aura_env.id, count, script.Name))
 		end
 	end
 end

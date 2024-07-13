@@ -51,7 +51,7 @@ Each pack uses sound clues. These are streamlined across specs.
 | Raid Cooldown Active                 | Brass                |
 | Cheat Death procced                  | Wilhelm Scream       |
 | Cheat Death ready                    | Wicked Male Laughter |
-| At least 1 Enemy in Aoe Healing      | Laser Sword Sound    |
+| At least 1 Enemy in Aoe Healing      | Eror Beep            |
 | Poison Dispel [if you can]           | Sword Ring           |
 | Other Dispel [if you can]            | Temple Bell          |
 | `Afflicted` or `Incorporeal` spawned | Phone Ring           |

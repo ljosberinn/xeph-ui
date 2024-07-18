@@ -2,6 +2,25 @@ function f(modTable)
 	modTable.reflectableSpells = {}
 
 	if select(3, UnitClass("player")) == 1 then
+		--TWW Dungeons
+
+		--DF Dungeons
+
+		local murozondsRise = {
+			400165, -- Epoch Bolt
+			413607, -- Corroding Volley
+			418202, -- Temporal Blast
+			417030, -- Fireball
+			411763, -- Infinite Blast
+			407121, -- Immolate
+		}
+
+		local galakrondsFall = {
+			415435, -- Infinite Bolt
+			413590, -- Noxious Ejection
+			411958, -- Stonebolt
+		}
+
 		local rubyLifePools = {
 			373803, -- Cold Claws boss adds
 			372683, -- Cold Claws trash
@@ -75,40 +94,7 @@ function f(modTable)
 			387975, -- Arcane Missiles
 		}
 
-		local darkheartThicket = {
-			204243, -- Tormenting Eye
-			200238, -- Feed on the Weak
-			200185, -- Nightmare Bolt
-			200684, -- Nightmare Toxin
-			200642, -- Despair
-			201411, -- Firebolt
-			201837, -- Shadow Bolt
-		}
-
-		local everbloom = {
-			169657, -- Poisonous Claws
-			168040, -- Nature's Wrath
-			168092, -- Water Bolt
-			169840, -- Frostbolt
-			169841, -- Arcane Blast
-			169839, -- Pyroblast
-			427858, -- Fireball
-			164965, -- Choking Vines
-		}
-
-		local throneOfTheTides = {
-			426731, -- Water Bolt
-			428542, -- Crushing Depths
-			426768, -- Lightning Bolt
-			75992, -- Lightning Surge
-			428374, -- Focused Tempest
-			426783, -- Mind Flay
-			429048, -- Flame Shock
-			429173, -- Mind Rot
-			429176, -- Aquablast
-			428526, -- Ink Blast
-			428889, -- Foul Bolt
-		}
+		--BFA Dungeons
 
 		local waycrestManor = {
 			265372, -- Shadow Cleave
@@ -138,19 +124,6 @@ function f(modTable)
 			250096, -- Wracking Pain
 		}
 
-		local blackRookHold = {
-			199663, -- Soul Blast
-			200248, -- Arcane Blitz
-		}
-
-		local vortexPinnacle = {
-			410873, -- Rushing Wind
-			86331, -- Lightning Bolt
-			411019, -- Starlight
-			87762, -- Lightning Lash
-			87622, -- Chain Lightning
-		}
-
 		local underrot = {
 			265084, -- Blood Bolt
 			260879, -- Blood Bolt (boss)
@@ -165,6 +138,23 @@ function f(modTable)
 			281420, -- Water Bolt
 		}
 
+		--Legion Dungeons
+
+		local darkheartThicket = {
+			204243, -- Tormenting Eye
+			200238, -- Feed on the Weak
+			200185, -- Nightmare Bolt
+			200684, -- Nightmare Toxin
+			200642, -- Despair
+			201411, -- Firebolt
+			201837, -- Shadow Bolt
+		}
+
+		local blackRookHold = {
+			199663, -- Soul Blast
+			200248, -- Arcane Blitz
+		}
+
 		local neltharionsLair = {
 			186269, -- Stone Bolt
 			198496, -- Sunder
@@ -172,13 +162,12 @@ function f(modTable)
 			200732, -- Molten Crash
 		}
 
-		local templeOfTheJadeSerpent = {
-			397888, -- Hydrolance
-			114803, -- Throw Torch
-			114571, -- Agony
-			397914, -- Defiling Mist
-			397931, -- Dark Claw
-			106823, -- Serpent Strike
+		local hallsOfValor = {
+			198595, -- Thunderous Bolt
+			198962, -- Shattered Rune
+			198959, -- Etch
+			191976, -- Arcing Bolt
+			192288, -- Searing Light
 		}
 
 		local courtOfStars = {
@@ -187,6 +176,19 @@ function f(modTable)
 			211406, -- Firebolt
 			211473, -- Shadow Slash
 			373364, -- Vampiric Claws
+		}
+
+		--WoD Dungeons
+
+		local everbloom = {
+			169657, -- Poisonous Claws
+			168040, -- Nature's Wrath
+			168092, -- Water Bolt
+			169840, -- Frostbolt
+			169841, -- Arcane Blast
+			169839, -- Pyroblast
+			427858, -- Fireball
+			164965, -- Choking Vines
 		}
 
 		local shadowmoonBurialGrounds = {
@@ -198,29 +200,42 @@ function f(modTable)
 			153524, -- Plague Spit
 		}
 
-		local hallsOfValor = {
-			198595, -- Thunderous Bolt
-			198962, -- Shattered Rune
-			198959, -- Etch
-			191976, -- Arcing Bolt
-			192288, -- Searing Light
+		--MoP Dungeons
+
+		local templeOfTheJadeSerpent = {
+			397888, -- Hydrolance
+			114803, -- Throw Torch
+			114571, -- Agony
+			397914, -- Defiling Mist
+			397931, -- Dark Claw
+			106823, -- Serpent Strike
 		}
 
-		local murozondsRise = {
-			400165, -- Epoch Bolt
-			413607, -- Corroding Volley
-			418202, -- Temporal Blast
-			417030, -- Fireball
-			411763, -- Infinite Blast
-			407121, -- Immolate
+		--Cata Dungeons
+
+		local throneOfTheTides = {
+			426731, -- Water Bolt
+			428542, -- Crushing Depths
+			426768, -- Lightning Bolt
+			75992, -- Lightning Surge
+			428374, -- Focused Tempest
+			426783, -- Mind Flay
+			429048, -- Flame Shock
+			429173, -- Mind Rot
+			429176, -- Aquablast
+			428526, -- Ink Blast
+			428889, -- Foul Bolt
 		}
 
-		local galakrondsFall = {
-			415435, -- Infinite Bolt
-			413590, -- Noxious Ejection
-			411958, -- Stonebolt
+		local vortexPinnacle = {
+			410873, -- Rushing Wind
+			86331, -- Lightning Bolt
+			411019, -- Starlight
+			87762, -- Lightning Lash
+			87622, -- Chain Lightning
 		}
 
+		-- Raids
 		local amidrassil = {
 			431302, -- Fyr'alath's Flame, Fyrakk
 			421284, -- Coiling Flames, Volcoross

@@ -121,26 +121,22 @@ function f(modTable)
 
 	---@param frame Frame
 	function modTable.EnsureCorrectBorder(token, frame)
-		if UnitExists("focus") then
-			local guid = UnitGUID("focus")
-			local focusToken = guid and UnitTokenFromGUID(guid) or nil
+		local guid = UnitGUID("focus")
+		local focusToken = guid and UnitTokenFromGUID(guid) or nil
 
-			if token == focusToken then
-				Plater.SetBorderColor(frame, focusBorderColor)
-				modTable.focus.current = frame
-				return
-			end
+		if token == focusToken then
+			Plater.SetBorderColor(frame, focusBorderColor)
+			modTable.focus.current = frame
+			return
 		end
 
-		if UnitExists("target") then
-			local guid = UnitGUID("target")
-			local targetToken = guid and UnitTokenFromGUID(guid) or nil
+		guid = UnitGUID("target")
+		local targetToken = guid and UnitTokenFromGUID(guid) or nil
 
-			if token == targetToken then
-				Plater.SetBorderColor(frame, targetBorderColor)
-				modTable.target.current = frame
-				return
-			end
+		if token == targetToken then
+			Plater.SetBorderColor(frame, targetBorderColor)
+			modTable.target.current = frame
+			return
 		end
 
 		Plater.SetBorderColor(frame)

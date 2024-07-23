@@ -1,4 +1,4 @@
--- UNIT_POWER_UPDATE:player, UNIT_SPELLCAST_CHANNEL_START:player, UNIT_SPELLCAST_CHANNEL_STOP:player, CLEU:SPELL_EMPOWER_START:SPELL_EMPOWER_INTERRUPT:SPELL_EMPOWER_END:SPELL_CAST_START:SPELL_CAST_SUCCESS:SPELL_CAST_FAILED:SPELL_PERIODIC_DAMAGE, PLAYER_DEAD, UNIT_SPELLCAST_SUCCEEDED:player
+-- UNIT_POWER_UPDATE:player, UNIT_SPELLCAST_CHANNEL_START:player, UNIT_SPELLCAST_CHANNEL_STOP:player, CLEU:SPELL_EMPOWER_START:SPELL_EMPOWER_INTERRUPT:SPELL_EMPOWER_END:SPELL_CAST_START:SPELL_CAST_SUCCESS:SPELL_CAST_FAILED:SPELL_PERIODIC_DAMAGE:SPELL_AURA_APPLIED:SPELL_AURA_REFRESH, PLAYER_DEAD, UNIT_SPELLCAST_SUCCEEDED:player
 --- @class State
 --- @field show boolean
 --- @field changed boolean
@@ -185,6 +185,41 @@ function f(states, event, ...)
 			return false
 		end
 
+		if subEvent == "SPELL_AURA_APPLIED" or subEvent == "SPELL_AURA_REFRESH" then
+			if not aura_env.isCataclysm then
+				return false
+			end
+
+			if spellId ~= 32645 then
+				return false
+			end
+
+			local name, icon = aura_env.getSpellMeta(spellId)
+			local now = GetTime()
+
+			states[aura_env.spellcasts] = {
+				show = true,
+				changed = true,
+				name = name,
+				icon = icon,
+				progressType = "timed",
+				duration = aura_env.config.general.duration,
+				expirationTime = now + aura_env.config.general.duration,
+				autoHide = true,
+				spellId = spellId,
+				paused = false,
+				start = now,
+				desaturated = false,
+				specialNumber = 0,
+				interrupted = false,
+				isPet = false,
+			}
+
+			aura_env.spellcasts = aura_env.spellcasts + 1
+
+			return true
+		end
+
 		if subEvent == "SPELL_PERIODIC_DAMAGE" then
 			-- disintegrate
 			if not aura_env.isEvoker or spellId ~= 356995 then
@@ -294,7 +329,7 @@ function f(states, event, ...)
 				return hasChanges
 			end
 
-			local _, _, _, channelStartTime = UnitChannelInfo("player")
+			local channelStartTime = select(4, UnitChannelInfo("player"))
 
 			-- channels are handled separately due to sending SPELL_CAST_SUCCESS at channel start
 			if channelStartTime ~= nil then
@@ -316,7 +351,11 @@ function f(states, event, ...)
 			local specialNumber = 0
 
 			if aura_env.isRogue and aura_env.rogueSpenders[spellId] then
-				specialNumber = aura_env.lastComboPoints
+				if aura_env.isCataclysm then
+					specialNumber = aura_env.currentComboPoints
+				else
+					specialNumber = aura_env.lastComboPoints
+				end
 			end
 
 			states[aura_env.spellcasts] = {

@@ -59,6 +59,8 @@ aura_env.ignorelist = {
 	[408385] = true, -- Crusading Strikes
 	[429826] = true, -- Hammer of Light
 	[431398] = true, -- Empyrean Hammer
+	[434144] = true, -- Infliction of Sorrow fake cast
+	[441426] = true, -- Exterminate cleave
 	[456640] = true, -- Consuming Fire fake cast
 }
 
@@ -69,6 +71,10 @@ end
 aura_env.spellcasts = 0
 
 aura_env.isRogue = false
+-- in cata, Envenom does not send cast events. instead, we use the aura
+-- applying/being refreshed as indicator of the cast.
+-- additionally, combo points updates are sent in a different order
+aura_env.isCataclysm = WOW_PROJECT_CATACLYSM_CLASSIC and WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC or false
 aura_env.isEvoker = false
 
 aura_env.lastComboPoints = 0
@@ -124,6 +130,7 @@ do
 			-- common
 			[1943] = true, -- rupture
 			[315496] = true, -- slice and dice
+			[5171] = true, -- slice and dice classic
 			[408] = true, -- kidney shot
 			-- assa
 			[32645] = true, -- envenom

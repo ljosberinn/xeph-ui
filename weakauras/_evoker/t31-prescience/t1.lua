@@ -41,13 +41,16 @@ function f(states, event, ...)
 
 		local duration = 0
 
-		for i = 1, 255 do
-			local _, _, _, _, dur, _, source, _, _, spellId = UnitBuff(unit, i)
-			if spellId == 410089 and source == "player" then
+		AuraUtil.ForEachAura(unit, "HELPFUL", nil, function(...)
+			local _, _, _, _, dur, _, source, _, _, auraSpellId = ...
+
+			if auraSpellId == 410089 and source == "player" then
 				duration = dur
-				break
+				return true
 			end
-		end
+
+			return false
+		end)
 
 		if duration == 0 then
 			aura_env.queue(unit, 1)
@@ -68,13 +71,16 @@ function f(states, event, ...)
 
 		local duration = 0
 
-		for i = 1, 255 do
-			local _, _, _, _, dur, _, source, _, _, spellId = UnitBuff(unit, i)
-			if spellId == 410089 and source == "player" then
+		AuraUtil.ForEachAura(unit, "HELPFUL", nil, function(...)
+			local _, _, _, _, dur, _, source, _, _, auraSpellId = ...
+
+			if auraSpellId == 410089 and source == "player" then
 				duration = dur
-				break
+				return true
 			end
-		end
+
+			return false
+		end)
 
 		if duration == 0 then
 			aura_env.queue(unit, count + 1)

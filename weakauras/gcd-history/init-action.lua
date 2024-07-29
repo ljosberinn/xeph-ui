@@ -367,11 +367,7 @@ local function OnCombatLogEventUnfiltered(states, ...)
 	end
 
 	if subEvent == "SPELL_AURA_APPLIED" or subEvent == "SPELL_AURA_REFRESH" then
-		if not isCataclysm then
-			return false
-		end
-
-		if spellId ~= 32645 then
+		if not isCataclysm or spellId ~= 32645 then
 			return false
 		end
 
@@ -411,6 +407,13 @@ local function OnCombatLogEventUnfiltered(states, ...)
 			return false
 		end
 
+		local now = GetTime()
+
+		if previousCast.lastTick ~= nil and now - previousCast.lastTick < 0.25 then
+			return false
+		end
+
+		previousCast.lastTick = now
 		previousCast.specialNumber = previousCast.specialNumber + 1
 		previousCast.changed = true
 

@@ -10,7 +10,7 @@
 --- @param states table<number, EmeraldTranceState>
 --- @param event "OPTIONS" | "STATUS" | "COMBAT_LOG_EVENT_UNFILTERED" | "XEPHUI_EMERALD_TRANCE" | "TRIGGER"
 --- @return boolean
-function (states, event, ...)
+function f(states, event, ...)
 	if event == "TRIGGER" then
 		local updatedTriggerStates = select(2, ...)
 

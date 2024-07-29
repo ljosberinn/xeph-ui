@@ -110,7 +110,9 @@
     "ITEM_POOR_COLOR",
     "WHITE_FONT_COLOR",
     "ITEM_ARTIFACT_COLOR",
-    "YOU"
+    "LE_UNIT_STAT_INTELLECT",
+    "LE_PARTY_CATEGORY_INSTANCE",
+    "EncounterJournal"
   ],
   "[lua]": {
     "editor.defaultFormatter": "JohnnyMorganz.stylua",

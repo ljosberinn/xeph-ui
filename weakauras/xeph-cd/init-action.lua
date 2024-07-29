@@ -3,6 +3,16 @@
   - listen on cast
     - special case empowers
   - dont forget to cleanup if unit dies
+
+  - categorize spells
+    - interrupts
+	- aoe stops
+	- defensives
+	- offensives
+  - add potion support
+    - combat
+	- healthstone
+	- defensive/health potion	
 ]]
 --
 
@@ -11,23 +21,106 @@ aura_env.CUSTOM_EVENT_AURA_EXPIRED = "XephCD_AURA_EXPIRED"
 aura_env.scheduledCooldownEvents = {}
 aura_env.scheduledAuraEvents = {}
 
----@type table<string, number[]>
-local abilities = {
-	[13] = {
-		355913, -- Emerald Blossom
-		358267, -- Hover
-		364342, -- Blessing of the Bronze
-		357208, -- Fire Breath without Font of Magic
-		382266, -- Fire Breath with Font of Magic
-		368970, -- Tail Swipe
-		357214, -- Wing Buffet
-	},
+---@type table<string, number>
+local EnumClass = {
+	Warrior = 1,
+	Hunter = 2,
+	Mage = 3,
+	Rogue = 4,
+	Priest = 5,
+	Warlock = 6,
+	Paladin = 7,
+	Druid = 8,
+	Shaman = 9,
+	Monk = 10,
+	DemonHunter = 11,
+	DeathKnight = 12,
+	Evoker = 13,
+}
+
+---@type table<string, number>
+local EnumSpec = {
+	MageArcane = 62,
+	MageFire = 63,
+	MageFrost = 64,
+	PaladinHoly = 65,
+	PaladinProtection = 66,
+	PaladinRetribution = 70,
+	WarriorArms = 71,
+	WarriorFury = 72,
+	WarriorProtection = 73,
+	DruidBalance = 102,
+	DruidFeral = 103,
+	DruidGuardian = 104,
+	DruidRestoration = 105,
+	DeathknightBlood = 250,
+	DeathknightFrost = 251,
+	DeathknightUnholy = 252,
+	HunterBeastmastery = 253,
+	HunterMarksmanship = 254,
+	HunterSurvival = 255,
+	PriestDiscipline = 256,
+	PriestHoly = 257,
+	PriestShadow = 258,
+	RogueAssassination = 259,
+	RogueOutlaw = 260,
+	RogueSubtlety = 261,
+	ShamanElemental = 262,
+	ShamanEnhancement = 263,
+	ShamanRestoration = 264,
+	WarlockAffliction = 265,
+	WarlockDemonology = 266,
+	WarlockDestruction = 267,
+	MonkBrewmaster = 268,
+	MonkWindwalker = 269,
+	MonkMistweaver = 270,
+	DemonhunterHavoc = 577,
+	DemonhunterVengeance = 581,
+	EvokerDevastation = 1467,
+	EvokerPreservation = 1468,
+	EvokerAugmentation = 1473,
 }
 
 local specIdToClassId = {
-	[1467] = 13,
-	[1468] = 13,
-	[1473] = 13, -- augmentation
+	[EnumSpec.MageArcane] = EnumClass.Mage,
+	[EnumSpec.MageFire] = EnumClass.Mage,
+	[EnumSpec.MageFrost] = EnumClass.Mage,
+	[EnumSpec.PaladinHoly] = EnumClass.Paladin,
+	[EnumSpec.PaladinProtection] = EnumClass.Paladin,
+	[EnumSpec.PaladinRetribution] = EnumClass.Paladin,
+	[EnumSpec.WarriorArms] = EnumClass.Warrior,
+	[EnumSpec.WarriorFury] = EnumClass.Warrior,
+	[EnumSpec.WarriorProtection] = EnumClass.Warrior,
+	[EnumSpec.DruidBalance] = EnumClass.Druid,
+	[EnumSpec.DruidFeral] = EnumClass.Druid,
+	[EnumSpec.DruidGuardian] = EnumClass.Druid,
+	[EnumSpec.DruidRestoration] = EnumClass.Druid,
+	[EnumSpec.DeathknightBlood] = EnumClass.DeathKnight,
+	[EnumSpec.DeathknightFrost] = EnumClass.DeathKnight,
+	[EnumSpec.DeathknightUnholy] = EnumClass.DeathKnight,
+	[EnumSpec.HunterBeastmastery] = EnumClass.Hunter,
+	[EnumSpec.HunterMarksmanship] = EnumClass.Hunter,
+	[EnumSpec.HunterSurvival] = EnumClass.Hunter,
+	[EnumSpec.PriestDiscipline] = EnumClass.Priest,
+	[EnumSpec.PriestHoly] = EnumClass.Priest,
+	[EnumSpec.PriestShadow] = EnumClass.Priest,
+	[EnumSpec.RogueAssassination] = EnumClass.Rogue,
+	[EnumSpec.RogueOutlaw] = EnumClass.Rogue,
+	[EnumSpec.RogueSubtlety] = EnumClass.Rogue,
+	[EnumSpec.ShamanElemental] = EnumClass.Shaman,
+	[EnumSpec.ShamanEnhancement] = EnumClass.Shaman,
+	[EnumSpec.ShamanRestoration] = EnumClass.Shaman,
+	[EnumSpec.WarlockAffliction] = EnumClass.Warlock,
+	[EnumSpec.WarlockDemonology] = EnumClass.Warlock,
+	[EnumSpec.WarlockDestruction] = EnumClass.Warlock,
+	[EnumSpec.MonkBrewmaster] = EnumClass.Monk,
+	[EnumSpec.MonkWindwalker] = EnumClass.Monk,
+	[EnumSpec.MonkMistweaver] = EnumClass.Monk,
+	[EnumSpec.DemonhunterHavoc] = EnumClass.DemonHunter,
+	[EnumSpec.DemonhunterVengeance] = EnumClass.DemonHunter,
+	[EnumSpec.EvokerDevastation] = EnumClass.Evoker,
+	[EnumSpec.EvokerPreservation] = EnumClass.Evoker,
+	[EnumSpec.EvokerAugmentation] = EnumClass.Evoker,
 }
 
 function aura_env.log(...)
@@ -73,12 +166,6 @@ function aura_env.enqueueInspect(unit)
 
 		NotifyInspect(unit)
 	end
-end
-
----@param id number
----@return number
-local function getSpellIcon(id)
-	return C_Spell.GetSpellTexture and C_Spell.GetSpellTexture(id) or select(3, GetSpellInfo(id))
 end
 
 ---@param configId number
@@ -131,31 +218,36 @@ function aura_env.getGear(unit)
 		return gear, true
 	end
 
-	for i = 0, 30 do
+	local sawAtLeastOneItem = false
+
+	for i = INVSLOT_HEAD, INVSLOT_TABARD do
 		local itemLink = GetInventoryItemLink(unit, i)
 
 		if itemLink then
-			local itemId, _, _, _, icon = C_Item.GetItemInfoInstant(itemLink)
-			local usesItemIcon = i == INVSLOT_TRINKET1 or i == INVSLOT_TRINKET2
+			sawAtLeastOneItem = true
+			local itemId, _, _, _, itemIcon = C_Item.GetItemInfoInstant(itemLink)
 
 			if itemId then
 				local spellName, spellId = C_Item.GetItemSpell(itemLink)
 
 				if spellName and spellId then
 					local cooldown = GetSpellBaseCooldown(spellId) / 1000
+					-- spells from items may have a different icon people aren't familiar with
+					-- this forces us to use the item icon instead
+					local usesItemIcon = i == INVSLOT_TRINKET1 or i == INVSLOT_TRINKET2
 
 					gear[itemId] = {
 						name = spellName,
 						id = spellId,
 						cooldown = cooldown,
-						icon = usesItemIcon and icon or getSpellIcon(spellId),
+						icon = usesItemIcon and itemIcon or C_Spell.GetSpellTexture(spellId),
 					}
 				end
 			end
 		end
 	end
 
-	return gear, true
+	return gear, sawAtLeastOneItem
 end
 
 --- @param specName string
@@ -186,15 +278,16 @@ local function getCooldownForSpell(unitInfo, spellId)
 
 	baseCooldown = baseCooldown / 1000
 
-	-- evoker
-	if unitInfo.specId == 1468 or unitInfo.specId == 1473 or unitInfo.specId == 1467 then
+	if
+		unitInfo.specId == EnumSpec.EvokerAugmentation
+		or unitInfo.specId == EnumSpec.EvokerDevastation
+		or unitInfo.specId == EnumSpec.EvokerPreservation
+	then
 		if spellId == 363916 then -- base cooldown for obsidian scales reports as 1
 			baseCooldown = 90
 		elseif spellId == 358267 then -- base cooldown for hover reports as 1
 			baseCooldown = 30
-		end
-
-		if spellId == 374348 then -- renewing blaze + fire within
+		elseif spellId == 374348 then -- renewing blaze + fire within
 			if unitInfo.talents[375577] == 1 then
 				baseCooldown = baseCooldown - 30
 			end
@@ -213,7 +306,7 @@ local function getCooldownForSpell(unitInfo, spellId)
 		end
 
 		-- deva & aug
-		if unitInfo.specId ~= 1468 then
+		if unitInfo.specId ~= EnumSpec.EvokerPreservation then
 			if spellId == 351338 then -- quell + imposing presence
 				if unitInfo.talents[371016] == 1 then
 					baseCooldown = baseCooldown - 20
@@ -222,7 +315,7 @@ local function getCooldownForSpell(unitInfo, spellId)
 		end
 
 		-- augmentation
-		if unitInfo.specId == 1473 then
+		if unitInfo.specId == EnumSpec.EvokerAugmentation then
 			if spellId == 355913 and unitInfo.talents[414969] == 1 then -- emerald blossom has no cd with dream of spring
 				return 0
 			end
@@ -240,6 +333,76 @@ local function getCooldownForSpell(unitInfo, spellId)
 	end
 
 	return baseCooldown
+end
+
+---@param unitInfo UnitInfo
+---@return number[]
+local function getBaselineAbilities(unitInfo)
+	local classId = specIdToClassId[unitInfo.specId]
+
+	if classId == EnumClass.Warrior then
+		return {}
+	end
+
+	if classId == EnumClass.Hunter then
+		return {}
+	end
+
+	if classId == EnumClass.Mage then
+		return {}
+	end
+
+	if classId == EnumClass.Rogue then
+		return {}
+	end
+
+	if classId == EnumClass.Priest then
+		return {}
+	end
+
+	if classId == EnumClass.Warlock then
+		return {}
+	end
+
+	if classId == EnumClass.Paladin then
+		return {}
+	end
+
+	if classId == EnumClass.Druid then
+		return {}
+	end
+
+	if classId == EnumClass.Shaman then
+		return {}
+	end
+
+	if classId == EnumClass.Monk then
+		return {}
+	end
+
+	if classId == EnumClass.DemonHunter then
+		return {}
+	end
+
+	if classId == EnumClass.DeathKnight then
+		return {}
+	end
+
+	if classId == EnumClass.Evoker then
+		local abilities = {
+			355913, -- Emerald Blossom
+			358267, -- Hover
+			364342, -- Blessing of the Bronze
+			368970, -- Tail Swipe
+			357214, -- Wing Buffet
+		}
+
+		table.insert(abilities, unitInfo.talents[408083] == 1 and 382266 or 357208) -- fire breath with / without font of magic
+
+		return abilities
+	end
+
+	return {}
 end
 
 ---@class UnitInfo
@@ -262,16 +425,14 @@ local function getSpells(unitInfo)
 		end
 	end
 
-	local classId = specIdToClassId[unitInfo.specId]
+	local baselineAbilities = getBaselineAbilities(unitInfo)
 
-	if classId then
-		for i = 1, #abilities[classId] do
-			local abilityId = abilities[classId][i]
-			local cooldown = getCooldownForSpell(unitInfo, abilityId)
+	for i = 1, #baselineAbilities do
+		local abilityId = baselineAbilities[i]
+		local cooldown = getCooldownForSpell(unitInfo, abilityId)
 
-			if cooldown > 0 and cooldown >= aura_env.config.minCd and cooldown <= aura_env.config.maxCd then
-				tbl[abilityId] = cooldown
-			end
+		if cooldown > 0 and cooldown >= aura_env.config.minCd and cooldown <= aura_env.config.maxCd then
+			tbl[abilityId] = cooldown
 		end
 	end
 
@@ -283,7 +444,11 @@ end
 local function getStacksMapForUnitInfo(unitInfo)
 	local tbl = {}
 
-	if unitInfo.specId == 1468 or unitInfo.specId == 1473 or unitInfo.specId == 1467 then -- evoker
+	if
+		unitInfo.specId == EnumSpec.EvokerAugmentation
+		or unitInfo.specId == EnumSpec.EvokerDevastation
+		or unitInfo.specId == EnumSpec.EvokerPreservation
+	then
 		tbl[358267] = 2 -- hover
 
 		if unitInfo.talents[375406] then -- obsidian bulwark
@@ -294,8 +459,19 @@ local function getStacksMapForUnitInfo(unitInfo)
 	return tbl
 end
 
-local function getSpellName(spellId)
-	return C_Spell.GetSpellName and C_Spell.GetSpellName(spellId) or select(1, GetSpellInfo(spellId))
+---@param state XephCDState
+---@param newData XephCDState
+local function maybeUpdateState(state, newData)
+	local changed = false
+
+	for k, v in pairs(newData) do
+		if state[k] ~= v then
+			state[k] = v
+			changed = true
+		end
+	end
+
+	state.changed = changed
 end
 
 ---@param states table<string, XephCDState>
@@ -314,16 +490,15 @@ function aura_env.setupState(states, unitInfo)
 	for spellId, cooldown in pairs(spells) do
 		local key = unitInfo.guid .. "|" .. spellId
 
-		local aura = C_UnitAuras.GetAuraDataBySpellName(unitInfo.unit, getSpellName(spellId))
+		local aura = C_UnitAuras.GetAuraDataBySpellName(unitInfo.unit, C_Spell.GetSpellName(spellId))
 
-		states[key] = {
+		local state = {
 			show = true,
-			changed = true,
 			progressType = "static",
 			spellId = spellId,
 			unit = unitInfo.unit,
 			cooldown = cooldown,
-			icon = getSpellIcon(spellId),
+			icon = C_Spell.GetSpellTexture(spellId),
 			duration = nil,
 			expirationTime = nil,
 			value = 1,
@@ -331,18 +506,28 @@ function aura_env.setupState(states, unitInfo)
 			stacks = stacksMap[spellId],
 			maxStacks = stacksMap[spellId],
 			kind = "spell",
-			spellName = getSpellName(spellId),
+			spellName = C_Spell.GetSpellName(spellId),
 			auraActive = aura ~= nil,
 			auraInstanceId = aura and aura.auraInstanceID or nil,
 		}
+
+		if states[key] then
+			maybeUpdateState(states[key], state)
+		else
+			state.changed = true
+			states[key] = state
+		end
+
+		if state.spellId == 358267 then
+			DevTool:AddData(state, "hover")
+		end
 	end
 
 	for _, spellInfo in pairs(unitInfo.gear) do
 		local key = unitInfo.guid .. "|" .. spellInfo.id
 
-		states[key] = {
+		local state = {
 			show = true,
-			changed = true,
 			progressType = "static",
 			spellId = spellInfo.id,
 			unit = unitInfo.unit,
@@ -357,5 +542,12 @@ function aura_env.setupState(states, unitInfo)
 			auraActive = false,
 			auraInstanceId = nil,
 		}
+
+		if states[key] then
+			maybeUpdateState(states[key], state)
+		else
+			state.changed = true
+			states[key] = state
+		end
 	end
 end

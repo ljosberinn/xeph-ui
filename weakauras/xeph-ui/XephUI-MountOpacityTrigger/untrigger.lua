@@ -1,3 +1,3 @@
-function ()    
-    return InCombatLockdown() or not IsMounted()
+function f()
+	return InCombatLockdown() or not IsMounted()
 end

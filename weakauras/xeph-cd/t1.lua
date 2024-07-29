@@ -16,12 +16,14 @@
 ---@field stacks number|nil
 ---@field maxStacks number|nil
 ---@field auraInstanceId number|nil
+---@field onAuraExpiryState? XephCDState
 
 ---@param states table<string, XephCDState>
 ---@param event "OPTIONS" | "STATUS" | "PLAYER_SPECIALIZATION_CHANGED" | "INSPECT_READY" | "TRAIT_CONFIG_UPDATED" | "XephCD_CD_READY" | "UNIT_AURA" | "XephCD_AURA_EXPIRED" | "PLAYER_EQUIPMENT_CHANGED"
 ---@return boolean
 function f(states, event, ...)
 	if event == "STATUS" or event == "OPTIONS" then
+		DevTool:AddData({}, event)
 		if event ~= "OPTIONS" then -- dont enqueue inspecting here, apparently cannot clean those timers up
 			for unit in WA_IterateGroupMembers() do
 				aura_env.enqueueInspect(unit)
@@ -67,9 +69,13 @@ function f(states, event, ...)
 		---@type string, UnitAuraUpdateInfo|nil
 		local unit, updateInfo = ...
 
-		if not updateInfo then
+		if
+			not updateInfo
+			or (unit ~= "player" and string.find(unit, "party") == nil and string.find(unit, "raid") == nil)
+		then
 			return false
 		end
+		DevTool:AddData({ unit, updateInfo }, event)
 
 		local hasChanges = false
 
@@ -110,7 +116,6 @@ function f(states, event, ...)
 				local addedAura = addedAuras[state.spellId]
 
 				if addedAura and addedAura.expirationTime > 0 and addedAura.duration < 600 then
-					print(unit, "saw match for aura GAIN of " .. GetSpellLink(state.spellId))
 					state.changed = true
 					state.auraActive = true
 					state.auraInstanceId = addedAura.auraInstanceID
@@ -122,13 +127,21 @@ function f(states, event, ...)
 
 					print(event, "queued " .. state.spellId .. " for " .. addedAura.duration .. " seconds")
 
+					-- state.onAuraExpiryState = {
+					-- 	progressType = "timed",
+					-- 	expirationTime = expirationTime,
+					-- 	duration = remainingTime,
+					-- }
+
+					DevTool:AddData(state, "added aura")
+
 					aura_env.scheduledAuraEvents[key] = C_Timer.NewTimer(addedAura.duration, function()
-						WeakAuras.ScanEvents(customEventName, id, key, remainingTime, expirationTime)
+						WeakAuras.ScanEvents(customEventName, id, key, remainingTime, expirationTime, "addedAura")
 					end, 1)
 
 					state.progressType = "timed"
 					state.duration = addedAura.duration
-					state.expirationTime = addedAura.expirationTime --GetTime() + addedAura.duration
+					state.expirationTime = addedAura.expirationTime
 
 					hasChanges = true
 				end
@@ -136,13 +149,13 @@ function f(states, event, ...)
 				local updatedAura = updatedAuras[state.spellId]
 
 				if updatedAura then
-					print(unit, "saw match for aura UPDATE of " .. GetSpellLink(state.spellId))
+					local recuperatedCooldown = GetTime() - (state.expirationTime - state.duration)
 
 					state.changed = true
 					state.expirationTime = updatedAura.expirationTime
 					state.duration = updatedAura.duration
 
-					local remainingTime = state.cooldown - updatedAura.duration
+					local remainingTime = state.cooldown - recuperatedCooldown - updatedAura.duration
 					local expirationTime = state.expirationTime + remainingTime
 					local customEventName = aura_env.CUSTOM_EVENT_AURA_EXPIRED
 					local id = aura_env.id
@@ -150,10 +163,19 @@ function f(states, event, ...)
 					if aura_env.scheduledAuraEvents[key] and not aura_env.scheduledAuraEvents[key]:IsCancelled() then
 						aura_env.scheduledAuraEvents[key]:Cancel()
 						aura_env.scheduledAuraEvents[key] = nil
+						print("UPDATED canceled previous aura timer")
 					end
 
+					-- state.onAuraExpiryState = {
+					-- 	progressType = "timed",
+					-- 	expirationTime = expirationTime,
+					-- 	duration = remainingTime,
+					-- }
+
+					DevTool:AddData(state, "updated aura")
+
 					aura_env.scheduledAuraEvents[key] = C_Timer.NewTimer(updatedAura.duration, function()
-						WeakAuras.ScanEvents(customEventName, id, key, remainingTime, expirationTime)
+						WeakAuras.ScanEvents(customEventName, id, key, remainingTime, expirationTime, "updatedAura")
 					end, 1)
 
 					hasChanges = true
@@ -163,8 +185,8 @@ function f(states, event, ...)
 
 		if updateInfo.removedAuraInstanceIDs then
 			for i = 1, #updateInfo.removedAuraInstanceIDs do
-				local id = updateInfo.removedAuraInstanceIDs[i]
-				local key = activeAuraInstanceIds[id]
+				local auraInstanceId = updateInfo.removedAuraInstanceIDs[i]
+				local key = activeAuraInstanceIds[auraInstanceId]
 
 				if key then
 					local state = states[key]
@@ -174,7 +196,32 @@ function f(states, event, ...)
 					-- todo: account for manual removal of aura
 					hasChanges = true
 
-					print(unit, "removed " .. GetSpellLink(states[key].spellId))
+					-- if aura_env.scheduledAuraEvents[key] and not aura_env.scheduledAuraEvents[key]:IsCancelled() then
+					-- aura_env.scheduledAuraEvents[key]:Cancel()
+					-- aura_env.scheduledAuraEvents[key] = nil
+					-- print("REMOVAL canceled previous aura timer")
+
+					-- todo: doing this is technically wrong. the scheduled events sets the state for the next remaining cooldown in the custom event branch
+					-- end
+
+					DevTool:AddData(state, "removed aura")
+
+					if state.onAuraExpiryState then
+						state.progressType = state.onAuraExpiryState.progressType
+						state.expirationTime = state.onAuraExpiryState.expirationTime
+						state.duration = state.onAuraExpiryState.duration
+						state.onAuraExpiryState = nil
+
+						local id = aura_env.id
+						local customEventName = aura_env.CUSTOM_EVENT_CD_READY
+						local remainingTime = state.expirationTime - GetTime()
+
+						aura_env.scheduledCooldownEvents[key] = C_Timer.NewTimer(remainingTime, function()
+							WeakAuras.ScanEvents(customEventName, id, key, nil, "removedAura")
+						end, 1)
+					end
+
+					print(unit, "removed " .. C_Spell.GetSpellLink(states[key].spellId))
 				end
 			end
 		end
@@ -183,9 +230,8 @@ function f(states, event, ...)
 	end
 
 	if event == "TRAIT_CONFIG_UPDATED" or event == "PLAYER_EQUIPMENT_CHANGED" then
-		aura_env.log(event, "player")
-
 		local specId = GetSpecializationInfo(GetSpecialization())
+		DevTool:AddData({ specId }, event)
 
 		if specId == nil or specId == 0 then
 			return false
@@ -224,8 +270,7 @@ function f(states, event, ...)
 
 	if event == "PLAYER_SPECIALIZATION_CHANGED" then
 		local unit = ...
-
-		aura_env.log(event, unit)
+		DevTool:AddData({ unit }, event)
 
 		aura_env.enqueueInspect(unit)
 
@@ -233,17 +278,16 @@ function f(states, event, ...)
 	end
 
 	if event == aura_env.CUSTOM_EVENT_CD_READY then
-		local id, key, stacks = ...
+		local id, key, stacks, source = ...
+		DevTool:AddData({ id, key, stacks, source }, event)
 
 		if stacks ~= nil then
-			print(event, "before", key, stacks)
-			key = string.gsub(key, "-" .. stacks, "")
-			print(event, "after", key, stacks)
+			key = string.gsub(key, "|" .. stacks, "")
 		end
 
 		local state = states[key]
 
-		aura_env.log(event, GetTime(), id, key)
+		print(event, key, source)
 
 		if id ~= aura_env.id or state == nil or state.progressType == "static" then
 			return false
@@ -252,23 +296,33 @@ function f(states, event, ...)
 		state.changed = true
 
 		if state.maxStacks ~= nil then
-			state.stacks = state.stacks + 1
-
-			print("gained stack", state.stacks)
+			if state.stacks < state.maxStacks then
+				state.stacks = state.stacks + 1
+			end
 
 			if state.stacks < state.maxStacks then
-				if not state.auraActive then
+				if state.auraActive then
+					local expirationTime = state.cooldown + GetTime()
+					local duration = state.cooldown
+
+					state.onAuraExpiryState = {
+						progressType = "timed",
+						expirationTime = expirationTime,
+						duration = duration,
+					}
+
+					DevTool:AddData(state, "aura active, gained stack")
+				else
 					state.progressType = "timed"
 					state.duration = state.cooldown
 					state.expirationTime = GetTime() + state.duration
+
+					aura_env.scheduledCooldownEvents[key] = C_Timer.NewTimer(state.duration, function()
+						WeakAuras.ScanEvents(event, id, key, nil, event)
+					end, 1)
+
+					DevTool:AddData(state, "not max stacks yet, recharging")
 				end
-
-				local customEventName = aura_env.CUSTOM_EVENT_CD_READY
-				print("scheduled cooldown for " .. GetSpellLink(state.spellId) .. " in " .. state.cooldown)
-
-				aura_env.scheduledCooldownEvents[key] = C_Timer.NewTimer(state.cooldown, function()
-					WeakAuras.ScanEvents(customEventName, id, key)
-				end, 1)
 
 				return true
 			end
@@ -280,13 +334,16 @@ function f(states, event, ...)
 		state.value = 1
 		state.total = 1
 
+		DevTool:AddData(state, "resetting entirely, reached max stacks or never had any")
+
 		return true
 	end
 
 	if event == aura_env.CUSTOM_EVENT_AURA_EXPIRED then
-		local id, key, duration, expirationTime = ...
+		local id, key, duration, expirationTime, source = ...
+		DevTool:AddData({}, event)
 
-		aura_env.log(event, id, key)
+		print(event, id, key, source)
 		local state = states[key]
 
 		if id ~= aura_env.id or state == nil or state.progressType == "static" then
@@ -306,6 +363,7 @@ function f(states, event, ...)
 	end
 
 	if event == "UNIT_SPELLCAST_SUCCEEDED" then
+		DevTool:AddData({}, event)
 		local unit, _, spellId = ...
 
 		local guid = UnitGUID(unit)
@@ -333,21 +391,30 @@ function f(states, event, ...)
 		if state.maxStacks ~= nil then
 			state.changed = true
 			state.stacks = state.stacks - 1
-			key = key .. "-" .. state.stacks
+
+			-- don't queue repeated stack consumption as cd recuperates chained, not in parallel
+			if state.stacks < state.maxStacks - 1 then
+				return true
+			end
+
+			key = key .. "|" .. state.stacks
 		end
 
 		local stacks = state.stacks
 		local customEventName = aura_env.CUSTOM_EVENT_CD_READY
 		local id = aura_env.id
 
+		print("queued" .. customEventName, key, stacks, event)
+
 		aura_env.scheduledCooldownEvents[key] = C_Timer.NewTimer(state.cooldown, function()
-			WeakAuras.ScanEvents(customEventName, id, key, stacks)
+			WeakAuras.ScanEvents(customEventName, id, key, stacks, event)
 		end, 1)
 
 		return true
 	end
 
 	if event == "INSPECT_READY" then
+		DevTool:AddData({}, event)
 		local guid = ...
 
 		if guid == WeakAuras.myGUID then

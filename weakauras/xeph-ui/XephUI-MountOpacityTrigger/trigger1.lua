@@ -1,5 +1,5 @@
 -- UNIT_AURA:player, PLAYER_REGEN_DISABLED, PLAYER_REGEN_ENABLED, PLAYER_ENTERING_WORLD, UNIT_ENTERED_VEHICLE:player, UNIT_EXITED_VEHICLE:player
-function (event, unit)
+function f(event, unit)
 	if InCombatLockdown() or event == "PLAYER_REGEN_DISABLED" then
 		return false
 	end

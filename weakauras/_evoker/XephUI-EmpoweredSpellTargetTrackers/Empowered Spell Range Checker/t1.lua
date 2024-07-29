@@ -1,4 +1,4 @@
-function (allstates)
+function f(allstates)
 	if not aura_env.last or GetTime() - aura_env.last > aura_env.config.throttle then
 		aura_env.last = GetTime()
 

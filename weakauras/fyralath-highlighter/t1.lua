@@ -12,7 +12,7 @@
 --- @param states table<number, FyralathHighlighter>
 --- @param event "STATUS" | "OPTIONS" | "COMBAT_LOG_EVENT_UNFILTERED" | "XEPHUI_BEACON" | "UNIT_SPELLCAST_SUCCEEDED"
 --- @return boolean
-function (states, event, ...)
+function f(states, event, ...)
 	if not states[""] then
 		states[""] = {
 			stacks = 0,

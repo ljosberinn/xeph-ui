@@ -13,7 +13,7 @@
 
 --- @param states table<string, UnboundAbominationHelperState>
 --- @param event "COMBAT_LOG_EVENT_UNFILTERED" | "OPTIONS" | "STATUS"
-function (states, event, ...)
+function f(states, event, ...)
 	if event ~= "COMBAT_LOG_EVENT_UNFILTERED" then
 		return false
 	end

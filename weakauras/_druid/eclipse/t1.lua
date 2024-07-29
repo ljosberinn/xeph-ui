@@ -10,7 +10,7 @@
 --- @param states table<number, EclipseState>
 --- @param event "OPTIONS" | "STATUS" | "COMBAT_LOG_EVENT_UNFILTERED" | "UNIT_SPELLCAST_SUCCEEDED"
 --- @return boolean
-function (states, event, ...)
+function f(states, event, ...)
 	if event == "UNIT_SPELLCAST_SUCCEEDED" then
 		if not states[""] then
 			return false

@@ -1,6 +1,5 @@
 ---@param event "STATUS"|"OPTIONS"|"UNIT_SPELLCAST_START"|"UNIT_SPELLCAST_CHANNEL_START"|"UNIT_SPELLCAST_FAILED"|"UNIT_SPELLCAST_FAILED_QUIET"|"UNIT_SPELLCAST_CHANNEL_STOP"|"COMBAT_LOG_EVENT_UNFILTERED"
-function (states, event, ...)
-
+function f(states, event, ...)
 	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
 		local subEvent = select(2, event)
 

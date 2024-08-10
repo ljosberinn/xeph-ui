@@ -1,23 +1,11 @@
 function f(modTable)
-	local targetBorderColor = "#ffffff"
-	local focusBorderColor = "#00FFFF"
+	local targetBorderColor = modTable.config.targetColor
+	local focusBorderColor = modTable.config.focusColor
 	-- local nonTargetBorderColor = "white"
 
 	---@class Cache
 	---@field current Frame|nil
 	---@field id number|nil
-
-	---@type Cache
-	modTable.target = {
-		current = nil,
-		id = nil,
-	}
-
-	---@type Cache
-	modTable.focus = {
-		current = nil,
-		id = nil,
-	}
 
 	---@param token string
 	local function GetUnitFrameForToken(token)
@@ -31,117 +19,104 @@ function f(modTable)
 		return nil
 	end
 
-	do
-		local targetGUID = UnitGUID("target")
-		local targetToken = targetGUID and UnitTokenFromGUID(targetGUID) or nil
+	---@type Cache
+	modTable.target = {
+		current = GetUnitFrameForToken("target"),
+	}
 
-		if targetToken then
-			modTable.target.current = GetUnitFrameForToken(targetToken)
-		end
+	---@type Cache
+	modTable.focus = {
+		current = GetUnitFrameForToken("focus"),
+	}
 
-		local focusGUID = UnitGUID("focus")
-		local focusToken = focusGUID and UnitTokenFromGUID(focusGUID) or nil
+	modTable.globalKey = "PlaterJundiesTargetBorderColor"
 
-		if focusToken then
-			modTable.focus.current = GetUnitFrameForToken(focusToken)
-		end
-	end
+	if _G[modTable.globalKey] == nil then
+		local frame = CreateFrame("Frame", modTable.globalKey)
 
-	local function OnPlayerFocusChange(owner)
-		local guid = UnitGUID("focus")
+		frame.unregistered = nil
+		frame:RegisterEvent("PLAYER_TARGET_CHANGED")
+		frame:RegisterEvent("PLAYER_FOCUS_CHANGED")
 
-		-- player has focus
-		if guid then
-			local token = UnitTokenFromGUID(guid)
-			local frame = token and GetUnitFrameForToken(token) or nil
+		local function OnPlayerFocusChange()
+			-- player has focus
+			if UnitExists("focus") then
+				local frame = GetUnitFrameForToken("focus")
 
-			local previousFrame = modTable.focus.current
-			modTable.focus.current = frame
+				local previousFrame = modTable.focus.current
+				modTable.focus.current = frame
 
-			-- cleanup previous frame
-			if previousFrame and previousFrame ~= modTable.target.current then
-				Plater.SetBorderColor(previousFrame)
-			end
+				-- cleanup previous frame
+				if previousFrame and previousFrame ~= modTable.target.current then
+					Plater.SetBorderColor(previousFrame)
+				end
 
-			-- dont override target border color
-			if frame ~= modTable.target.current then
-				Plater.SetBorderColor(frame, focusBorderColor)
-			end
-
-			return
-		end
-
-		if modTable.focus.current and modTable.focus.current ~= modTable.target.current then
-			Plater.SetBorderColor(modTable.focus.current)
-		end
-
-		modTable.focus.current = nil
-	end
-
-	local function OnPlayerTargetChange(owner)
-		local guid = UnitGUID("target")
-
-		-- player has target
-		if guid then
-			local token = UnitTokenFromGUID(guid)
-			local frame = token and GetUnitFrameForToken(token) or nil
-
-			local previousFrame = modTable.target.current
-			modTable.target.current = frame
-
-			-- cleanup previous frame
-			if previousFrame then
-				Plater.SetBorderColor(
-					previousFrame,
-					previousFrame == modTable.focus.current and focusBorderColor or nil
-				)
-			end
-
-			if frame then
-				Plater.SetBorderColor(frame, targetBorderColor)
+				-- dont override target border color
+				if frame ~= modTable.target.current then
+					Plater.SetBorderColor(frame, focusBorderColor)
+				end
 			else
-				-- targeting something outside of nameplate range has plater not initialized yet, but it will be on the next frame
-				C_Timer.After(0, function()
-					OnPlayerTargetChange(owner)
-				end)
+				if modTable.focus.current and modTable.focus.current ~= modTable.target.current then
+					Plater.SetBorderColor(modTable.focus.current)
+				end
+
+				modTable.focus.current = nil
 			end
-
-			return
 		end
 
-		if modTable.target.current then
-			Plater.SetBorderColor(
-				modTable.target.current,
-				modTable.target.current == modTable.focus.current and focusBorderColor or nil
-			)
+		local function OnPlayerTargetChange()
+			-- player has target
+			if UnitExists("target") then
+				local frame = GetUnitFrameForToken("target")
+
+				local previousFrame = modTable.target.current
+				modTable.target.current = frame
+
+				-- cleanup previous frame
+				if previousFrame then
+					Plater.SetBorderColor(
+						previousFrame,
+						previousFrame == modTable.focus.current and focusBorderColor or nil
+					)
+				end
+
+				if frame then
+					Plater.SetBorderColor(frame, targetBorderColor)
+				else
+					-- targeting something outside of nameplate range has plater not initialized yet, but it will be on the next frame
+					C_Timer.After(0, OnPlayerTargetChange)
+				end
+			else
+				if modTable.target.current then
+					Plater.SetBorderColor(
+						modTable.target.current,
+						modTable.target.current == modTable.focus.current and focusBorderColor or nil
+					)
+				end
+
+				modTable.target.current = nil
+			end
 		end
 
-		modTable.target.current = nil
+		frame:SetScript("OnEvent", function(self, event, ...)
+			if event == "PLAYER_TARGET_CHANGED" then
+				OnPlayerTargetChange()
+			elseif event == "PLAYER_FOCUS_CHANGED" then
+				OnPlayerFocusChange()
+			end
+		end)
 	end
 
 	---@param frame Frame
 	function modTable.EnsureCorrectBorder(token, frame)
-		local guid = UnitGUID("focus")
-		local focusToken = guid and UnitTokenFromGUID(guid) or nil
-
-		if token == focusToken then
-			Plater.SetBorderColor(frame, focusBorderColor)
-			modTable.focus.current = frame
-			return
-		end
-
-		guid = UnitGUID("target")
-		local targetToken = guid and UnitTokenFromGUID(guid) or nil
-
-		if token == targetToken then
+		if UnitExists("target") and UnitIsUnit(token, "target") then
 			Plater.SetBorderColor(frame, targetBorderColor)
 			modTable.target.current = frame
-			return
+		elseif UnitExists("focus") and UnitIsUnit(token, "focus") then
+			Plater.SetBorderColor(frame, focusBorderColor)
+			modTable.focus.current = frame
+		else
+			Plater.SetBorderColor(frame)
 		end
-
-		Plater.SetBorderColor(frame)
 	end
-
-	modTable.target.id = EventRegistry:RegisterFrameEventAndCallback("PLAYER_TARGET_CHANGED", OnPlayerTargetChange)
-	modTable.focus.id = EventRegistry:RegisterFrameEventAndCallback("PLAYER_FOCUS_CHANGED", OnPlayerFocusChange)
 end

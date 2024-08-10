@@ -395,6 +395,7 @@ local function getBaselineAbilities(unitInfo)
 			364342, -- Blessing of the Bronze
 			368970, -- Tail Swipe
 			357214, -- Wing Buffet
+			390386, -- Fury of the Aspects
 		}
 
 		table.insert(abilities, unitInfo.talents[408083] == 1 and 382266 or 357208) -- fire breath with / without font of magic
@@ -474,11 +475,43 @@ local function maybeUpdateState(state, newData)
 	state.changed = changed
 end
 
+---@return table<number, ItemInfo>
+local function getConsumables()
+	if not aura_env.config.includeConsumables then
+		return {}
+	end
+
+	return {
+		-- Healthstone
+		[5512] = {
+			name = C_Item.GetItemNameByID(5512),
+			id = 6262,
+			cooldown = 60,
+			icon = C_Spell.GetSpellTexture(6262),
+		},
+		-- Algari Healing Potion
+		[211880] = {
+			name = C_Item.GetItemNameByID(211880),
+			id = 431416,
+			cooldown = 300,
+			icon = C_Item.GetItemIconByID(211880),
+		},
+		-- Combat Potion
+		[191914] = {
+			name = C_Item.GetItemNameByID(191914),
+			id = 371028,
+			cooldown = 300,
+			icon = C_Item.GetItemIconByID(191914),
+		},
+	}
+end
+
 ---@param states table<string, XephCDState>
 ---@param unitInfo UnitInfo
 function aura_env.setupState(states, unitInfo)
 	local spells = getSpells(unitInfo)
 	local stacksMap = getStacksMapForUnitInfo(unitInfo)
+	local consumables = getConsumables()
 
 	for key, state in pairs(states) do
 		if state.unit == unitInfo.unit then
@@ -517,10 +550,6 @@ function aura_env.setupState(states, unitInfo)
 			state.changed = true
 			states[key] = state
 		end
-
-		if state.spellId == 358267 then
-			DevTool:AddData(state, "hover")
-		end
 	end
 
 	for _, spellInfo in pairs(unitInfo.gear) do
@@ -539,6 +568,34 @@ function aura_env.setupState(states, unitInfo)
 			total = 1,
 			kind = "item",
 			spellName = spellInfo.name,
+			auraActive = false,
+			auraInstanceId = nil,
+		}
+
+		if states[key] then
+			maybeUpdateState(states[key], state)
+		else
+			state.changed = true
+			states[key] = state
+		end
+	end
+
+	for _, consumable in pairs(consumables) do
+		local key = unitInfo.guid .. "|" .. consumable.id
+
+		local state = {
+			show = true,
+			progressType = "static",
+			spellId = consumable.id,
+			unit = unitInfo.unit,
+			cooldown = consumable.cooldown,
+			icon = consumable.icon,
+			duration = nil,
+			expirationTime = nil,
+			value = 1,
+			total = 1,
+			kind = "consumable",
+			spellName = consumable.name,
 			auraActive = false,
 			auraInstanceId = nil,
 		}

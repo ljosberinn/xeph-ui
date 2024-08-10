@@ -1,16 +1,12 @@
--- PLAYER_SPECIALIZATION_CHANGED, GROUP_ROSTER_UPDATE, GROUP_LEFT, STATUS, WA_DELAYED_PLAYER_ENTERING_WORLD, UNIT_SPEC_CHANGED
---- @param event "PLAYER_SPECIALIZATION_CHANGED" | "WA_DELAYED_PLAYER_ENTERING_WORLD" | "UNIT_SPEC_CHANGED" | "GROUP_LEFT" | "GROUP_ROSTER_UPDATE"
+-- ACTIVE_PLAYER_SPECIALIZATION_CHANGED, GROUP_ROSTER_UPDATE, GROUP_LEFT, STATUS, WA_DELAYED_PLAYER_ENTERING_WORLD, UNIT_SPEC_CHANGED
+--- @param event "ACTIVE_PLAYER_SPECIALIZATION_CHANGED" | "WA_DELAYED_PLAYER_ENTERING_WORLD" | "UNIT_SPEC_CHANGED" | "GROUP_LEFT" | "GROUP_ROSTER_UPDATE"
 function f(_, event, ...)
 	if not aura_env.active or not event then
 		return false
 	end
 
-	if event == "PLAYER_SPECIALIZATION_CHANGED" then
-		local unit = ...
-
-		if unit == "player" then
-			aura_env.onPlayerSpecChange(event)
-		end
+	if event == "ACTIVE_PLAYER_SPECIALIZATION_CHANGED" then
+		aura_env.onPlayerSpecChange(event)
 
 		return false
 	end
@@ -34,11 +30,7 @@ function f(_, event, ...)
 		if specId and specId ~= aura_env.tokenToSpecIdMap[unit] then
 			aura_env.tokenToSpecIdMap[unit] = specId
 
-			local _, specName, _, icon = GetSpecializationInfoByID(specId)
-			local className = UnitClassBase(unit)
-			local name = UnitName(unit)
-
-			aura_env.log("received spec for " .. aura_env.formattedSpecIconWithName(specName, icon, className, name))
+			aura_env.log("received spec for " .. aura_env.formattedSpecIconWithName(unit, specId))
 		end
 
 		aura_env.setup("UNIT_SPEC_CHANGED")
@@ -46,7 +38,7 @@ function f(_, event, ...)
 		return false
 	end
 
-	if event == "STATUS" or event == "OPTIONS" then
+	if event == "STATUS" then
 		aura_env.onLoginOrReload()
 
 		for unit in WA_IterateGroupMembers() do
@@ -74,14 +66,7 @@ function f(_, event, ...)
 						if specId ~= aura_env.tokenToSpecIdMap[unit] then
 							aura_env.tokenToSpecIdMap[unit] = specId
 
-							local _, specName, _, icon = GetSpecializationInfoByID(specId)
-							local className = UnitClassBase(unit)
-							local name = UnitName(unit)
-
-							aura_env.log(
-								"received spec for "
-									.. aura_env.formattedSpecIconWithName(specName, icon, className, name)
-							)
+							aura_env.log("received spec for " .. aura_env.formattedSpecIconWithName(unit, specId))
 						end
 					else
 						aura_env.log("could not determine spec for unit " .. unit .. " (" .. UnitName(unit) .. ")")

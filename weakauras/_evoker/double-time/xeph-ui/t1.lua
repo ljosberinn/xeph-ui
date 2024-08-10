@@ -1,15 +1,7 @@
---- GROUP_ROSTER_UPDATE, GROUP_LEFT, GROUP_JOINED, CLEU:SPELL_AURA_APPLIED:SPELL_EMPOWER_END, UNIT_SPELLCAST_SUCCEEDED:player
----@param event "GROUP_ROSTER_UPDATE" | "GROUP_LEFT" | "GROUP_JOINED" | "COMBAT_LOG_EVENT_UNFILTERED" | "OPTIONS" | "UNIT_SPELLCAST_SUCCEEDED"
+--- CLEU:SPELL_AURA_APPLIED:SPELL_EMPOWER_END, UNIT_SPELLCAST_SUCCEEDED:player
+---@param event "COMBAT_LOG_EVENT_UNFILTERED" | "OPTIONS" | "UNIT_SPELLCAST_SUCCEEDED"
 function f(event, ...)
-	if event == "GROUP_ROSTER_UPDATE" or event == "GROUP_LEFT" or event == "GROUP_JOINED" or event == "OPTIONS" then
-		aura_env.groupType = aura_env.determineGroupType()
-
-		return false
-	elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
-		if aura_env.groupType == "none" then
-			return false
-		end
-
+	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
 		local _, subEvent, _, sourceGUID, _, _, _, targetGUID, _, _, _, spellId = ...
 
 		if sourceGUID ~= WeakAuras.myGUID then
@@ -33,11 +25,8 @@ function f(event, ...)
 				return false
 			end
 
-			-- account for Close as Clutchmates
-			local multiplier = aura_env.groupType == "raid" and 0.065 or 0.065 * 1.1
-
 			local effectiveInt = select(2, UnitStat("player", LE_UNIT_STAT_INTELLECT))
-			local expectedBuff = math.floor(effectiveInt * multiplier)
+			local expectedBuff = math.floor(effectiveInt * 0.05)
 			local grantedMainStat = auraInfo.points[2]
 			local buffRatio = grantedMainStat / expectedBuff
 

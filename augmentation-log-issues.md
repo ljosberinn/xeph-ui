@@ -5,15 +5,15 @@
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s` discord & twitter).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: July 11**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions).
+**Last updated: July 31**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions).
 
 Note this document was overhauled in June 2024 to allow a better overview. Older bugs and their context can be seen in the changelog linked above.
 
 - [General Bugs](#general-bugs)
-  - [Enemies with shared health reattribute an additional time](#enemies-with-shared-health-reattribute-an-additional-time)
+  - [Shifting Sands Reattribution does not factor in throughput-increasing debuffs](#shifting-sands-reattribution-does-not-factor-in-throughput-increasing-debuffs)
   - [Negative Reattribution](#negative-reattribution)
+  - [Enemies with shared health reattribute an additional time](#enemies-with-shared-health-reattribute-an-additional-time)
   - [Friendly Fire can reattribute](#friendly-fire-can-reattribute)
-  - [Reattribution does not factor in throughput-increasing non-player originating auras](#reattribution-does-not-factor-in-throughput-increasing-non-player-originating-auras)
   - [Empty Support Events](#empty-support-events)
 - [Per Class](#per-class)
   - [Warrior](#warrior)
@@ -41,14 +41,52 @@ Note this document was overhauled in June 2024 to allow a better overview. Older
   - [Druid](#druid)
   - [Hunter](#hunter)
     - [The War Within](#the-war-within-8)
-  - [Mage](#mage-1)
-    - [The War Within](#the-war-within-9)
     - [Special Cases](#special-cases-3)
   - [Other](#other)
 
 # General Bugs
 
+In order of importance.
+
+## Shifting Sands Reattribution does not factor in throughput-increasing debuffs
+
+<details><summary>click to expand</summary>
+
+Quite the mouthful of a description, I know. An example:
+
+In scenarios where you gain a debuff increasing player throughput, the increase is not reflected in the support log lines for `Shifting Sands`, meaning too little damage is subtracted from buffed players.
+
+This applies to all seen cases where debuffs increase throughput, such as:
+
+- Smolderon intermission orbs
+- Tindral, Dream Essence
+- Throne of the Tides, last boss, P2 empowerment
+- Black Rook Hold, last boss, P2 empowerment
+
+</details>
+
+## Negative Reattribution
+
+<details><summary>click to expand</summary>
+
+**WCL could zero these events out but this makes it intransparent whether it's fixed. Additionally, the negative values are commonly disproportionally low so it's not as simple as multiplying them by -1.**
+
+Whenever there's a lot of enemies present in a pull, support events may write negative values. Instead of being _granted_ the damage, this results in the buffing evoker to have damage subtracted from them, meaning they appear to have done less contribution than they actually did.
+
+Notable examples:
+
+- [Tindral, the roots / treants overlap at ~0:45min](https://www.warcraftlogs.com/reports/X7gPAR2Vthn1BNcG#fight=14&type=damage-done&pins=2%24Off%24%23244F4B%24expression%24effectiveDamage%20%3C%200&view=events)
+- any very large pull in dungeons, such as:
+  - Brackenhide Hollow between 1st and 2nd boss whenever lots of lashers are present
+  - [Neltharion's Lair first pull with lots of small Crawlers](https://www.warcraftlogs.com/reports/23ncHaKrhQRzVvMW#fight=47&type=damage-done&pins=2$Off$#244F4B$expression$effectiveDamage%20%3C%200&view=events)
+
+</details>
+
 ## Enemies with shared health reattribute an additional time
+
+<details><summary>click to expand</summary>
+
+**WCL is fixing these on our end.**
 
 Given bosses with shared healthpools, the game writes support event lines for the damage mirrored to the shared health target, but sources these events to the NPC.
 
@@ -64,23 +102,19 @@ Examples:
   - [example link](https://www.warcraftlogs.com/reports/X6hQKLVW9RAtrbfP#fight=9&type=damage-done&pull=15&source=5&pins=2%24Off%24%23244F4B%24expression%24supportedActor.type%20%3D%20%22npc%22&view=events)
 - The Silken Court (Nerub'ar Palace)
   - [example link](<https://www.warcraftlogs.com/reports/Gwyh4TrFd7gbfVxn#fight=5&type=damage-done&ability=-442204&view=events&pins=2%24Off%24%23244F4B%24expression%24effectiveDamage%20in%20(2377766,%201094996,%201529984,%20339806,%201142270,%201079850,%20146105,%20320522)>)
-
-## Negative Reattribution
-
-- [in large pulls, support events may write negative values](https://www.warcraftlogs.com/reports/23ncHaKrhQRzVvMW#fight=47&type=damage-done&pins=2%24Off%24%23244F4B%24expression%24effectiveDamage%20%3C%200&view=events), presumably until leaving combat
-  - note that this seem in fact to be directly related to the pull size. we've only seen it on e.g. the first pull of Neltharion's Lair or pulls with many lashers in Brackenhide Hollow between 1st and 2nd boss
-  - another good example here on [`Tindral Sageswift`](https://www.warcraftlogs.com/reports/Q4cz7XTKg9F1BZGM#fight=41&type=damage-done&pins=2%24Off%24%23244F4B%24expression%24effectiveDamage%20%3C%200&view=events)
+  </details>
 
 ## Friendly Fire can reattribute
 
+<details><summary>click to expand</summary>
+
 - [trinket friendly fire on yourself reattributes](<https://www.warcraftlogs.com/reports/zCdypcK83xaLvfnh#fight=67&type=summary&view=events&start=11609328&end=11613883&pins=2%24Off%24%23244F4B%24expression%24(target.name%20%3D%20%22Gigadb%22%20or%20supportedActor.name%20%3D%20%22Gigadb%22)%20and%20ability.id%20in%20(401394,%20413984)%20and%20target.name%20!%3D%20%22Magmorax%22>), e.g. Echo of Neltharion trinkets or `Vessel of Searing Shadows`
-- environmental damage may reattribute (needs reproduction example)
 
-## Reattribution does not factor in throughput-increasing non-player originating auras
-
-- player buffs and debuffs increasing throughput such as orbs on Smolderon, P2 of last boss Throne of the Tides, P2 of last boss Black Rook Hold are not factored into reattribution events of `Shifting Sands`, meaning too little throughput is subtracted from buffed targets
+</details>
 
 ## Empty Support Events
+
+<details><summary>click to expand</summary>
 
 https://www.warcraftlogs.com/reports/X2yBtArq6RbVkD1Z#fight=5&type=damage-done&start=1285631&end=1285631&view=events
 
@@ -92,12 +126,13 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 
 ![image](https://user-images.githubusercontent.com/29307652/278869767-2e4e5e6b-9f30-4c5c-991a-073a8e12a1a5.png)
 
-# Per Class
+</details>
+
+# Class-Specific Bugs
 
 ## Warrior
 
 - `Finishing Wound` (id 426284) does not reattribute anything
-- `Fatal Mark` (id 383706) does not reattribute `Ebon Might`
 - `Fervid Bite` (id 425534) does not reattribute `Shifting Sands` or `Ebon Might`
 
 ### The War Within
@@ -112,11 +147,17 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 
 ### The War Within
 
+- `Frostfire Empowerment` (id 431186) does not reattribute `Ebon Might`
+  - tooltip is misleading, this is the 11.0 set 2pc
 - `Magi's Spark Echo` (id 458375) is not reattributing anything
 - `Embedded Arcane Splinter` (id 444736) is not reattributing anything
   - note that `Embedded Arcane Splinter` (id 444735) _is_ fully reattributing
+- `Embedded Frost Splinter` (id 443934) is not reattributing anything
+  - note that `Embedded Frost Splinter` (id 443740) _is_ fully reattributing  
 - `Dematerialize` (id 461498) is only reattributing `Shifting Sands` - cannot crit, so only `Ebon Might` missing
-- `Controlled Instincts` (444720) does not reattribute anything
+- `Controlled Instincts` (id 444720) does not reattribute anything (Arcane)
+- `Controlled Instincts` (id 444487) does not reattribute anything (Frost)
+- nothing from `Arcane Phoenix` (id 448659) reattributes
 
 ## Warlock
 
@@ -179,6 +220,9 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 
 - `Truth Prevails` (id 461529) does not reattribute anything
   - this is the party overheal part, note that the self heal (id 461546) does reattribute
+- `Dawnlight` (id 431399) does not reattribute anything
+  - this is the initial damage
+  - note that the dot (id 431380) does fully reattribute
 
 ## Evoker
 
@@ -244,13 +288,6 @@ Note that these below may be reattributing `Shifting Sands` and it's based on a 
 ### The War Within
 
 - `Laceration` (id 459560) does not reattribute anything
-
-## Mage
-
-### The War Within
-
-- `Frostfire Empowerment` (id 431186) does not reattribute `Ebon Might`
-  - tooltip is misleading, this is the 11.0 set 2pc
 
 ### Special Cases
 

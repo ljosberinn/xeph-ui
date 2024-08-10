@@ -18,85 +18,75 @@ local itemSlots = {
 }
 
 local bonusToTierMap = {
-	[10321] = "Explorer",
-	[10322] = "Explorer",
-	[10323] = "Explorer",
-	[10324] = "Explorer",
-	[10325] = "Explorer",
-	[10326] = "Explorer",
-	[10327] = "Explorer",
-	[10328] = "Explorer",
-	[10305] = "Adventurer",
-	[10306] = "Adventurer",
-	[10307] = "Adventurer",
-	[10308] = "Adventurer",
-	[10309] = "Adventurer",
-	[10310] = "Adventurer",
-	[10311] = "Adventurer",
-	[10312] = "Adventurer",
-	[10341] = "Veteran",
-	[10343] = "Veteran",
-	[10344] = "Veteran",
-	[10345] = "Veteran",
-	[10346] = "Veteran",
-	[10347] = "Veteran",
-	[10348] = "Veteran",
-	[10313] = "Champion",
-	[10314] = "Champion",
-	[10315] = "Champion",
-	[10316] = "Champion",
-	[10317] = "Champion",
-	[10318] = "Champion",
-	[10319] = "Champion",
-	[10320] = "Champion",
-	[10329] = "Hero",
-	[10330] = "Hero",
-	[10331] = "Hero",
-	[10332] = "Hero",
-	[10333] = "Hero",
-	[10334] = "Hero",
-	[10335] = "Myth",
-	[10336] = "Myth",
-	[10337] = "Myth",
-	[10338] = "Myth",
-	[10407] = "Awakened",
-	[10408] = "Awakened",
-	[10409] = "Awakened",
-	[10410] = "Awakened",
-	[10411] = "Awakened",
-	[10412] = "Awakened",
-	[10413] = "Awakened",
-	[10414] = "Awakened",
-	[10415] = "Awakened",
-	[10416] = "Awakened",
-	[10417] = "Awakened",
-	[10418] = "Awakened",
-	--Rare Awakened Drops go to 1/14
-	[10490] = "Awakened+",
-	[10491] = "Awakened+",
-	[10492] = "Awakened+",
-	[10493] = "Awakened+",
-	[10494] = "Awakened+",
-	[10495] = "Awakened+",
-	[10496] = "Awakened+",
-	[10497] = "Awakened+",
-	[10498] = "Awakened+",
-	[10499] = "Awakened+",
-	[10500] = "Awakened+",
-	[10501] = "Awakened+",
-	[10502] = "Awakened+",
-	[10503] = "Awakened+",
+	[10256] = "Hero",
+	[10257] = "Myth",
+	[10258] = "Myth",
+	[10259] = "Myth",
+	[10260] = "Myth",
+	[10261] = "Hero",
+	[10262] = "Hero",
+	[10263] = "Hero",
+	[10264] = "Hero",
+	[10265] = "Hero",
+	[10266] = "Champion",
+	[10267] = "Champion",
+	[10268] = "Champion",
+	[10269] = "Champion",
+	[10270] = "Champion",
+	[10271] = "Champion",
+	[10272] = "Champion",
+	[10273] = "Champion",
+	[10274] = "Veteran",
+	[10275] = "Veteran",
+	[10276] = "Veteran",
+	[10277] = "Veteran",
+	[10278] = "Veteran",
+	[10279] = "Veteran",
+	[10280] = "Veteran",
+	[10281] = "Veteran",
+	[10282] = "Explorer",
+	[10283] = "Explorer",
+	[10284] = "Explorer",
+	[10285] = "Explorer",
+	[10286] = "Explorer",
+	[10287] = "Explorer",
+	[10288] = "Explorer",
+	[10289] = "Explorer",
+	[10290] = "Adventurer",
+	[10291] = "Adventurer",
+	[10292] = "Adventurer",
+	[10293] = "Adventurer",
+	[10294] = "Adventurer",
+	[10295] = "Adventurer",
+	[10296] = "Adventurer",
+	[10297] = "Adventurer",
 }
 
 local tiers = {
-	Explorer = { min = 454, max = 476 },
-	Adventurer = { min = 467, max = 489 },
-	Veteran = { min = 480, max = 502 },
-	Champion = { min = 493, max = 515 },
-	Hero = { min = 506, max = 522 },
-	Myth = { min = 519, max = 528 },
-	Awakened = { min = 493, max = 528 },
-	["Awakened+"] = { min = 493, max = 535 },
+	Explorer = {
+		min = 558,
+		max = 580,
+	},
+	Adventurer = {
+		min = 571,
+		max = 593,
+	},
+	Veteran = {
+		min = 584,
+		max = 606,
+	},
+	Champion = {
+		min = 597,
+		max = 619,
+	},
+	Hero = {
+		min = 610,
+		max = 626,
+	},
+	Myth = {
+		min = 623,
+		max = 632,
+	},
 }
 
 ---@param id ?number
@@ -104,6 +94,7 @@ local tiers = {
 local function isCraftedBonusId(id)
 	return id == 9498 -- Dream Crafted
 		or id == 10249 -- Awakened Crafted
+		or id == 10222 -- Omen Crafted
 end
 
 local function getUpgradeTrack(bonusIds)
@@ -133,7 +124,7 @@ function aura_env.doUpgradeCheck()
 		if itemLoc:IsValid() then
 			local currentItemLevel = C_Item.GetCurrentItemLevel(itemLoc)
 
-			if currentItemLevel >= 454 then
+			if currentItemLevel >= 558 then
 				local itemLink = C_Item.GetItemLink(itemLoc)
 
 				if itemLink then

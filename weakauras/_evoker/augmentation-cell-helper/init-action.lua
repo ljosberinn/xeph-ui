@@ -71,15 +71,20 @@ function aura_env.log(...)
 	end
 end
 
---- @param specName string
---- @param icon string
---- @param className string
---- @param name string
---- @return string
-function aura_env.formattedSpecIconWithName(specName, icon, className, name)
+---@param unit string
+---@param specId number
+---@return string
+function aura_env.formattedSpecIconWithName(unit, specId)
+	if not aura_env.config.dev.log then
+		return ""
+	end
+
+	local _, specName, _, icon = GetSpecializationInfoByID(specId)
+	local className = UnitClassBase(unit)
+	local name = UnitName(unit)
 	local classColor = className and RAID_CLASS_COLORS[className] and RAID_CLASS_COLORS[className].colorStr or ""
 
-	return "|T" .. icon .. ":0|t" .. " " .. ("|c%s%s|r"):format(classColor, specName .. " " .. name)
+	return format("|T%s:0|t |c%s%s|r", icon, classColor, specName .. " " .. name)
 end
 
 function aura_env.onGroupLeave()
@@ -106,6 +111,23 @@ end
 
 function aura_env.onLoginOrReload()
 	isAug = GetSpecialization() == 3
+end
+
+---@param nextSpotlights table<number, string>
+---@return string[]
+local function getExistingSpotlights(nextSpotlights)
+	local tokenMap = tInvert(nextSpotlights)
+
+	local existingSpotlights = {}
+	for _, spotlight in pairs(Cell.unitButtons.spotlight) do
+		local currentUnit = spotlight:GetAttribute("unit")
+
+		if currentUnit ~= nil and tokenMap[currentUnit] == nil then
+			tinsert(existingSpotlights, currentUnit)
+		end
+	end
+
+	return existingSpotlights
 end
 
 --- @param event string
@@ -136,9 +158,11 @@ local function setupSpotlight(event, tokens)
 		aura_env.log("clearing spotlights. reason: " .. (eventExplanationMap[event] or event))
 	end
 
+	local additionalExistingSpotlights = getExistingSpotlights(tokens)
+
 	clearSpotlights()
 
-	if nextSpotlightGroup == "" then
+	if nextSpotlightGroup == "" and #additionalExistingSpotlights == 0 then
 		aura_env.log("next spotlights empty, doing nothing.")
 		return
 	end
@@ -149,17 +173,36 @@ local function setupSpotlight(event, tokens)
 			local specId = aura_env.tokenToSpecIdMap[token]
 			local str = token
 			if specId then
-				local name = UnitName(token)
-				local _, specName, _, icon, _, className = GetSpecializationInfoByID(specId)
-				str = aura_env.formattedSpecIconWithName(specName, icon, className, name)
+				str = aura_env.formattedSpecIconWithName(token, specId)
 			end
 
 			aura_env.log("--> " .. str)
 		end
 	end
 
-	for t = 1, #tokens do
+	local priorityTokenCount = #tokens
+	for t = 1, priorityTokenCount do
 		setUnitNameButton:SetUnit(t, tokens[t])
+	end
+
+	if #additionalExistingSpotlights > 0 then
+		local from = priorityTokenCount + 1
+		local to = from + #additionalExistingSpotlights - 1
+
+		aura_env.log("restoring seemingly manually added spotlights")
+
+		for t = from, to do
+			local token = additionalExistingSpotlights[t]
+
+			local specId = aura_env.tokenToSpecIdMap[token]
+			local str = token
+			if specId then
+				str = aura_env.formattedSpecIconWithName(token, specId)
+			end
+
+			aura_env.log("--> " .. str)
+			setUnitNameButton:SetUnit(t, token)
+		end
 	end
 end
 
@@ -279,11 +322,8 @@ function aura_env.setup(event)
 					local isPhasedOrZoned = select(4, UnitPosition(token)) ~= playerInstanceId
 
 					if isPhasedOrZoned and aura_env.config.dev.log then
-						local _, specName, _, icon = GetSpecializationInfoByID(wantedSpecId)
-						local className = UnitClassBase(token)
-
 						aura_env.log(
-							aura_env.formattedSpecIconWithName(specName, icon, className, dataset.name)
+							aura_env.formattedSpecIconWithName(token, wantedSpecId)
 								.. " matches criteria but is in a different zone/phase and will be skipped."
 						)
 					else

@@ -16,14 +16,18 @@
 ---@field stacks number|nil
 ---@field maxStacks number|nil
 ---@field auraInstanceId number|nil
----@field onAuraExpiryState? XephCDState
+---@field onAuraExpiryState? PartialXephCDState
+
+---@class PartialXephCDState
+---@field progressType string
+---@field duration number|
+---@field expirationTime number
 
 ---@param states table<string, XephCDState>
 ---@param event "OPTIONS" | "STATUS" | "PLAYER_SPECIALIZATION_CHANGED" | "INSPECT_READY" | "TRAIT_CONFIG_UPDATED" | "XephCD_CD_READY" | "UNIT_AURA" | "XephCD_AURA_EXPIRED" | "PLAYER_EQUIPMENT_CHANGED"
 ---@return boolean
 function f(states, event, ...)
 	if event == "STATUS" or event == "OPTIONS" then
-		DevTool:AddData({}, event)
 		if event ~= "OPTIONS" then -- dont enqueue inspecting here, apparently cannot clean those timers up
 			for unit in WA_IterateGroupMembers() do
 				aura_env.enqueueInspect(unit)
@@ -75,7 +79,6 @@ function f(states, event, ...)
 		then
 			return false
 		end
-		DevTool:AddData({ unit, updateInfo }, event)
 
 		local hasChanges = false
 
@@ -125,16 +128,6 @@ function f(states, event, ...)
 					local customEventName = aura_env.CUSTOM_EVENT_AURA_EXPIRED
 					local id = aura_env.id
 
-					print(event, "queued " .. state.spellId .. " for " .. addedAura.duration .. " seconds")
-
-					-- state.onAuraExpiryState = {
-					-- 	progressType = "timed",
-					-- 	expirationTime = expirationTime,
-					-- 	duration = remainingTime,
-					-- }
-
-					DevTool:AddData(state, "added aura")
-
 					aura_env.scheduledAuraEvents[key] = C_Timer.NewTimer(addedAura.duration, function()
 						WeakAuras.ScanEvents(customEventName, id, key, remainingTime, expirationTime, "addedAura")
 					end, 1)
@@ -163,16 +156,7 @@ function f(states, event, ...)
 					if aura_env.scheduledAuraEvents[key] and not aura_env.scheduledAuraEvents[key]:IsCancelled() then
 						aura_env.scheduledAuraEvents[key]:Cancel()
 						aura_env.scheduledAuraEvents[key] = nil
-						print("UPDATED canceled previous aura timer")
 					end
-
-					-- state.onAuraExpiryState = {
-					-- 	progressType = "timed",
-					-- 	expirationTime = expirationTime,
-					-- 	duration = remainingTime,
-					-- }
-
-					DevTool:AddData(state, "updated aura")
 
 					aura_env.scheduledAuraEvents[key] = C_Timer.NewTimer(updatedAura.duration, function()
 						WeakAuras.ScanEvents(customEventName, id, key, remainingTime, expirationTime, "updatedAura")
@@ -204,8 +188,6 @@ function f(states, event, ...)
 					-- todo: doing this is technically wrong. the scheduled events sets the state for the next remaining cooldown in the custom event branch
 					-- end
 
-					DevTool:AddData(state, "removed aura")
-
 					if state.onAuraExpiryState then
 						state.progressType = state.onAuraExpiryState.progressType
 						state.expirationTime = state.onAuraExpiryState.expirationTime
@@ -231,7 +213,6 @@ function f(states, event, ...)
 
 	if event == "TRAIT_CONFIG_UPDATED" or event == "PLAYER_EQUIPMENT_CHANGED" then
 		local specId = GetSpecializationInfo(GetSpecialization())
-		DevTool:AddData({ specId }, event)
 
 		if specId == nil or specId == 0 then
 			return false
@@ -270,7 +251,6 @@ function f(states, event, ...)
 
 	if event == "PLAYER_SPECIALIZATION_CHANGED" then
 		local unit = ...
-		DevTool:AddData({ unit }, event)
 
 		aura_env.enqueueInspect(unit)
 
@@ -279,7 +259,6 @@ function f(states, event, ...)
 
 	if event == aura_env.CUSTOM_EVENT_CD_READY then
 		local id, key, stacks, source = ...
-		DevTool:AddData({ id, key, stacks, source }, event)
 
 		if stacks ~= nil then
 			key = string.gsub(key, "|" .. stacks, "")
@@ -310,8 +289,6 @@ function f(states, event, ...)
 						expirationTime = expirationTime,
 						duration = duration,
 					}
-
-					DevTool:AddData(state, "aura active, gained stack")
 				else
 					state.progressType = "timed"
 					state.duration = state.cooldown
@@ -320,8 +297,6 @@ function f(states, event, ...)
 					aura_env.scheduledCooldownEvents[key] = C_Timer.NewTimer(state.duration, function()
 						WeakAuras.ScanEvents(event, id, key, nil, event)
 					end, 1)
-
-					DevTool:AddData(state, "not max stacks yet, recharging")
 				end
 
 				return true
@@ -334,14 +309,11 @@ function f(states, event, ...)
 		state.value = 1
 		state.total = 1
 
-		DevTool:AddData(state, "resetting entirely, reached max stacks or never had any")
-
 		return true
 	end
 
 	if event == aura_env.CUSTOM_EVENT_AURA_EXPIRED then
 		local id, key, duration, expirationTime, source = ...
-		DevTool:AddData({}, event)
 
 		print(event, id, key, source)
 		local state = states[key]
@@ -363,7 +335,6 @@ function f(states, event, ...)
 	end
 
 	if event == "UNIT_SPELLCAST_SUCCEEDED" then
-		DevTool:AddData({}, event)
 		local unit, _, spellId = ...
 
 		local guid = UnitGUID(unit)
@@ -414,7 +385,6 @@ function f(states, event, ...)
 	end
 
 	if event == "INSPECT_READY" then
-		DevTool:AddData({}, event)
 		local guid = ...
 
 		if guid == WeakAuras.myGUID then
@@ -427,6 +397,11 @@ function f(states, event, ...)
 
 		if not unit then
 			aura_env.log(format("[%s] could not get a unit for guid %s", event, guid))
+			return false
+		end
+
+		if not UnitInParty(unit) then
+			aura_env.log(format("[%s] unit %s is not in party", event, unit))
 			return false
 		end
 

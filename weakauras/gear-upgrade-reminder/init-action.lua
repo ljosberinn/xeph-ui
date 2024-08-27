@@ -60,6 +60,8 @@ local bonusToTierMap = {
 	[10295] = "Adventurer",
 	[10296] = "Adventurer",
 	[10297] = "Adventurer",
+	[10298] = "Myth",
+	[10299] = "Myth",
 }
 
 local tiers = {
@@ -85,9 +87,11 @@ local tiers = {
 	},
 	Myth = {
 		min = 623,
-		max = 632,
+		max = 639,
 	},
 }
+
+local crestFreeItemLevelUpgradeThreshold = 580
 
 ---@param id ?number
 ---@return boolean
@@ -124,7 +128,7 @@ function aura_env.doUpgradeCheck()
 		if itemLoc:IsValid() then
 			local currentItemLevel = C_Item.GetCurrentItemLevel(itemLoc)
 
-			if currentItemLevel >= 558 then
+			if currentItemLevel >= tiers.Explorer.min then
 				local itemLink = C_Item.GetItemLink(itemLoc)
 
 				if itemLink then
@@ -152,6 +156,15 @@ function aura_env.doUpgradeCheck()
 								"%s can be upgraded to item level %d without using crests!",
 								itemLink,
 								finalIlvlToCompareWith
+							)
+
+							print(msg)
+						elseif currentItemLevel < crestFreeItemLevelUpgradeThreshold then
+							found = found + 1
+							local msg = format(
+								"%s can be upgraded to item level %d without crests!",
+								itemLink,
+								crestFreeItemLevelUpgradeThreshold
 							)
 
 							print(msg)

@@ -26,7 +26,7 @@ function f(self, unitId, unitFrame, envTable, modTable)
 	function envTable.EnhancedCastBar(unitId, castBar)
 		castBar.tick:Hide()
 
-		if castBar.IsInterrupted then
+		if castBar.IsInterrupted or castBar.interrupted then
 			return
 		end
 
@@ -37,70 +37,71 @@ function f(self, unitId, unitFrame, envTable, modTable)
 		end
 
 		local targetName = UnitName(targetUnitId)
-		local spellName = castBar.SpellName
-		local inParty = UnitInParty("player")
-		local inRaid = UnitInRaid("player")
-		castBar.Text:SetText(spellName)
 		local isTargettingMe = targetName == UnitName("player")
 
 		-- Cast is targetting a specific unit
 		if targetName then
 			-- Nameplate flash options
-			if isTargettingMe then
-				if envTable.optionsNameplateFlash then
-					-- Default value of true since it is turned on in the options
-					local showNameplateFlash = true
+			if isTargettingMe and envTable.optionsNameplateFlash then
+				-- Default value of true since it is turned on in the options
+				local showNameplateFlash = true
 
-					-- Hide flash when not in a group
-					if envTable.optionsHideFlashSolo then
-						if not inParty and not inRaid then
-							showNameplateFlash = false
-						end
-					end
+				if envTable.optionsHideFlashSolo and not UnitInParty("player") and not UnitInRaid("player") then
+					showNameplateFlash = false
+				end
 
-					-- Hide flash when player is a tank specialization
-					if envTable.optionsHideFlashAsTank then
-						if GetSpecializationRole(GetSpecialization()) == "TANK" then
-							showNameplateFlash = false
-						end
-					end
+				if envTable.optionsHideFlashAsTank and GetSpecializationRole(GetSpecialization()) == "TANK" then
+					showNameplateFlash = false
+				end
 
-					-- Show nameplate flash if conditions met
-					if showNameplateFlash then
-						Plater.FlashNameplateBody(unitFrame)
-					end
+				-- Show nameplate flash if conditions met
+				if showNameplateFlash then
+					Plater.FlashNameplateBody(unitFrame)
 				end
 			end
 
 			-- Target name in cast bar options
 			if envTable.optionsShowTargetName then
-				-- Change character name to "Me" if turned on in options
 				if envTable.optionsReplaceMyName and isTargettingMe then
 					targetName = "Me"
 				end
 
-				-- Color the target name based on the targets class color
-				local targetNameByColor = Plater.SetTextColorByClass(targetUnitId, targetName)
-
-				-- Shrink the name of the cast bar text if necessary (based on options)
-				local castBarWidth = castBar:GetWidth()
-				DetailsFramework:TruncateText(castBar.Text, castBarWidth * (envTable.optionsCastNameSize / 100))
-
-				-- Update the cast bar text
 				local currentText = castBar.Text:GetText()
-				if currentText ~= nil and currentText ~= "" then
-					local castText = currentText .. " " .. targetNameByColor
+				local nextText = ""
 
-					-- Hide self target name when solo
-					if envTable.optionsHideNameSolo then
-						if not inParty and not inRaid then
-							if isTargettingMe then
-								castText = currentText
-							end
+				if
+					isTargettingMe
+					and envTable.optionsHideNameSolo
+					and not UnitInParty("player")
+					and not UnitInRaid("player")
+				then
+					nextText = currentText
+				else
+					local targetNameByColor = Plater.SetTextColorByClass(targetUnitId, targetName)
+					nextText = castBar.SpellName .. " " .. targetNameByColor
+				end
+
+				if nextText ~= currentText then
+					local previousLength = string.len(currentText)
+					local newLength = string.len(nextText)
+					local needsUpdate = false
+
+					if previousLength < newLength then
+						local trimmed = string.sub(nextText, 1, previousLength)
+
+						if trimmed ~= currentText then
+							needsUpdate = true
 						end
+					elseif nextText ~= currentText then
+						needsUpdate = true
 					end
-					castBar.Text:SetText(castText)
-					DetailsFramework:TruncateText(castBar.Text, castBarWidth)
+
+					if needsUpdate then
+						castBar.Text:SetText(nextText)
+						-- Shrink the name of the cast bar text if necessary (based on options)
+						local castBarWidth = castBar:GetWidth()
+						DetailsFramework:TruncateText(castBar.Text, castBarWidth * (envTable.optionsCastNameSize / 100))
+					end
 				end
 			end
 		end
@@ -121,42 +122,38 @@ function f(self, unitId, unitFrame, envTable, modTable)
 			interruptReadyTime = start + duration
 		end
 
-		if canInterrupt then
-			if envTable.interruptID ~= nil then
-				-- Is the player a warlock?
-				local playerIsWarlock = envTable.class == 9
+		local nextColor = envTable.optionsColorProtected
 
-				-- Check to see if the spell is known/talented
-				if IsSpellKnown(envTable.interruptID, playerIsWarlock) then
-					if interruptReadyTime == 0 then
-						Plater.SetCastBarColor(unitFrame, envTable.optionsColorInterruptAvailable)
-					elseif
-						envTable.optionsShowSecondaryInterrupts
-						and envTable.class == 2 -- paladin
-						and IsSpellKnown(31935) -- avenger's shield
-						and not envTable.isSpellOnCooldown_IgnoreGCD(31935)
-					then
-						-- Paladin Avenger's Shield
-						Plater.SetCastBarColor(unitFrame, envTable.optionsColorSecondaryAvailable)
-					elseif interruptReadyTime < (castEndTime - 0.25) then
-						castBar.tick:Show()
-						castBar.tick:SetVertexColor(Plater:ParseColors(envTable.optionsColorTick))
-						local tickLocation = (start + duration - castBar.spellStartTime) / castBar.maxValue -- castBar.spellStartTime + 0.25
-						if castBar.channeling then
-							tickLocation = 1 - tickLocation
-						end
-						castBar.tick:SetPoint("center", castBar, "left", tickLocation * castBar:GetWidth(), 0)
+		if canInterrupt and envTable.interruptID ~= nil then
+			local playerIsWarlock = envTable.class == 9
 
-						Plater.SetCastBarColor(unitFrame, envTable.optionsColorInterruptSoon)
-					elseif interruptReadyTime >= (castEndTime - 0.25) then
-						Plater.SetCastBarColor(unitFrame, envTable.optionsColorNoInterrupt)
+			-- Check to see if the spell is known/talented
+			if IsSpellKnown(envTable.interruptID, playerIsWarlock) then
+				if interruptReadyTime == 0 then
+					nextColor = envTable.optionsColorInterruptAvailable
+				elseif
+					envTable.optionsShowSecondaryInterrupts
+					and envTable.class == 2 -- paladin
+					and IsSpellKnown(31935) -- avenger's shield
+					and not envTable.isSpellOnCooldown_IgnoreGCD(31935)
+				then
+					nextColor = envTable.optionsColorSecondaryAvailable
+				elseif interruptReadyTime < (castEndTime - 0.25) then
+					castBar.tick:Show()
+					castBar.tick:SetVertexColor(Plater:ParseColors(envTable.optionsColorTick))
+					local tickLocation = (start + duration - castBar.spellStartTime) / castBar.maxValue -- castBar.spellStartTime + 0.25
+					if castBar.channeling then
+						tickLocation = 1 - tickLocation
 					end
-				else
-					Plater.SetCastBarColor(unitFrame, envTable.optionsColorNoInterrupt)
+					castBar.tick:SetPoint("center", castBar, "left", tickLocation * castBar:GetWidth(), 0)
+
+					nextColor = envTable.optionsColorInterruptSoon
+				elseif interruptReadyTime >= (castEndTime - 0.25) then
+					nextColor = envTable.optionsColorNoInterrupt
 				end
+			else
+				nextColor = envTable.optionsColorNoInterrupt
 			end
-		else
-			Plater.SetCastBarColor(unitFrame, envTable.optionsColorProtected)
 		end
 
 		-- Spell Reflection coloring
@@ -169,7 +166,14 @@ function f(self, unitId, unitFrame, envTable, modTable)
 			and modTable.reflectableSpells[castBar.SpellID] == true
 		then
 			-- Color the bar if the spell is reflectable
-			Plater.SetCastBarColor(unitFrame, envTable.optionsColorSecondaryAvailable)
+			nextColor = envTable.optionsColorSecondaryAvailable
+		end
+
+		local currentR, currentG, currentB, currentA = castBar:GetColor()
+		local nextR, nextG, nextB, nextA = unpack(nextColor)
+
+		if currentR ~= nextR or currentG ~= nextG or currentB ~= nextB or currentA ~= nextA then
+			Plater.SetCastBarColor(unitFrame, nextColor)
 		end
 	end
 

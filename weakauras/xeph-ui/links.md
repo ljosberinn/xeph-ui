@@ -28,6 +28,7 @@ In-depth support for multiple specs. Not your usual aura pack.
 ### Hunter
 
 - [Marksmanship](https://wago.io/rgCCGKTBx)
+- [Beast Mastery](https://wago.io/A_FIZVjA_)
 
 ### Demon Hunter
 
@@ -37,6 +38,7 @@ In-depth support for multiple specs. Not your usual aura pack.
 ### Death Knight
 
 - [Blood](https://wago.io/UIpdprTZT)
+- [Frost](https://wago.io/KZeECPU1_)
 
 ## Sounds
 

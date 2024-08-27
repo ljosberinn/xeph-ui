@@ -11,6 +11,10 @@ function f(self, unitId, unitFrame, envTable)
 
 	function envTable.updateText(unitFrame)
 		if not unitFrame or not unitFrame.namePlateIsQuestObjective or not unitFrame.QuestAmountCurrent then
+			if unitFrame.healthBar.questProgressTextFrame and unitFrame.healthBar.questProgressTextFrame:IsShown() then
+				unitFrame.healthBar.questProgressTextFrame:Hide()
+			end
+
 			return
 		end
 
@@ -30,6 +34,10 @@ function f(self, unitId, unitFrame, envTable)
 			envTable.questProgressTextFrame = Plater:CreateLabel(unitFrame.healthBar, "", textSize, textColor)
 			Plater.SetAnchor(envTable.questProgressTextFrame, anchor)
 			unitFrame.healthBar.questProgressTextFrame = envTable.questProgressTextFrame
+		end
+
+		if not unitFrame.healthBar.questProgressTextFrame:IsVisible() then
+			unitFrame.healthBar.questProgressTextFrame:Show()
 		end
 
 		unitFrame.healthBar.questProgressTextFrame:SetText(text)

@@ -1,4 +1,4 @@
---- CLEU:SPELL_AURA_APPLIED:SPELL_EMPOWER_END, UNIT_SPELLCAST_SUCCEEDED:player
+--- CLEU:SPELL_AURA_APPLIED:SPELL_EMPOWER_END:SPELL_AURA_REFRESH, UNIT_SPELLCAST_SUCCEEDED:player
 ---@param event "COMBAT_LOG_EVENT_UNFILTERED" | "OPTIONS" | "UNIT_SPELLCAST_SUCCEEDED"
 function f(event, ...)
 	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
@@ -8,7 +8,7 @@ function f(event, ...)
 			return false
 		end
 
-		if subEvent == "SPELL_AURA_APPLIED" then
+		if subEvent == "SPELL_AURA_APPLIED" or subEvent == "SPELL_AURA_REFRESH" then
 			if spellId ~= 395152 then
 				return false
 			end

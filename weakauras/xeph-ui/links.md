@@ -40,6 +40,10 @@ In-depth support for multiple specs. Not your usual aura pack.
 - [Blood](https://wago.io/UIpdprTZT)
 - [Frost](https://wago.io/KZeECPU1_)
 
+### Warrior
+
+- [Protection](https://wago.io/LSbkY1J3_)
+
 ## Sounds
 
 Each pack uses sound clues. These are streamlined across specs.
@@ -62,6 +66,7 @@ Each pack uses sound clues. These are streamlined across specs.
 
 Naturally, these will be dated over time with features being added/removed.
 
+- [Augmentation Evoker Grim Batol 12](https://youtu.be/n8x75K3aU-c)
 - [Augmentation Evoker Mythic Fyrakk](https://www.youtube.com/watch?v=_zmr26fwCoU)
 - [Augmentation Evoker Throne of the Tides 29](https://www.youtube.com/watch?v=ZOtK-6REERQ)
 - [Retribution Paladin Galakrond's Fall 31](https://www.youtube.com/watch?v=foaLsO6eUuM) (slightly modified)
@@ -93,7 +98,6 @@ I've separated a small UI Utils aura [here](https://wago.io/dX5H_AygQ) as not ev
 
 - [GCD History](https://wago.io/b9euX-znp)
 - [XephUI Highlighter](https://wago.io/ZaoqRVhYX)
-- [Umbrelskul's Execute Tracker](https://wago.io/lXT9wfXYl)
 - [Equipment Upgrade Reminder](https://wago.io/DA3OzoIsi)
 - [Disable Details in Raid](https://wago.io/kqpf9gjEK)
 
@@ -102,11 +106,12 @@ I've separated a small UI Utils aura [here](https://wago.io/dX5H_AygQ) as not ev
 - [Cauterizing Flame debuff indication on Party Frames](https://wago.io/zdERbYhcw)
 - [Expunge debuff indication on Party Frames](https://wago.io/bPovxGfxH)
 - [Evoker Bloodlust Reminder](https://wago.io/cqiHQPnfY)
+- [Bars for Essences and Hover](https://wago.io/aoNNvlqkh)
 
 ### Augmentation
 
-- [Augmentation Group CDs Tracking](https://wago.io/JQ5imI9M4)
 - [Augmentation Ebon Might Extension Helper](https://wago.io/XfOM-zvXl)
+- [Augmentation Group CDs Tracking](https://wago.io/JQ5imI9M4)
 - [Augmentation Cell Spotlights Helper](https://wago.io/NJ3dyb8mN)
 - [Augmentation Vuhdo Private Tanks Helper](https://wago.io/ugseHvxTU)
 

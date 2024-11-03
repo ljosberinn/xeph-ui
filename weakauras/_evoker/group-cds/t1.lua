@@ -16,7 +16,7 @@ function f(states, event, ...)
 	if event == "UNIT_SPELLCAST_SUCCEEDED" then
 		local unit, castGUID, spellId = ...
 
-		if unit == "player" then
+		if unit == "player" or not UnitInParty(unit) then
 			return false
 		end
 
@@ -39,6 +39,7 @@ function f(states, event, ...)
 			progressType = "timed",
 			icon = icon,
 			unit = unit,
+			spellId = spellId,
 		}
 
 		return true
@@ -75,7 +76,7 @@ function f(states, event, ...)
 
 		local guidToUse, unit = aura_env.getBuffedPlayerGuid(spellId, sourceGUID, targetGUID)
 
-		if not guidToUse or not unit or guidToUse == WeakAuras.myGUID then
+		if not guidToUse or not unit or guidToUse == WeakAuras.myGUID or not UnitInParty(unit) then
 			return false
 		end
 
@@ -99,14 +100,16 @@ function f(states, event, ...)
 				progressType = "timed",
 				icon = icon,
 				unit = unit,
+				spellId = spellId,
 			}
 
-			aura_env.enqueuePoll(unit, guidToUse, spellId, key)
+			-- has no duration, nothing to poll
+			if spellId ~= aura_env.breathOfSindragosaBuffId then
+				aura_env.enqueuePoll(unit, guidToUse, spellId, key)
+			end
 
 			return true
-		end
-
-		if subEvent == "SPELL_AURA_REFRESH" then
+		elseif subEvent == "SPELL_AURA_REFRESH" then
 			if not states[key] then
 				return false
 			end
@@ -124,9 +127,7 @@ function f(states, event, ...)
 			aura_env.enqueuePoll(unit, guidToUse, spellId, key)
 
 			return true
-		end
-
-		if subEvent == "SPELL_AURA_REMOVED" then
+		elseif subEvent == "SPELL_AURA_REMOVED" then
 			if not states[key] then
 				return false
 			end

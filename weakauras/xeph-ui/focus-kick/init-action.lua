@@ -6,11 +6,7 @@ if aura_env.config.interruptSpellId == 0 or not IsSpellKnown(aura_env.config.int
 	if aura_env.config.interruptSpellId ~= nil then
 		local id = aura_env.config.interruptSpellId
 
-		if C_Spell.GetSpellName then
-			name = C_Spell.GetSpellName(id)
-		else
-			name = GetSpellInfo(id)
-		end
+		name = C_Spell.GetSpellName(id)
 	end
 
 	local label = name and name or "Spell doesn't exist"
@@ -95,11 +91,6 @@ end
 
 ---@return number, number
 function aura_env.getInterruptCooldown()
-	if C_Spell.GetSpellCooldown then
-		local spellCd = C_Spell.GetSpellCooldown(aura_env.config.interruptSpellId)
-		return spellCd.duration, spellCd.startTime
-	end
-
-	local interruptCastTime, interruptCd = GetSpellCooldown(aura_env.config.interruptSpellId)
-	return interruptCd, interruptCastTime
+	local spellCd = C_Spell.GetSpellCooldown(aura_env.config.interruptSpellId)
+	return spellCd.duration, spellCd.startTime
 end

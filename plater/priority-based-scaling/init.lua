@@ -5,27 +5,32 @@ function f(modTable)
 	local larger = modTable.config.higherScale -- 1.1
 
 	--[[
-	GUIDELINES
-	- use LARGER for enemies with great situational importance that need extra attention
-	    ex: totems at the end of Stonevault, Spiteful targeting you
-	- use MEDIUM for enemies that do little to nothing but melee the tank and have average health
-		OR casters without mandatory kick
-		ex: Patchwerk Soldier, Necrotic Wake | Tainted Lashers, Gnarlroot
-		ex: Primalist Galesinger, Halls of Infusion
-	- use SMALL for enemies that do nothing but melee the tank and have less than average health
-		-- ex: Jagged Hound, Waycrest Manor
-	- use EXTRA SMALL for enemies that do nothing at all AND/OR there's so many on the screen, you have no choice
-		ex: Fiery Vines, Tindral | Hungry Lashers, Academy
-	]]
+    GUIDELINES
+    - use LARGER for enemies with great situational importance that need extra attention
+        ex: totems at the end of Stonevault, Spiteful targeting you
+    - use MEDIUM for enemies that do little to nothing but melee the tank and have average health
+        OR casters without mandatory kick
+        ex: Patchwerk Soldier, Necrotic Wake | Tainted Lashers, Gnarlroot
+        ex: Primalist Galesinger, Halls of Infusion
+    - use SMALL for enemies that do nothing but melee the tank and have less than average health
+        -- ex: Jagged Hound, Waycrest Manor
+    - use EXTRA SMALL for enemies that do nothing at all AND/OR there's so many on the screen, you have no choice
+        ex: Fiery Vines, Tindral | Hungry Lashers, Academy
+    ]]
 	--
 
 	modTable.npcIDs = {}
 
-	local test = {}
+	local test = {
+		--[87329] = extrasmall, -- test dummy
+	}
 	-- raids
 	local nerubarPalace = {
 		[219739] = small, -- Infested Spawn
-		[220626] = medium, -- Parasite
+		--[220626] = small, -- Blood Parasite -
+		[223674] = small, --Skitterer - Ansurek
+		[219746] = small, -- Tomb - Ansurek
+		[221344] = medium, -- Gloom Hatchling - Ansurek
 	}
 	local amirdrassil = {
 		[210231] = medium, -- Tainted Lasher, Gnarlroot
@@ -43,14 +48,35 @@ function f(modTable)
 	}
 
 	-- War Within dungeons
+
+	local prioryOfTheSacredFlame = {
+		[212838] = small, --Arathi Neophyte
+		[207943] = small, --Arathi Neophyte
+	}
+
+	local darkflameCleft = {
+		[210148] = small, -- Menial Laborer
+		[210810] = small, -- Menial Laborer
+		[208457] = small, -- Skittering Darkness
+	}
+
+	local cinderbrewMeadery = {
+		[217126] = extrasmall, --Over-indulged Patron
+		[214668] = small, -- Patron
+		[218865] = small, --Bee-let
+		[210270] = small, --Brew Drop
+		[223562] = small, --Brew Drop #2
+	}
+
 	local stoneVault = {
 		[214287] = larger, --Earth Burst Totem
 	}
 
 	local araKara = {
-		[216336] = medium, --Ravenous Crawler
-		[216341] = medium, --Jabbing Flyer
-		[218325] = medium, --Swarming Flyer
+		[216336] = small, --Ravenous Crawler
+		[216341] = small, --Jabbing Flyer
+		[218325] = extrasmall, --Swarming Flyer
+		[216337] = small, --Bloodworker
 	}
 
 	local cityOfThreads = {
@@ -62,8 +88,16 @@ function f(modTable)
 		[220065] = small, --Umbral Weave
 		[222700] = small, --Umbral Weave
 		[219198] = medium, --Ravenous Scarab
+		[216342] = medium, -- Skittering Assistant
 	}
+
+	local theDawnbreaker = {
+		--[225601] = extrasmall, --Webbed Victim
+		[224616] = small, --Animated Shadow
+	}
+
 	-- DF Dungeons
+
 	local murozondsRise = {
 		[205151] = small, -- Tyr's Vanguard
 	}
@@ -92,8 +126,8 @@ function f(modTable)
 		[192481] = small, -- Decaying Slime (boss adds)
 		[194330] = small, -- Decaying Slime (from big slime split)
 		[199916] = small, -- Decaying Slime
-		[194273] = medium, -- Witherling
-		[187238] = medium, -- Witherling
+		[194273] = small, -- Witherling
+		[187238] = small, -- Witherling
 		[189363] = extrasmall, -- Infected Lasher
 		[208994] = extrasmall, -- Infected Lasher
 		[194373] = small, -- Witherling
@@ -105,7 +139,6 @@ function f(modTable)
 		[197398] = extrasmall, -- Hungry Lasher
 		[192329] = small, -- Territorial Eagle
 		[196694] = medium, -- Arcane Forager
-		[196671] = medium, -- Arcane Ravager
 	}
 
 	local azureVault = {
@@ -113,6 +146,7 @@ function f(modTable)
 		[196559] = extrasmall, -- Volatile Sapling
 		[187246] = medium, -- Nullmagic Hornswog
 		[187242] = medium, -- Tarasek Looter
+		[187159] = small, -- Whelp
 	}
 
 	local rubyLifePools = {
@@ -128,7 +162,9 @@ function f(modTable)
 		[195875] = small, -- Desecrated Bakar
 		[196645] = small, -- Desecrated Bakar
 	}
+
 	-- Shadowlands Dungeons
+
 	local tazavesh = {
 		[178163] = small, -- Murkbrine Shorerunner
 	}
@@ -140,9 +176,11 @@ function f(modTable)
 	local necroticWake = {
 		[166264] = small, -- Spare Parts
 		[166266] = small, -- Spare Parts #2
-		[171500] = small, -- Shuffling Corpse
+		[171500] = extrasmall, -- Shuffling Corpse
 		[165138] = small, -- Blight bag
 		[162729] = medium, -- Patchwerk Soldier
+		[163122] = small, -- Brittlebone Warrior
+		[164427] = small, -- Reanimated Warrior
 	}
 
 	local mistsOfTirnaScithe = {
@@ -167,14 +205,11 @@ function f(modTable)
 		[168457] = small, -- Stonewall Gargon
 		[166589] = small, -- Animate Weapon
 	}
+
 	--BFA Dungeons
+
 	local mechagon = {
 		[144300] = small, -- Mechagon Citizen
-	}
-
-	local grimBatol = {
-		[224853] = small, -- Hatchling
-		[39388] = medium, -- Boss Hatchling
 	}
 
 	local siegeOfBoralus = {
@@ -198,7 +233,9 @@ function f(modTable)
 	local freehold = {
 		[130024] = small, -- Soggy Shiprat
 	}
+
 	-- Legion Dungeons
+
 	local hallsOfValor = {
 		[97087] = medium, -- Valajar Champion
 		[96640] = medium, -- Valajar Marksman
@@ -229,7 +266,9 @@ function f(modTable)
 		[96247] = extrasmall, -- Vileshard Crawler
 		[102430] = small, -- Tarspitter Slug
 	}
+
 	-- WoD Dungeons
+
 	local everbloom = {
 		[81864] = small, -- Dreadpetal
 		[84401] = small, -- Swift Sproutling
@@ -246,7 +285,9 @@ function f(modTable)
 		[58319] = small, -- Lesser Sha
 		[59598] = small, -- Lesser Sha
 	}
+
 	-- Cata Dungeons
+
 	local throneOfTheTides = {
 		[40923] = extrasmall, -- Unstable Corruption
 	}
@@ -262,6 +303,11 @@ function f(modTable)
 		[45932] = small, -- Skyfall Star
 	}
 
+	local grimBatol = {
+		[224853] = small, -- Hatchling
+		[39388] = medium, -- Boss Hatchling
+	}
+
 	local misc = {
 		-- Fodder to the Flame demons
 		[169428] = small,
@@ -271,11 +317,18 @@ function f(modTable)
 		[169421] = small,
 		[169425] = small,
 		[168932] = small,
+		-- Misc
 		[189707] = small, -- Chaotic Motes, SL Fated affix
+		[229537] = larger, -- Void Emissary
+		[229296] = small, -- Orb of Ascendance
 	}
 
 	local maps = {
 		test,
+		prioryOfTheSacredFlame,
+		darkflameCleft,
+		cinderbrewMeadery,
+		theDawnbreaker,
 		stoneVault,
 		amirdrassil,
 		atalDazar,
@@ -347,21 +400,21 @@ function f(modTable)
 	-- do nothing while spiteful is disabled
 	-- when updating this, also update Nameplate Updated and Leave Combat
 
-	-- ---@param id number
-	-- ---@return boolean
-	-- function modTable.isSpiteful(id)
-	-- 	return tonumber(id) == 174773
-	-- end
+	---@param id number
+	---@return boolean
+	function modTable.isSpiteful(id)
+		return tonumber(id) == 220626 --Blood Parasite
+	end
 
-	-- ---@param unitId string
-	-- ---@return boolean
-	-- function modTable.spitefulTargetsPlayer(unitId)
-	-- 	local targetName = UnitName(unitId .. "target")
+	---@param unitId string
+	---@return boolean
+	function modTable.spitefulTargetsPlayer(unitId)
+		local targetName = UnitName(unitId .. "target")
 
-	-- 	if not targetName then
-	-- 		return false
-	-- 	end
+		if not targetName then
+			return false
+		end
 
-	-- 	return UnitIsUnit(targetName, "player")
-	-- end
+		return UnitIsUnit(targetName, "player")
+	end
 end

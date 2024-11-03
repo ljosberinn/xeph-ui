@@ -1,3 +1,3 @@
 function f(self, unitId, unitFrame, envTable, modTable)
-	envTable.EnhancedCastBar(unitId, unitFrame.castBar)
+	modTable.EnhancedCastBar(unitId, unitFrame)
 end

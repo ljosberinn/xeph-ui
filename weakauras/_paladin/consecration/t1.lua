@@ -12,8 +12,7 @@ function f(states, event, ...)
 			show = true,
 			spellId = aura_env.consecrationCastId,
 			unit = "player",
-			icon = C_Spell.GetSpellTexture and C_Spell.GetSpellTexture(aura_env.consecrationCastId)
-				or select(3, GetSpellInfo(aura_env.consecrationCastId)),
+			icon = C_Spell.GetSpellTexture(aura_env.consecrationCastId),
 			changed = true,
 			lastCast = 0,
 		}
@@ -69,7 +68,21 @@ function f(states, event, ...)
 		end
 
 		if states[""].progressType == "static" then
-			states[""].expirationTime = consecrationBuff.expirationTime
+			local expirationTime = consecrationBuff.expirationTime
+
+			if expirationTime == 0 then
+				local diffToLastCast = now - states[""].lastCast
+
+				-- standing in consecration without duration while closing WA
+				-- or casting and gaining buff without duration
+				if now == diffToLastCast or diffToLastCast == 0 then
+					return false
+				end
+
+				expirationTime = states[""].lastCast + aura_env.getDuration()
+			end
+
+			states[""].expirationTime = expirationTime
 			states[""].duration = aura_env.getDuration()
 			states[""].progressType = "timed"
 			states[""].changed = true

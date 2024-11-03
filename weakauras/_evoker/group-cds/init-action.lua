@@ -1,4 +1,5 @@
 aura_env.customEventName = "XEPHUI_CD_CHECK"
+aura_env.breathOfSindragosaBuffId = 152279
 
 --- @type table<number, number>
 aura_env.trackedCasts = {}
@@ -54,23 +55,38 @@ end
 --- @param spellId number
 --- @return number, number, number, string
 function aura_env.getAuraMeta(unit, spellId)
+	if spellId == aura_env.breathOfSindragosaBuffId then
+		return 60, GetTime() + 60, 1029007, C_Spell.GetSpellName(spellId)
+	end
+
 	local duration = 0
 	local expirationTime = 0
 	local name = "Unknown"
 	local icon = 0
 
-	AuraUtil.ForEachAura(unit, "HELPFUL", nil, function(...)
-		local _, _, _, _, auraDuration, auraExpirationTime, _, _, _, auraSpellId = ...
+	AuraUtil.ForEachAura(
+		unit,
+		"HELPFUL",
+		nil,
+		---@param AuraData
+		function(auraInfo)
+			if auraInfo.spellId == spellId then
+				if DevTool then
+					DevTool:AddData(auraInfo)
+					print("added devtool entry")
+				end
 
-		if spellId == auraSpellId then
-			duration = auraDuration
-			expirationTime = auraExpirationTime
-			name, icon = aura_env.getSpellInfo(spellId)
-			return true
-		end
+				duration = auraInfo.duration
+				expirationTime = auraInfo.expirationTime
+				name = auraInfo.name
+				icon = auraInfo.icon
+				return true
+			end
 
-		return false
-	end)
+			return false
+		end,
+		true
+	)
 
 	return duration, expirationTime, icon, name
 end
@@ -82,7 +98,7 @@ local tickers = {}
 --- @param spellId number
 --- @return string
 function aura_env.createKey(guid, spellId)
-	return guid .. "|" .. spellId
+	return guid .. "||" .. spellId
 end
 
 --- @param unit string
@@ -109,7 +125,7 @@ function aura_env.clearTickerFor(key)
 	end
 end
 
----@type table<string, string|nil>
+---@type table<string, string||nil>
 local guidUnitCache = {}
 
 ---@param guid string
@@ -149,7 +165,7 @@ end
 --- @param spellId number
 --- @param sourceGUID string
 --- @param targetGUID string
---- @return string|nil, string|nil
+--- @return string||nil, string||nil
 function aura_env.getBuffedPlayerGuid(spellId, sourceGUID, targetGUID)
 	if
 		guidIsDps(sourceGUID)

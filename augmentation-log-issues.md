@@ -5,7 +5,7 @@
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s` discord & twitter).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: July 31**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions).
+**Last updated: October 27**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions).
 
 Note this document was overhauled in June 2024 to allow a better overview. Older bugs and their context can be seen in the changelog linked above.
 
@@ -149,7 +149,6 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 
 - `Frostfire Empowerment` (id 431186) does not reattribute `Ebon Might`
   - tooltip is misleading, this is the 11.0 set 2pc
-- `Magi's Spark Echo` (id 458375) is not reattributing anything
 - `Embedded Arcane Splinter` (id 444736) is not reattributing anything
   - note that `Embedded Arcane Splinter` (id 444735) _is_ fully reattributing
 - `Embedded Frost Splinter` (id 443934) is not reattributing anything
@@ -157,12 +156,15 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 - `Dematerialize` (id 461498) is only reattributing `Shifting Sands` - cannot crit, so only `Ebon Might` missing
 - `Controlled Instincts` (id 444720) does not reattribute anything (Arcane)
 - `Controlled Instincts` (id 444487) does not reattribute anything (Frost)
-- nothing from `Arcane Phoenix` (id 448659) reattributes
 
 ## Warlock
 
 - `Dimensional Cinder` (id 427285) does not reattribute anything
 - `Soul Cleave` (id 387502) via `Fel Guard` does not reattribute `Ebon Might`
+
+### The War Within
+- `Wicked Cleave` (id 432120) via `Overlord` summoned by `Diabolic Ritual` does not reattribute `Prescience`
+- `Chaos Bolt` (id 434589) via `Summon Overfiend` does not reattribute `Ebon Might`
 
 ### Special Cases
 
@@ -191,6 +193,7 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 - `Flametongue Attack`(id 10444) does not reattribute `Ebon Might`
 - `Restorative Mists` (id 114083) does not reattribute anything
   - note that 294020 does
+- `Stormblast` (id 390287) does not reattribute anything
 
 ### The War Within
 
@@ -198,11 +201,11 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 
 ## Rogue
 
-- `Soulreave` (id 409605) and `Soulrip` (id 409604) do not reattribute anything
-  - both components of Aberrus T30 so not terribly important at this point
 - `Poisoned Edges` (id 409483) does not reattribute anything
 - `Sudden Demise` (id 343769) does not reattribute anything
 - `Shadow Rupture` (id 424493) does not reattribute `Shifting Sands` or `Ebon Might`
+- `Singular Focus` (id 457236) does not reattribute anything
+- `Mutilated Flesh` (id 394021) does not reattribute anything
 
 ### The War Within
 
@@ -223,6 +226,8 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 - `Dawnlight` (id 431399) does not reattribute anything
   - this is the initial damage
   - note that the dot (id 431380) does fully reattribute
+- `Empyrean Hammer` (id 431625) does not reattribute anything
+  - this is the cleave
 
 ## Evoker
 
@@ -237,6 +242,7 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 ## Demon Hunter
 
 - `Soulscar` (id 390181) does not reattribute anything
+- `Burning Blades` (id 453177) does not reattribute anything
 - `Ragefire` (id 390197) does not reattribute anything
 - `The Hunt` (id 370971) healing does not reattribute anything
 - `Charred Warblades` (id 213011) healing does not reattribute anything
@@ -247,6 +253,7 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 - `Charred Passions` (id 386959) does not reattribute anything
 - `Charred Dreams` (id 425299) does not reattribute anything
 - melee hits as Mistweaver do not reattribute anything
+- `Tiger's Ferocity` (id 454508) does not reattribute anything
 
 ### The War Within
 
@@ -275,6 +282,7 @@ Note that these below may be reattributing `Shifting Sands` and it's based on a 
 - `Reaper's Mark` (id 439594) does not reattribute anything
 - `Blood Fever` (id 440005) does not reattribute anything
 - `Shattered Frost` (id 455996) does not reattribute anything
+- `Hyperpyrexia` (id 458169) does not reattribute anything
 
 ## Druid
 

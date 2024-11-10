@@ -5,7 +5,7 @@
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s` discord & twitter).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: October 27**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions).
+**Last updated: Nov 4**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions).
 
 Note this document was overhauled in June 2024 to allow a better overview. Older bugs and their context can be seen in the changelog linked above.
 
@@ -238,6 +238,7 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 
 - `Enkindle` (id 444017) does not reattribute anything
 - `Spiritbloom` (id 409895) does not reattribute anything (this is the Chronowarden hot)
+- `Consume Flame` (id 444089) does not reattribute `Ebon Might` or `Shifting Sands`
 
 ## Demon Hunter
 

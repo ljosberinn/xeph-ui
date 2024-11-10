@@ -160,10 +160,6 @@ function f(modTable)
 	function modTable.EnhancedCastBar(unitId, unitFrame)
 		local interruptID = GetInterruptID()
 
-		if interruptID == nil then
-			return
-		end
-
 		local castBar = unitFrame.castBar
 
 		if castBar.tick ~= nil then
@@ -216,8 +212,8 @@ function f(modTable)
 				end
 
 				local castBarWidth = castBar:GetWidth()
-				local width = castBarWidth * 0.9
-				DetailsFramework:TruncateText(castBar.Text, width)
+				-- clip cast name at 50% of cast bar width always
+				DetailsFramework:TruncateText(castBar.Text, castBarWidth * 0.5)
 
 				-- first, truncate the spell name to make space for the target name
 				local currentText = castBar.Text:GetText()
@@ -235,12 +231,12 @@ function f(modTable)
 
 					castBar.Text:SetText(castText)
 					-- now truncate again to ensure the target name doesn't overlap with the cast duration
-					DetailsFramework:TruncateText(castBar.Text, width)
+					DetailsFramework:TruncateText(castBar.Text, castBarWidth * 0.9)
 				end
 			end
 		end
 
-		if not modTable.config.showInterruptColor then
+		if interruptID == nil or not modTable.config.showInterruptColor then
 			return
 		end
 

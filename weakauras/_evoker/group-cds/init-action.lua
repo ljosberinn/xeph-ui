@@ -19,35 +19,11 @@ for _, cast in pairs(aura_env.config.casts) do
 	end
 end
 
----@type table<number, true>
-local healBuffsAndCasts = {}
-
-if aura_env.config.enableHealTracking then
-	for _, buff in pairs(aura_env.config.healBuffs) do
-		if buff.active then
-			aura_env.trackedBuffs[buff.id] = true
-			healBuffsAndCasts[buff.id] = true
-		end
-	end
-
-	for _, cast in pairs(aura_env.config.healCasts) do
-		if cast.active then
-			aura_env.trackedCasts[cast.id] = cast.duration
-			healBuffsAndCasts[cast.id] = true
-		end
-	end
-end
-
 ---@param spellId number
 ---@return string, number
 function aura_env.getSpellInfo(spellId)
-	if C_Spell.GetSpellInfo then -- dummy War Within check
-		local name = C_Spell.GetSpellName(spellId)
-		local icon = C_Spell.GetSpellTexture(spellId)
-		return name, icon
-	end
-
-	local name, _, icon = GetSpellInfo(spellId)
+	local name = C_Spell.GetSpellName(spellId)
+	local icon = C_Spell.GetSpellTexture(spellId)
 	return name, icon
 end
 
@@ -73,7 +49,7 @@ function aura_env.getAuraMeta(unit, spellId)
 			if auraInfo.spellId == spellId then
 				if DevTool then
 					DevTool:AddData(auraInfo)
-					print("added devtool entry")
+					print(string.format("[%s] added DevTool entry, use /dev", aura_env.id))
 				end
 
 				duration = auraInfo.duration
@@ -144,33 +120,12 @@ local function guidIsDps(guid)
 	return role ~= "TANK" and role ~= "HEALER"
 end
 
----@param guid string
----@return boolean
-local function guidIsHealer(guid)
-	local unit = guidUnitCache[guid] or UnitTokenFromGUID(guid)
-
-	if not unit or not UnitIsFriend("player", unit) then
-		return false
-	end
-
-	return UnitGroupRolesAssigned(unit) == "HEALER"
-end
-
----@param spellId number
----@return boolean
-local function isHealingSpell(spellId)
-	return healBuffsAndCasts[spellId] ~= nil
-end
-
 --- @param spellId number
 --- @param sourceGUID string
 --- @param targetGUID string
 --- @return string||nil, string||nil
 function aura_env.getBuffedPlayerGuid(spellId, sourceGUID, targetGUID)
-	if
-		guidIsDps(sourceGUID)
-		or (aura_env.config.enableHealTracking and guidIsHealer(sourceGUID) and isHealingSpell(spellId))
-	then
+	if guidIsDps(sourceGUID) then
 		return sourceGUID, guidUnitCache[sourceGUID]
 	end
 

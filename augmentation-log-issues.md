@@ -5,7 +5,7 @@
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s` discord & twitter).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: Nov 4**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions).
+**Last updated: Dec 20**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions).
 
 Note this document was overhauled in June 2024 to allow a better overview. Older bugs and their context can be seen in the changelog linked above.
 
@@ -152,7 +152,7 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 - `Embedded Arcane Splinter` (id 444736) is not reattributing anything
   - note that `Embedded Arcane Splinter` (id 444735) _is_ fully reattributing
 - `Embedded Frost Splinter` (id 443934) is not reattributing anything
-  - note that `Embedded Frost Splinter` (id 443740) _is_ fully reattributing  
+  - note that `Embedded Frost Splinter` (id 443740) _is_ fully reattributing
 - `Dematerialize` (id 461498) is only reattributing `Shifting Sands` - cannot crit, so only `Ebon Might` missing
 - `Controlled Instincts` (id 444720) does not reattribute anything (Arcane)
 - `Controlled Instincts` (id 444487) does not reattribute anything (Frost)
@@ -163,6 +163,7 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 - `Soul Cleave` (id 387502) via `Fel Guard` does not reattribute `Ebon Might`
 
 ### The War Within
+
 - `Wicked Cleave` (id 432120) via `Overlord` summoned by `Diabolic Ritual` does not reattribute `Prescience`
 - `Chaos Bolt` (id 434589) via `Summon Overfiend` does not reattribute `Ebon Might`
 
@@ -177,7 +178,6 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 - `Devouring Plague` (id 335467) healing does not reattribute anything
 - `Vampiric Touch` (id 34914) healing does not reattribute anything
 - `Halo` (id 390971) - healing does not reattribute anything
-- `Binding Heal` (id 368276) does not reattribute anything
 - `Sanctuary` (id 208771) does not reattribute anything
 
 ### Special Cases
@@ -214,15 +214,11 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 
 ## Paladin
 
-- `Cleansing Flame` (ids 425261, 425262) T31 4pc does not reattribute anything
-- `Blessed Hammer` (id 229976) healing doesn't reattribute anything
 - `Bulwark of Order` (id 209388) does not reattribute anything
 - `Hammer of Wrath` (id 24275) does not reattribute `Shifting Sands`
 
 ### The War Within
 
-- `Truth Prevails` (id 461529) does not reattribute anything
-  - this is the party overheal part, note that the self heal (id 461546) does reattribute
 - `Dawnlight` (id 431399) does not reattribute anything
   - this is the initial damage
   - note that the dot (id 431380) does fully reattribute

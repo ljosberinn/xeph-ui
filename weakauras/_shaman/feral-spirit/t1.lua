@@ -1,48 +1,81 @@
+--- CLEU:SPELL_SUMMON, PLAYER_DEAD, XEPHUI_FERAL_SPIRITS
 function f(states, event, ...)
 	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
-		local _, _, _, _, _, _, _, targetGUID, _, _, _, spellId = ...
+		local _, subEvent, _, sourceGUID, _, _, _, _, _, _, _, spellId = ...
 
-		if targetGUID ~= WeakAuras.myGUID then
+		if subEvent ~= "SPELL_SUMMON" or sourceGUID ~= WeakAuras.myGUID then
 			return false
 		end
 
-		if spellId ~= 224127 and spellId ~= 224125 and spellId ~= 224126 then
+		local duration = 0
+		if spellId == 426516 then
+			duration = 15
+		elseif spellId == 469330 or spellId == 469322 or spellId == 469332 or spellId == 469328 then
+			duration = 8
+		end
+
+		if duration == 0 then
 			return false
 		end
 
-		local isFirst = true
+		local expiresFirst = true
 		local now = GetTime()
+		local expirationTime = now + duration
 
 		for _, state in pairs(states) do
-			if state.expirationTime > now then
-				isFirst = false
+			if state.expirationTime > now and state.expirationTime < expirationTime then
+				expiresFirst = false
 				break
 			end
 		end
 
-		local GetSpellInfo = C_Spell.GetSpellInfo and C_Spell.GetSpellInfo or GetSpellInfo
+		local key = #states + 1
 
-		states[#states + 1] = {
-			spellId = spellId,
-			show = true,
+		states[key] = {
 			changed = true,
-			duration = 15,
-			expirationTime = now + 15,
+			show = true,
+			spellId = spellId,
 			autoHide = true,
+			expirationTime = expirationTime,
+			duration = duration,
 			progressType = "timed",
-			icon = select(3, GetSpellInfo(spellId)),
-			isFirst = isFirst,
+			expiresFirst = expiresFirst,
 		}
 
-		if isFirst then
+		if expiresFirst then
 			local id = aura_env.id
 
-			aura_env.timer = C_Timer.After(15, function()
-				WeakAuras.ScanEvents("XEPHUI_FERAL_SPIRITS", id, now + 15)
+			aura_env.timer = C_Timer.After(8, function()
+				WeakAuras.ScanEvents("XEPHUI_FERAL_SPIRITS", id, now + 8)
 			end)
+
+			for otherKey, state in pairs(states) do
+				if otherKey ~= key and state.expiresFirst then
+					state.changed = true
+					state.expiresFirst = false
+				end
+			end
 		end
 
 		return true
+	end
+
+	if event == "PLAYER_DEAD" then
+		local hasChanges = false
+
+		for _, state in pairs(states) do
+			if state.expirationTime > GetTime() then
+				state.changed = true
+				state.show = false
+				hasChanges = true
+			end
+		end
+
+		if aura_env.timer ~= nil and not aura_env.timer:IsCancelled() then
+			aura_env.timer:Cancel()
+		end
+
+		return hasChanges
 	end
 
 	if event == "XEPHUI_FERAL_SPIRITS" then
@@ -52,37 +85,44 @@ function f(states, event, ...)
 			return false
 		end
 
-		for _, state in pairs(states) do
-			if state.show and state.expirationTime > now and not state.isFirst then
-				state.isFirst = true
-				state.changed = true
-				local nextExpiration = state.expirationTime - now
+		local lowestExpirationKey = nil
 
-				aura_env.timer = C_Timer.After(nextExpiration, function()
-					WeakAuras.ScanEvents("XEPHUI_FERAL_SPIRITS", id, now + nextExpiration)
-				end)
-
-				return true
+		for key, state in pairs(states) do
+			if
+				state.expirationTime > now
+				and (lowestExpirationKey == nil or state.expirationTime < states[lowestExpirationKey].expirationTime)
+			then
+				lowestExpirationKey = key
 			end
 		end
 
-		return false
-	end
-
-	if event == "PLAYER_DEAD" then
-		local changed = false
-
-		for _, state in pairs(states) do
-			state.changed = true
-			state.show = false
-			changed = true
+		if lowestExpirationKey == nil then
+			return false
 		end
 
-		if aura_env.timer ~= nil and not aura_env.timer:IsCancelled() then
-			aura_env.timer:Cancel()
+		local nextExpiration = states[lowestExpirationKey].expirationTime - now
+
+		aura_env.timer = C_Timer.After(nextExpiration, function()
+			WeakAuras.ScanEvents("XEPHUI_FERAL_SPIRITS", id, now + nextExpiration)
+		end)
+
+		local hasChanges = false
+
+		for key, state in pairs(states) do
+			if key == lowestExpirationKey then
+				if not state.expiresFirst then
+					state.changed = true
+					state.expiresFirst = true
+					hasChanges = true
+				end
+			elseif state.expiresFirst then
+				state.expiresFirst = false
+				state.changed = true
+				hasChanges = true
+			end
 		end
 
-		return changed
+		return hasChanges
 	end
 
 	return false

@@ -1,10 +1,35 @@
 function f(_, _, _, envTable, scriptTable)
+	--TWW Dungeons
+	local araKara = {
+		[214840] = { 30 }, --Engorged Crawler
+	}
+
 	local cityOfThreads = {
 		[219984] = { 50 }, --Xeph'itik
 	}
 
 	local dawnbreaker = {
 		[211087] = { 50 }, --Speaker Shadowcrown
+		[213937] = { 60 }, --Rasha'nan
+	}
+
+	local prioryOfTheSacredFlame = {
+		[207940] = { 50 }, --Prioress Murrpray
+	}
+
+	local darkflameCleft = {
+		[210797] = { 55 }, --The Darkness
+	}
+
+	--DF Dungeons
+
+	local dawnOfTheInfinite = {
+		[207638] = { 80 }, -- Blight of Galakrond
+		[207639] = { 80 }, -- Blight of Galakrond
+		[198997] = { 80 }, -- Blight of Galakrond
+		[201792] = { 50 }, -- Ahnzon
+		[199000] = { 20 }, -- Deios
+		[198933] = { 90, 85 }, -- Iridikron
 	}
 
 	local rubyLifePools = {
@@ -53,6 +78,8 @@ function f(_, _, _, envTable, scriptTable)
 		[184125] = { 1 }, -- Chrono-Lord Deios
 	}
 
+	--SL Dungeons
+
 	local theaterOfPain = {
 		[164451] = { 40 }, -- Dessia the Decapitator
 		[164463] = { 40 }, -- Paceran the Virulent
@@ -61,9 +88,11 @@ function f(_, _, _, envTable, scriptTable)
 	}
 
 	local mistsOfTirnaScithe = {
+		[164929] = { 20 }, -- Tirnenn Villager
 		[164501] = { 70, 40, 10 }, -- Mistcaller
 		[164926] = { 50 }, --Drust Boughbreaker
 		[164804] = { 20 }, -- Droman Oulfarran
+		[164517] = { 70, 40 }, --Tred'ova
 	}
 
 	local plaguefall = {
@@ -100,6 +129,8 @@ function f(_, _, _, envTable, scriptTable)
 		[175806] = { 66, 33 }, -- So'azmi
 	}
 
+	--BFA Dungeons
+
 	local freehold = {
 		[126983] = { 60, 30 }, -- Harlan Sweete - Freehold
 		[126832] = { 75 }, -- Skycap'n Kragg - Freehold
@@ -127,6 +158,8 @@ function f(_, _, _, envTable, scriptTable)
 	local workshop = {
 		[144298] = { 30 }, -- Defense Bot Mk III (casts a shield)
 	}
+
+	--Legion Dungeons
 
 	local karazhanUpper = {
 		[114790] = { 66, 33 }, -- Viz'aduum
@@ -164,6 +197,8 @@ function f(_, _, _, envTable, scriptTable)
 		[99192] = { 50 }, -- Shade of Xavius
 	}
 
+	--WoD Dungeons
+
 	local grimrailDepot = {
 		[81236] = { 50 }, -- Grimrail Technician
 		[79545] = { 60 }, -- Nitrogg Thundertower
@@ -178,10 +213,14 @@ function f(_, _, _, envTable, scriptTable)
 		[76057] = { 20.5 }, -- Carrion Worm
 	}
 
+	--MoP Dungeons
+
 	local templeOfTheJadeSerpent = {
 		[59544] = { 50 }, --The Nodding Tiger
 		[56732] = { 70, 30 }, -- Liu Flameheart
 	}
+
+	--Cata Dungeons
 
 	local throneOfTheTides = {
 		[40586] = { 60, 30 }, -- Lady Naz'jar
@@ -190,7 +229,10 @@ function f(_, _, _, envTable, scriptTable)
 
 	local grimBatol = {
 		[224249] = { 50 }, --Twilight Lavabender
+		[40320] = { 50 }, --Valiona
 	}
+
+	--Raids
 
 	local amirdrassil = {
 		[208445] = { 35 }, -- Larodar
@@ -252,18 +294,12 @@ function f(_, _, _, envTable, scriptTable)
 		[116410] = { 33 }, -- Karam Magespear
 	}
 
-	local dawnOfTheInfinite = {
-		[207638] = { 80 }, -- Blight of Galakrond
-		[207639] = { 80 }, -- Blight of Galakrond
-		[198997] = { 80 }, -- Blight of Galakrond
-		[201792] = { 50 }, -- Ahnzon
-		[199000] = { 20 }, -- Deios
-		[198933] = { 90, 85 }, -- Iridikron
-	}
-
 	envTable.lifePercent = {}
 
 	local zones = {
+		araKara,
+		darkflameCleft,
+		prioryOfTheSacredFlame,
 		cityOfThreads,
 		dawnbreaker,
 		rubyLifePools,

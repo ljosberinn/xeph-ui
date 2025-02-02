@@ -1,16 +1,17 @@
----@param event "STATUS"|"OPTIONS"|"UNIT_SPELLCAST_START"|"UNIT_SPELLCAST_CHANNEL_START"|"UNIT_SPELLCAST_FAILED"|"UNIT_SPELLCAST_FAILED_QUIET"|"UNIT_SPELLCAST_CHANNEL_STOP"|"COMBAT_LOG_EVENT_UNFILTERED"
+---@param event "STATUS"|"OPTIONS"|"UNIT_SPELLCAST_START"|"UNIT_SPELLCAST_CHANNEL_START"|"UNIT_SPELLCAST_FAILED"|"UNIT_SPELLCAST_FAILED_QUIET"|"UNIT_SPELLCAST_CHANNEL_STOP"|"XEPHUI_SPELL_TEST"
 function f(states, event, ...)
-	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
-		local subEvent = select(2, event)
+	local unit, castGUID, spellId
+	if event == "XEPHUI_SPELL_TEST" then
+		local kind, testUnit, testCastGuid, testSpellId = ...
+		event = kind == "CAST" and "UNIT_SPELLCAST_START" or "UNIT_SPELLCAST_CHANNEL_START"
+		unit = testUnit
+		castGUID = testCastGuid
+		spellId = testSpellId
 
-		if subEvent == "SPELL_CAST_START" then
-			-- do sourceFlags comparison for hostility
-		end
-
-		return false
+		-- /run WeakAuras.ScanEvents("XEPHUI_SPELL_TEST", "CAST", "test", 1, 431304)
+	else
+		unit, castGUID, spellId = ...
 	end
-
-	local unit, castGUID, spellId = ...
 
 	if not unit then
 		return false
@@ -26,7 +27,7 @@ function f(states, event, ...)
 		castGUID = unit .. "|" .. spellId
 	end
 
-	if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" then
+	if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" or event == "XEPHUI_SPELL_TEST" then
 		local spellName, spellIcon
 
 		if event == "UNIT_SPELLCAST_CHANNEL_START" then
@@ -34,20 +35,9 @@ function f(states, event, ...)
 			spellName = name
 			spellIcon = icon
 		elseif event == "UNIT_SPELLCAST_START" then
-			local name = nil
-			local icon = nil
-			if C_Spell.GetSpellInfo then
-				local info = C_Spell.GetSpellInfo(spellId)
-				name = info.name
-				icon = info.icon
-			else
-				local n, _, i = GetSpellInfo(spellId)
-				name = n
-				icon = i
-			end
-
-			spellName = name
-			spellIcon = icon
+			local info = C_Spell.GetSpellInfo(spellId)
+			spellName = info.name
+			spellIcon = info.iconID
 		end
 
 		states[castGUID] = {

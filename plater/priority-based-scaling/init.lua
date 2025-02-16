@@ -19,10 +19,17 @@ function f(modTable)
     ]]
 	--
 
-	---@type table<number, boolean>
+	---@class SpitefulLikeScaling
+	---@field self number
+	---@field others number
+
+	---@type table<number, SpitefulLikeScaling>
 	---@description table of npc ids with conditional scaling based on their current target
 	local spitefulLikes = {
-		[220626] = true, --Blood Parasite, Ovinax
+		[220626] = {
+			self = larger,
+			others = extrasmall,
+		}, --Blood Parasite, Ovinax
 	}
 
 	modTable.npcIDs = {}
@@ -408,6 +415,10 @@ function f(modTable)
 	---@return boolean
 	function modTable.isSpitefulLike(id)
 		return spitefulLikes[id] ~= nil
+	end
+
+	function modTable.getSpitefulLikeScale(id)
+		return spitefulLikes[id]
 	end
 
 	---@param unitId string

@@ -25,11 +25,11 @@ local maxContributorBlueprint = "Highest contributor: %s with %s (%s%%)"
 ---@return string|number
 local function formatNumber(number)
 	if number > 1000000 then
-		return string.format("%1.fM", number / 1000000)
+		return string.format("%1.2fM", number / 1000000)
 	end
 
 	if number > 1000 then
-		return string.format("%1.fK", number / 1000)
+		return string.format("%1.2fK", number / 1000)
 	end
 
 	return number
@@ -63,7 +63,7 @@ function aura_env.getMessage()
 				base .. " " .. maxContributorBlueprint,
 				name,
 				formatNumber(individualMax),
-				string.format("%.1f", individualMax / total * 100)
+				string.format("%.2f", individualMax / total * 100)
 			)
 		end
 	end

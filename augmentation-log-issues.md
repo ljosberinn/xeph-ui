@@ -5,9 +5,12 @@
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s` discord & twitter).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: Dec 20**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions).
+**Last updated: Feb 2**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions).
 
-Note this document was overhauled in June 2024 to allow a better overview. Older bugs and their context can be seen in the changelog linked above.
+Major changes:
+
+- Feb 2025: removed tank and healing attribution as `Ebon Might` no longer can buff tanks and healers outside of special cases.
+- June 2024: overhauled to allow a better overview. Older bugs and their context can be seen in the changelog linked above.
 
 - [General Bugs](#general-bugs)
   - [Shifting Sands Reattribution does not factor in throughput-increasing debuffs](#shifting-sands-reattribution-does-not-factor-in-throughput-increasing-debuffs)
@@ -15,33 +18,33 @@ Note this document was overhauled in June 2024 to allow a better overview. Older
   - [Enemies with shared health reattribute an additional time](#enemies-with-shared-health-reattribute-an-additional-time)
   - [Friendly Fire can reattribute](#friendly-fire-can-reattribute)
   - [Empty Support Events](#empty-support-events)
-- [Per Class](#per-class)
+- [Class-Specific Bugs](#class-specific-bugs)
   - [Warrior](#warrior)
     - [The War Within](#the-war-within)
   - [Mage](#mage)
     - [The War Within](#the-war-within-1)
   - [Warlock](#warlock)
+    - [The War Within](#the-war-within-2)
     - [Special Cases](#special-cases)
   - [Priest](#priest)
     - [Special Cases](#special-cases-1)
   - [Shaman](#shaman)
-    - [The War Within](#the-war-within-2)
-  - [Rogue](#rogue)
     - [The War Within](#the-war-within-3)
-  - [Paladin](#paladin)
+  - [Rogue](#rogue)
     - [The War Within](#the-war-within-4)
-  - [Evoker](#evoker)
+  - [Paladin](#paladin)
     - [The War Within](#the-war-within-5)
-  - [Demon Hunter](#demon-hunter)
-  - [Monk](#monk)
+  - [Evoker](#evoker)
     - [The War Within](#the-war-within-6)
-    - [Special Cases](#special-cases-2)
-  - [Death Knight](#death-knight)
+  - [Demon Hunter](#demon-hunter)
     - [The War Within](#the-war-within-7)
+  - [Monk](#monk)
+    - [The War Within](#the-war-within-8)
+  - [Death Knight](#death-knight)
+    - [The War Within](#the-war-within-9)
   - [Druid](#druid)
   - [Hunter](#hunter)
-    - [The War Within](#the-war-within-8)
-    - [Special Cases](#special-cases-3)
+    - [The War Within](#the-war-within-10)
   - [Other](#other)
 
 # General Bugs
@@ -156,6 +159,7 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 - `Dematerialize` (id 461498) is only reattributing `Shifting Sands` - cannot crit, so only `Ebon Might` missing
 - `Controlled Instincts` (id 444720) does not reattribute anything (Arcane)
 - `Controlled Instincts` (id 444487) does not reattribute anything (Frost)
+- `Arcane Phoenix` (pet spawn id 448659) does not reattribute anything
 
 ## Warlock
 
@@ -174,12 +178,6 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 
 ## Priest
 
-- `Vampiric Embrace` (id 15290) healing does not reattribute anything
-- `Devouring Plague` (id 335467) healing does not reattribute anything
-- `Vampiric Touch` (id 34914) healing does not reattribute anything
-- `Halo` (id 390971) - healing does not reattribute anything
-- `Sanctuary` (id 208771) does not reattribute anything
-
 ### Special Cases
 
 - `Prescience` does not tax `Shadowy Apparitions` or `Tormented Spirits`
@@ -191,13 +189,11 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 - `Lava Slag` (id 427729) T31 4pc does not reattribute anything
 - `Earthquake` (id 77478) does not reattribute `Ebon Might`
 - `Flametongue Attack`(id 10444) does not reattribute `Ebon Might`
-- `Restorative Mists` (id 114083) does not reattribute anything
-  - note that 294020 does
 - `Stormblast` (id 390287) does not reattribute anything
 
 ### The War Within
 
-- `Ancestral Awakening` (id 382311) does not reattribute anything
+- `Surging Totem` (id 444995) does not seem to contribute to Breath of Eons
 
 ## Rogue
 
@@ -214,7 +210,6 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 
 ## Paladin
 
-- `Bulwark of Order` (id 209388) does not reattribute anything
 - `Hammer of Wrath` (id 24275) does not reattribute `Shifting Sands`
 
 ### The War Within
@@ -228,21 +223,25 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 ## Evoker
 
 - `Life-Givers Flame` (id 371441) does not reattribute anything
-- `Temporal Anomaly` (id 373862) only reattributes `Shifting Sands` currently
 
 ### The War Within
 
 - `Enkindle` (id 444017) does not reattribute anything
-- `Spiritbloom` (id 409895) does not reattribute anything (this is the Chronowarden hot)
 - `Consume Flame` (id 444089) does not reattribute `Ebon Might` or `Shifting Sands`
 
 ## Demon Hunter
+
+**Aldrachi Havoc is the worst offender currently, especially in dungeons. Around 30% of their overall damage does not reattribute!**
 
 - `Soulscar` (id 390181) does not reattribute anything
 - `Burning Blades` (id 453177) does not reattribute anything
 - `Ragefire` (id 390197) does not reattribute anything
 - `The Hunt` (id 370971) healing does not reattribute anything
 - `Charred Warblades` (id 213011) healing does not reattribute anything
+
+### The War Within
+
+- `Wounded Quarry` (id 448659) does not reattribute anything
 
 ## Monk
 
@@ -254,19 +253,8 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 
 ### The War Within
 
-- `Aspect of Harmony` (id 450763) does not reattribute anything
-- `Purified Spirit` (id 450820) does not reattribute anything
 - `Overwhelming Force` (id 452333) does not reattribute anything
 - `Tiger's Ferocity` (id 454508) does not reattribute anything
-
-### Special Cases
-
-Note that these below may be reattributing `Shifting Sands` and it's based on a key log where naturally no `Shifting Sands` were on the Mistweaver.
-
-- `Ancient Teachings` (ids 388024, 388025) does not reattribute anything
-- `Chi Harmony` (id 423458) does not reattribute anything
-- `Ancient Protection` (id 429271) does not reattribute anything
-- `Soothing Mist` (id 115175) does not reattribute anything
 
 ## Death Knight
 
@@ -283,7 +271,6 @@ Note that these below may be reattributing `Shifting Sands` and it's based on a 
 
 ## Druid
 
-- `Brambles` (id 203958) does not reattribute `Shifting Sands`
 - `Tear` (id 391356) does not reattribute `Shifting Sands` or `Ebon Might`
   - it does reattribute `Prescience`
 - `Tear Open Wounds` (id 391786) does not reattribute `Shifting Sands` or `Ebon Might`
@@ -293,14 +280,7 @@ Note that these below may be reattributing `Shifting Sands` and it's based on a 
 ### The War Within
 
 - `Laceration` (id 459560) does not reattribute anything
-
-### Special Cases
-
-- `Kill Cleave` can stop reattributing `Ebon Might` for the remainder of a key (and presumably similarily in raid until zoning out) if the main pet dies and gets rezzed
-  - note how [here](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=damage-done&source=15) Catwag has no reattribution on Kill Cleave from `EM`
-  - [plenty of reattribution from Foxwag](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=damage-done&source=14) which [died sec 18](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=summary&pins=2%24Off%24%23244F4B%24expression%24type%20%3D%20"death"&view=events) and [got rezzed 4s later](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=8&type=casts&view=events&source=12&ability=982)
-  - it [does work the next key again however](https://www.warcraftlogs.com/reports/pKrJvxTkYHabQcDf#fight=11&type=damage-done&source=12)
-- bm hunters can underattribute regardless of above fixes when the main pet loses its internal reattribution status somehow
+- `Kill Cleave` (id 389448) does not reattribute anything
 
 ## Other
 

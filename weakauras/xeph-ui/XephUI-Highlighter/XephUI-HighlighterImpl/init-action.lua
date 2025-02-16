@@ -15,33 +15,33 @@ function aura_env.queue()
 	end)
 end
 
---- @class CacheEntry
---- @field icon number
---- @field lastModified number|nil
---- @field total number
---- @field buffTargets table<string, number> map of guid, stacks
---- @field buffAmplifier number by how much % per stack this ability increases values
---- @field buffTrigger number
---- @field buffAllowList table<number, boolean> list of spells that are allowed to count for this trigger
---- @field buffAllowListLength number
---- @field buffConsumedBy number
---- @field buffRecentlyConsumed boolean
---- @field debuffTargets table<string, number> map of guid, stacks
---- @field debuffAmplifier number by how much % per stack this ability increases values
---- @field debuffTrigger number
---- @field debuffAllowList table<number, boolean> list of spells that are allowed to count for this trigger
---- @field debuffAllowListLength number
---- @field damageTrigger table<number, boolean> list of spells that should be merged
---- @field damageTriggerLength number
---- @field healTrigger table<number, boolean> list of spells that should be merged
---- @field healTriggerLength number
---- @field resetOnSpell number whether the spell resets on spellcast success, and which spell to reset on
---- @field ownOnly boolean whether to only count own spells
+---@class CacheEntry
+---@field icon number
+---@field lastModified number|nil
+---@field total number
+---@field buffTargets table<string, number> map of guid, stacks
+---@field buffAmplifier number by how much % per stack this ability increases values
+---@field buffTrigger number
+---@field buffAllowList table<number, boolean> list of spells that are allowed to count for this trigger
+---@field buffAllowListLength number
+---@field buffConsumedBy number
+---@field buffRecentlyConsumed boolean
+---@field debuffTargets table<string, number> map of guid, stacks
+---@field debuffAmplifier number by how much % per stack this ability increases values
+---@field debuffTrigger number
+---@field debuffAllowList table<number, boolean> list of spells that are allowed to count for this trigger
+---@field debuffAllowListLength number
+---@field damageTrigger table<number, boolean> list of spells that should be merged
+---@field damageTriggerLength number
+---@field healTrigger table<number, boolean> list of spells that should be merged
+---@field healTriggerLength number
+---@field resetOnSpell number whether the spell resets on spellcast success, and which spell to reset on
+---@field ownOnly boolean whether to only count own spells
 
---- @type table<number, CacheEntry>
+---@type table<number, CacheEntry>
 local cache = {}
 
---- @type table<string, table<number, table<number, number>>>
+---@type table<string, table<number, table<number, number>>>
 local keyMaps = {}
 
 local function resetKeyMap()
@@ -54,46 +54,46 @@ local function resetKeyMap()
 	}
 end
 
---- @class AbilityInfo
---- @field name string
---- @field id number
+---@class AbilityInfo
+---@field name string
+---@field id number
 
---- @class DeBuff
---- @field stacking boolean
---- @field amplification number
---- @field id number
---- @field allowlist table<number, AbilityInfo>
+---@class DeBuff
+---@field stacking boolean
+---@field amplification number
+---@field id number
+---@field allowlist table<number, AbilityInfo>
 
---- @class HealingAbility
---- @field name string
---- @field id number
+---@class HealingAbility
+---@field name string
+---@field id number
 
---- @class ConfigAbility
---- @field hasDots boolean whether the ability has dots
---- @field hasHots boolean whether the ability has dots
---- @field active boolean whether the ability is active
---- @field specs table<number, boolean> map of all specs and which to load this abiltiy on
---- @field healing table<number, AbilityInfo>
---- @field damage table<number, AbilityInfo>
---- @field iconId number icon override
---- @field castSpellId number
---- @field buffs table<number, DeBuff>
---- @field debuffs table<number, DeBuff>
---- @field ownOnly boolean whether to only count own spells
---- @field name string
+---@class ConfigAbility
+---@field hasDots boolean whether the ability has dots
+---@field hasHots boolean whether the ability has dots
+---@field active boolean whether the ability is active
+---@field specs table<number, boolean> map of all specs and which to load this abiltiy on
+---@field healing table<number, AbilityInfo>
+---@field damage table<number, AbilityInfo>
+---@field iconId number icon override
+---@field castSpellId number
+---@field buffs table<number, DeBuff>
+---@field debuffs table<number, DeBuff>
+---@field ownOnly boolean whether to only count own spells
+---@field name string
 
---- @class AuraEnvironmentConfig
---- @field abilities table<number, ConfigAbility>
---- @field duration number
+---@class AuraEnvironmentConfig
+---@field abilities table<number, ConfigAbility>
+---@field duration number
 
---- @class AuraEnvironment
---- @field config AuraEnvironmentConfig
---- @field active boolean
---- @field nextFrame number|nil
---- @field customEventName string
---- @field id string
---- @field dirtyIndices table<number, boolean>
---- @class aura_env
+---@class AuraEnvironment
+---@field config AuraEnvironmentConfig
+---@field active boolean
+---@field nextFrame number|nil
+---@field customEventName string
+---@field id string
+---@field dirtyIndices table<number, boolean>
+---@class aura_env
 
 local hasBuffs = false
 local hasDebuffs = false
@@ -172,8 +172,8 @@ function aura_env.setup()
 		return select(3, GetSpellInfo(id))
 	end
 
-	--- @param ability ConfigAbility
-	--- @return number
+	---@param ability ConfigAbility
+	---@return number
 	local function resolveIcon(ability)
 		if ability.iconId > 0 then
 			return ability.iconId
@@ -203,8 +203,8 @@ function aura_env.setup()
 		return 134400
 	end
 
-	--- @param ability ConfigAbility
-	--- @return boolean
+	---@param ability ConfigAbility
+	---@return boolean
 	local function thisSpellShouldLoad(ability)
 		if not ability.active then
 			return false
@@ -223,8 +223,8 @@ function aura_env.setup()
 		return false
 	end
 
-	--- @param tbl table
-	--- @return number
+	---@param tbl table
+	---@return number
 	local function getLength(tbl)
 		local count = 0
 
@@ -235,8 +235,8 @@ function aura_env.setup()
 		return count
 	end
 
-	--- @param specId number
-	--- @return boolean
+	---@param specId number
+	---@return boolean
 	local function isSpecWithSummons(specId)
 		-- for now, only warlocks are dedicatedly supported
 		-- may have to extend for special trinkets in the future
@@ -383,10 +383,10 @@ end
 
 aura_env.setup()
 
---- @param key number
---- @param now number
---- @param force boolean
---- @return boolean
+---@param key number
+---@param now number
+---@param force boolean
+---@return boolean
 local function reset(key, now, force)
 	local hasChanges = false
 
@@ -401,9 +401,9 @@ local function reset(key, now, force)
 	return hasChanges
 end
 
---- @param tbl table<number, boolean>
---- @param force boolean
---- @return boolean
+---@param tbl table<number, boolean>
+---@param force boolean
+---@return boolean
 function aura_env.expireOutdatedData(tbl, force)
 	local hasChanges = false
 	local now = GetTime()
@@ -418,17 +418,19 @@ function aura_env.expireOutdatedData(tbl, force)
 	return hasChanges
 end
 
---- @param now number
---- @param key number
---- @return boolean
+---@param now number
+---@param key number
+---@return boolean
 function aura_env.isExpired(now, key)
-	return cache[key].total > 0
-		and cache[key].lastModified ~= nil
-		and now > (cache[key].lastModified + aura_env.config.duration)
+	if cache[key].total == 0 or cache[key].lastModified == nil then
+		return false
+	end
+
+	return now > (cache[key].lastModified + aura_env.config.duration)
 end
 
---- @param spellId number
---- @return boolean
+---@param spellId number
+---@return boolean
 function aura_env.onSpellCastSuccess(spellId)
 	local keysToAdditionallyReset = keyMaps.cast[spellId]
 	local copy
@@ -466,12 +468,12 @@ function aura_env.onSpellCastSuccess(spellId)
 	return expiredOnCastKeys or expiredOutdatedKeys or false
 end
 
---- @type table<string, boolean>
+---@type table<string, boolean>
 local guidIsMyPet = {}
 
---- @param guid string
---- @param sourceFlags number
---- @return boolean
+---@param guid string
+---@param sourceFlags number
+---@return boolean
 local function isMyPet(guid, sourceFlags)
 	if guidIsMyPet[guid] == nil then
 		guidIsMyPet[guid] = CombatLog_Object_IsA(sourceFlags, COMBATLOG_FILTER_MY_PET)
@@ -480,20 +482,20 @@ local function isMyPet(guid, sourceFlags)
 	return guidIsMyPet[guid]
 end
 
---- @param guid string
---- @param sourceFlags number
---- @return boolean
+---@param guid string
+---@param sourceFlags number
+---@return boolean
 local function isBasicallyMe(guid, sourceFlags)
 	return guid == WeakAuras.myGUID or isMyPet(guid, sourceFlags) or false
 end
 
---- @param key number
---- @param sourceGUID string
---- @param sourceFlags number
---- @param targetGUID string
---- @param spellId number
---- @param kind "heal" | "damage"
---- @return boolean, number
+---@param key number
+---@param sourceGUID string
+---@param sourceFlags number
+---@param targetGUID string
+---@param spellId number
+---@param kind "heal" | "damage"
+---@return boolean, number
 local function validateAndDetermineAmplification(key, sourceGUID, sourceFlags, targetGUID, spellId, kind)
 	local ability = cache[key]
 
@@ -546,9 +548,9 @@ local function validateAndDetermineAmplification(key, sourceGUID, sourceFlags, t
 	return true, 0
 end
 
---- @param amount number
---- @param amplification number
---- @return number
+---@param amount number
+---@param amplification number
+---@return number
 local function calculateTotal(amount, amplification)
 	if amplification == 0 then
 		return amount
@@ -563,16 +565,25 @@ local function calculateTotal(amount, amplification)
 	return result
 end
 
---- @param key number
---- @param total number
-local function updateCacheAndDirty(key, total)
-	cache[key].total = cache[key].total + total
+---@param key number
+---@param total number
+---@return boolean
+local function cacheUpdated(key, total)
+	local newTotal = cache[key].total + total
+
+	if newTotal == cache[key].total then
+		return false
+	end
+
+	cache[key].total = newTotal
 	cache[key].lastModified = GetTime()
 
 	aura_env.dirtyIndices[key] = true
+
+	return true
 end
 
---- @return boolean
+---@return boolean
 local function handleDamageEvent(...)
 	if not InCombatLockdown() then -- cannot possibly be our damage event
 		return false
@@ -602,10 +613,8 @@ local function handleDamageEvent(...)
 		if mayProceed or isReflecting then
 			local total = calculateTotal(amount + (absorbed or 0), amplification)
 
-			if total > 0 then
+			if total > 0 and cacheUpdated(key, total) then
 				hasChanges = true
-
-				updateCacheAndDirty(key, total)
 			end
 		end
 	end
@@ -613,7 +622,7 @@ local function handleDamageEvent(...)
 	return hasChanges
 end
 
---- @return boolean
+---@return boolean
 local function handleHealEvent(...)
 	local _, _, _, sourceGUID, _, sourceFlags, _, targetGUID, _, _, _, spellId, _, _, amount, overheal = ...
 
@@ -632,9 +641,8 @@ local function handleHealEvent(...)
 		if mayProceed then
 			local total = calculateTotal(amount - overheal, amplification)
 
-			if total > 0 then
+			if total > 0 and cacheUpdated(key, total) then
 				hasChanges = true
-				updateCacheAndDirty(key, total)
 			end
 		end
 	end
@@ -642,7 +650,7 @@ local function handleHealEvent(...)
 	return hasChanges
 end
 
---- @return boolean
+---@return boolean
 local function handleAuraApplication(...)
 	local _, _, _, sourceGUID, _, _, _, targetGUID, _, _, _, spellId, _, _, type, stacks = ...
 
@@ -691,7 +699,7 @@ local function handleAuraApplication(...)
 	return false
 end
 
---- @return boolean
+---@return boolean
 local function handleAuraRemoval(...)
 	local _, _, _, sourceGUID, _, _, _, targetGUID, _, _, _, spellId, _, _, type, stacks = ...
 
@@ -748,30 +756,11 @@ local function handleAuraRemoval(...)
 	return false
 end
 
---- @return boolean
+---@return boolean
 local function handleSpellMissed(...)
-	local _, _, _, sourceGUID, _, _, _, targetGUID, _, _, _, spellId, _, _, missType, _, amount = ...
+	local _, _, _, sourceGUID, _, _, _, targetGUID, _, _, _, spellId, _, _, missType = ...
 
-	if missType == "ABSORB" then
-		return handleDamageEvent(
-			nil,
-			nil,
-			nil,
-			sourceGUID,
-			nil,
-			nil,
-			nil,
-			targetGUID,
-			nil,
-			nil,
-			nil,
-			spellId,
-			nil,
-			nil,
-			amount,
-			0
-		)
-	elseif missType == "REFLECT" and hasReflect and targetGUID == WeakAuras.myGUID then
+	if hasReflect and missType == "REFLECT" and targetGUID == WeakAuras.myGUID then
 		reflects[sourceGUID] = reflects[sourceGUID] or {}
 		reflects[sourceGUID][spellId] = GetTime()
 	end
@@ -779,7 +768,7 @@ local function handleSpellMissed(...)
 	return false
 end
 
---- @return boolean
+---@return boolean
 local function handleSpellSummon(...)
 	local _, _, _, sourceGUID, _, _, _, targetGUID = ...
 
@@ -792,16 +781,16 @@ local function handleSpellSummon(...)
 	return false
 end
 
---- @return boolean
+---@return boolean
 local function handleSpellAbsorb(...)
 	local _, _, _, _, _, _, _, targetGUID, _, _, _, _, _, _, sourceGUID, _, _, _, spellId, _, _, amount = ...
 
-	if not amount then -- melees do not include inflicting cast info
-		amount = select(19, ...)
-	end
-
 	if sourceGUID ~= WeakAuras.myGUID then
 		return false
+	end
+
+	if not amount then -- melees do not include inflicting cast info
+		amount = select(19, ...)
 	end
 
 	local unit = UnitTokenFromGUID(targetGUID)
@@ -888,10 +877,14 @@ aura_env.cleuMap = {
 		return handleHealEvent(...)
 	end,
 	["SPELL_MISSED"] = function(...)
+		if not hasReflect then
+			return false
+		end
+
 		return handleSpellMissed(...)
 	end,
 	["SPELL_PERIODIC_MISSED"] = function(...)
-		if not hasPeriodicDamage then
+		if not hasReflect then
 			return false
 		end
 
@@ -909,17 +902,17 @@ aura_env.cleuMap = {
 	end,
 }
 
---- @param index number
---- @return number, number
-function aura_env.getDisplayDataForIndex(index)
-	return cache[index].total, cache[index].icon
+---@param key number
+---@return number, number
+function aura_env.getDisplayDataForIndex(key)
+	return cache[key].total, cache[key].icon
 end
 
---- we don't track which enemies die, so unless we did, we'd be carrying around
---- a growing list of enemies with debuffs active despite them being long dead.
---- however, many enemies don't die event-wise, so it's safer and more performant
---- to just assume whenever you leave combat, we can drop all seen debuff stacks
---- @return boolean
+---we don't track which enemies die, so unless we did, we'd be carrying around
+---a growing list of enemies with debuffs active despite them being long dead.
+---however, many enemies don't die event-wise, so it's safer and more performant
+---to just assume whenever you leave combat, we can drop all seen debuff stacks
+---@return boolean
 function aura_env.onPlayerRegenEnabled()
 	if hasReflect then
 		table.wipe(reflects)

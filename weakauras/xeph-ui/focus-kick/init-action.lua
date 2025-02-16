@@ -24,6 +24,7 @@ if Plater and Plater.db and Plater.db.profile and Plater.db.profile.script_data 
 	local importantCastsScripts = {
 		["Cast - Very Important [Plater]"] = true,
 		["Important Casts - Jundies"] = true,
+		["Quazii MUST INTERRUPT"] = true,
 	}
 
 	for _, script in pairs(Plater.db.profile.script_data) do

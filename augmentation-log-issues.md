@@ -5,7 +5,7 @@
 Maintained by the WCL Team. If you have any question, additions or updates, please reach out on our [Discord](https://discord.gg/5ebPJSsy5y) or dm me (`xepher1s` discord & twitter).
 Thanks to all the folks helping spotting these and reporting them.
 
-**Last updated: Feb 2**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions).
+**Last updated: Feb 21**. [Click for an overview of changes](https://gist.github.com/ljosberinn/a2f08a53cfe8632a18350eea44e9da3e/revisions).
 
 Major changes:
 
@@ -163,6 +163,8 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 
 ## Warlock
 
+**Damaging abilities from many Demonology Warlock pets are incorrectly reattributing `Shifting Sands`. `Greater Dreadstalker`, `Grimoire: Felguard`, `Summon Demonic Tyrant` are reattributing `Shifting Sands `around or less than `Prescience`, while `Summon Charhound` works.**
+
 - `Dimensional Cinder` (id 427285) does not reattribute anything
 - `Soul Cleave` (id 387502) via `Fel Guard` does not reattribute `Ebon Might`
 
@@ -277,12 +279,16 @@ are not only empty but also, the hunter does not have Shifting Sands from these 
 
 ## Hunter
 
+**Damaging abilities from Beast Mastery hunter pets are incorrectly reattributing especially `Shifting Sands`. This has been an issue of varying impact in the past already, but is now more prevalent than ever.**
+
+- `Thread of Fate` does not work with Beast Mastery pets _at all_. This is just a straight up DPS loss for the Aug buffing a BM Hunter in that scenario when playing that hero talent.
+
 ### The War Within
 
 - `Laceration` (id 459560) does not reattribute anything
 - `Kill Cleave` (id 389448) does not reattribute anything
 
-## Other
+##
 
 - `Timestrike` (id 419737) does not reattribute anything
 - `Leech` is not reattributing anything but is arguably low priority

@@ -76,7 +76,7 @@ function f(modTable)
 			}
 
 			for _, locale in ipairs(locales) do
-				if name:find(locale) then
+				if name ~= locale and name:find(locale) then
 					return name:gsub(locale, ""):match("^%s*(.-)%s*$")
 				end
 			end
@@ -89,7 +89,7 @@ function f(modTable)
 		end,
 	}
 
-	-- @unitId  unitID for mob e.g nameplate1
+	-- @unitId unitID for mob e.g nameplate1
 	function modTable.renamer(unitFrame, unitId)
 		if not (unitId and unitFrame) then
 			return

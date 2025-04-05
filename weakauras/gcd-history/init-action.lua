@@ -222,7 +222,7 @@ local function OnUnitSpellcastSucceeded(states, ...)
 
 	-- unpause everything paused
 	for _, state in pairs(states) do
-		if state.paused then
+		if state.show and state.paused then
 			state.paused = false
 			state.changed = true
 			state.desaturated = false
@@ -266,7 +266,7 @@ local function OnUnitSpellcastChannelStart(states, ...)
 
 	for _, state in pairs(states) do
 		-- pause everything that isn't already paused
-		if state then
+		if state and state.show then
 			if not state.paused then
 				state.paused = true
 				state.changed = true
@@ -331,7 +331,7 @@ local function OnUnitSpellcastChannelStop(states, ...)
 
 	-- unpause everything paused
 	for index, state in pairs(states) do
-		if state.paused and index ~= previousIndex then
+		if state.show and state.paused and index ~= previousIndex then
 			state.paused = false
 			state.changed = true
 			state.desaturated = false
@@ -518,7 +518,7 @@ local function OnCombatLogEventUnfiltered(states, ...)
 
 		-- unpause everything paused
 		for _, state in pairs(states) do
-			if state.paused then
+			if state.show and state.paused then
 				state.paused = false
 				state.changed = true
 				state.desaturated = false
@@ -585,7 +585,7 @@ local function OnCombatLogEventUnfiltered(states, ...)
 
 		-- unpause everything paused
 		for index, state in pairs(states) do
-			if state.paused then
+			if state.show and state.paused then
 				hasChanges = true
 				state.paused = false
 				state.changed = true
@@ -639,7 +639,7 @@ local function OnCombatLogEventUnfiltered(states, ...)
 
 		-- unpause everything paused
 		for index, state in pairs(states) do
-			if state.paused then
+			if state.show and state.paused then
 				state.paused = false
 				state.changed = true
 				state.desaturated = false

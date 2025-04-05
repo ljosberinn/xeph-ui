@@ -158,8 +158,6 @@ function f(modTable)
 	---@param unitId string
 	---@param unitFrame Frame
 	function modTable.EnhancedCastBar(unitId, unitFrame)
-		local interruptID = GetInterruptID()
-
 		local castBar = unitFrame.castBar
 
 		if castBar.tick ~= nil then
@@ -236,61 +234,66 @@ function f(modTable)
 			end
 		end
 
-		if interruptID == nil or not modTable.config.showInterruptColor then
+		if not modTable.config.showInterruptColor then
 			return
 		end
 
-		-- Interrupt bar color options
-		local canInterrupt = castBar.canInterrupt
-		local castEndTime = castBar.spellEndTime
-
-		local interruptInfo = C_Spell.GetSpellCooldown(interruptID)
-		local interruptReadyTime = interruptInfo.startTime + interruptInfo.duration
-
+		local interruptID = GetInterruptID()
 		local nextColor = modTable.config.colorProtected
 
-		if canInterrupt then
-			-- Check to see if the spell is known/talented
-			if IsSpellKnown(interruptID, playerIsWarlock) then
-				if interruptReadyTime == 0 then
-					nextColor = modTable.config.colorInterruptAvailable
-				elseif
-					modTable.config.showSecondaryInterrupts
-					and playerClass == 2 -- paladin
-					and IsSpellKnown(31935) -- avenger's shield
-					and not IsSpellOnCooldown_IgnoreGCD(31935)
-				then
-					nextColor = modTable.config.colorSecondaryInterrupt
-				elseif interruptReadyTime < (castEndTime - 0.25) then
-					MaybeCreateTickTexture(castBar)
-					castBar.tick:Show()
-					local tickLocation = (interruptInfo.startTime + interruptInfo.duration - castBar.spellStartTime)
-						/ castBar.maxValue -- castBar.spellStartTime + 0.25
-					if castBar.channeling then
-						tickLocation = 1 - tickLocation
-					end
-					castBar.tick:SetPoint("center", castBar, "left", tickLocation * castBar:GetWidth(), 0)
+		if interruptID == nil then
+			nextColor = modTable.config.colorNoInterrupt
+		else
+			-- Interrupt bar color options
+			local canInterrupt = castBar.canInterrupt
+			local castEndTime = castBar.spellEndTime
 
-					nextColor = modTable.config.colorInterruptSoon
-				elseif interruptReadyTime >= (castEndTime - 0.25) then
+			local interruptInfo = C_Spell.GetSpellCooldown(interruptID)
+			local interruptReadyTime = interruptInfo.startTime + interruptInfo.duration
+
+			if canInterrupt then
+				-- Check to see if the spell is known/talented
+				if IsSpellKnown(interruptID, playerIsWarlock) then
+					if interruptReadyTime == 0 then
+						nextColor = modTable.config.colorInterruptAvailable
+					elseif
+						modTable.config.showSecondaryInterrupts
+						and playerClass == 2 -- paladin
+						and IsSpellKnown(31935) -- avenger's shield
+						and not IsSpellOnCooldown_IgnoreGCD(31935)
+					then
+						nextColor = modTable.config.colorSecondaryInterrupt
+					elseif interruptReadyTime < (castEndTime - 0.25) then
+						MaybeCreateTickTexture(castBar)
+						castBar.tick:Show()
+						local tickLocation = (interruptInfo.startTime + interruptInfo.duration - castBar.spellStartTime)
+							/ castBar.maxValue -- castBar.spellStartTime + 0.25
+						if castBar.channeling then
+							tickLocation = 1 - tickLocation
+						end
+						castBar.tick:SetPoint("center", castBar, "left", tickLocation * castBar:GetWidth(), 0)
+
+						nextColor = modTable.config.colorInterruptSoon
+					elseif interruptReadyTime >= (castEndTime - 0.25) then
+						nextColor = modTable.config.colorNoInterrupt
+					end
+				else
 					nextColor = modTable.config.colorNoInterrupt
 				end
-			else
-				nextColor = modTable.config.colorNoInterrupt
 			end
-		end
 
-		-- Spell Reflection coloring
-		if
-			modTable.config.showSecondaryInterrupts
-			and isTargettingMe
-			and playerClass == 1
-			and IsSpellKnown(23920) -- spell reflect
-			and not IsSpellOnCooldown_IgnoreGCD(23920)
-			and modTable.reflectableSpells[castBar.SpellID] == true
-		then
-			-- Color the bar if the spell is reflectable
-			nextColor = modTable.config.colorSecondaryInterrupt
+			-- Spell Reflection coloring
+			if
+				modTable.config.showSecondaryInterrupts
+				and isTargettingMe
+				and playerClass == 1
+				and IsSpellKnown(23920) -- spell reflect
+				and not IsSpellOnCooldown_IgnoreGCD(23920)
+				and modTable.reflectableSpells[castBar.SpellID] == true
+			then
+				-- Color the bar if the spell is reflectable
+				nextColor = modTable.config.colorSecondaryInterrupt
+			end
 		end
 
 		local currentR, currentG, currentB, currentA = castBar:GetColor()

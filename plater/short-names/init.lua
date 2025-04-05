@@ -73,6 +73,14 @@ function f(modTable)
 		[228463] = function(name)
 			local locales = {
 				"Reel Assistant", -- en
+				"Walzenassistent", -- de
+				"Assistant des bobines", --fr
+				"Технический ассистент", -- ru
+				"转轮助理", -- cn
+				"Ayudante de palanca", -- es
+				"Assistente al Rullo", -- it
+				"Assistente de Cilindro", -- pt
+				"굴림판 도우미", -- ko
 			}
 
 			for _, locale in ipairs(locales) do

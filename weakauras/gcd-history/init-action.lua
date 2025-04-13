@@ -60,8 +60,11 @@ local ignorelist = {
 	[429826] = true, -- Hammer of Light
 	[431398] = true, -- Empyrean Hammer
 	[434144] = true, -- Infliction of Sorrow fake cast
+	[437965] = true, -- Pulsing Flames, fake cast in Cinderbrew Area first pull
 	[441426] = true, -- Exterminate cleave
 	[456640] = true, -- Consuming Fire fake cast
+	[458357] = true, -- Chain Heal via Lively Totems
+	[470411] = true, -- Flame Shock fake cast
 }
 
 for _, spell in pairs(aura_env.config.ignorelist) do
@@ -142,6 +145,13 @@ elseif id == 4 then
 		[2098] = true, -- dispatch
 		[315341] = true, -- between the eyes
 	}
+elseif id == 7 and WOW_PROJECT_ID == WOW_PROJECT_MAINLINE and aura_env.config.petActions then
+	print(
+		format(
+			"[%s] Warning: Shaman totems cast a lot of noisy pet spells. If you wish to filter these, disable Pet Actions in the Custom Config tab of this aura.",
+			aura_env.id
+		)
+	)
 end
 
 --- @type table<string, boolean>
@@ -173,6 +183,8 @@ local function isBasicallyMe(guid, sourceFlags)
 	return false
 end
 
+local limit = 15
+
 --- @param guid string
 --- @return boolean
 local function isPet(guid)
@@ -180,22 +192,21 @@ local function isPet(guid)
 end
 
 ---@param states table<number, GCDHistoryState>
----@return boolean
 local function OnPlayerDeath(states, ...)
-	local hasChanges = false
 	local now = GetTime()
 
-	for _, state in pairs(states) do
-		if state.paused then
-			hasChanges = true
-			state.paused = false
-			state.changed = true
-			state.desaturated = false
-			state.remaining = now - state.start
+	for index = aura_env.spellcasts, aura_env.spellcasts - limit, -1 do
+		local state = states[index]
+
+		if state and state.show and state.paused then
+			states:Update(index, {
+				paused = false,
+				changed = true,
+				desaturated = false,
+				remaining = now - state.start,
+			})
 		end
 	end
-
-	return hasChanges
 end
 
 ---@param states table<number, GCDHistoryState>
@@ -221,18 +232,22 @@ local function OnUnitSpellcastSucceeded(states, ...)
 	local name, icon = getSpellMeta(spellId)
 
 	-- unpause everything paused
-	for _, state in pairs(states) do
-		if state.show and state.paused then
-			state.paused = false
-			state.changed = true
-			state.desaturated = false
-			state.remaining = now - state.start
+	for index = aura_env.spellcasts, aura_env.spellcasts - limit, -1 do
+		local state = states[index]
+
+		if state and state.show and state.paused then
+			states:Update(index, {
+				paused = false,
+				changed = true,
+				desaturated = false,
+				remaining = now - state.start,
+			})
 		end
 	end
 
 	local specialNumber = empowers[spellId]
 
-	states[aura_env.spellcasts] = {
+	states:Update(aura_env.spellcasts, {
 		show = true,
 		changed = true,
 		name = name,
@@ -248,7 +263,7 @@ local function OnUnitSpellcastSucceeded(states, ...)
 		specialNumber = specialNumber,
 		interrupted = false,
 		isPet = false,
-	}
+	})
 
 	aura_env.spellcasts = aura_env.spellcasts + 1
 
@@ -264,19 +279,26 @@ local function OnUnitSpellcastChannelStart(states, ...)
 		return false
 	end
 
-	for _, state in pairs(states) do
-		-- pause everything that isn't already paused
+	for index = aura_env.spellcasts, aura_env.spellcasts - limit, -1 do
+		local state = states[index]
+
 		if state and state.show then
+			-- pause everything that isn't already paused
+
+			local nextState = {}
+
 			if not state.paused then
-				state.paused = true
-				state.changed = true
+				nextState.paused = true
+				nextState.changed = true
 			end
 
 			-- chain channeling by eg skipping ticks of Disintegrate leaves the previous cast still desaturated, so correct this here
 			if state.desaturated then
-				state.desaturated = false
-				state.changed = true
+				nextState.desaturated = false
+				nextState.changed = true
 			end
+
+			states:Update(index, nextState)
 		end
 	end
 
@@ -288,7 +310,7 @@ local function OnUnitSpellcastChannelStart(states, ...)
 	local now = GetTime()
 	local duration = aura_env.config.general.duration + castTimeInSeconds
 
-	states[aura_env.spellcasts] = {
+	states:Update(aura_env.spellcasts, {
 		show = true,
 		changed = true,
 		name = name,
@@ -304,7 +326,7 @@ local function OnUnitSpellcastChannelStart(states, ...)
 		specialNumber = 0,
 		interrupted = false,
 		isPet = false,
-	}
+	})
 
 	aura_env.spellcasts = aura_env.spellcasts + 1
 
@@ -330,8 +352,10 @@ local function OnUnitSpellcastChannelStop(states, ...)
 	local now = GetTime()
 
 	-- unpause everything paused
-	for index, state in pairs(states) do
-		if state.show and state.paused and index ~= previousIndex then
+	for index = aura_env.spellcasts, aura_env.spellcasts - limit, -1 do
+		local state = states[index]
+
+		if state and state.show and state.paused and index ~= previousIndex then
 			state.paused = false
 			state.changed = true
 			state.desaturated = false
@@ -343,12 +367,14 @@ local function OnUnitSpellcastChannelStop(states, ...)
 		end
 	end
 
-	previousCast.changed = true
-	previousCast.paused = false
-	previousCast.desaturated = false
-	-- initial duration is based on max channel, but we don't always fully channel
-	previousCast.duration = aura_env.config.general.duration + GetTime() - previousCast.start
-	previousCast.expirationTime = previousCast.start + previousCast.duration
+	states:Update(previousIndex, {
+		changed = true,
+		pause = false,
+		desaturated = false,
+		-- initial duration is based on max channel, but we don't always fully channel
+		duration = aura_env.config.general.duration + GetTime() - previousCast.start,
+		expirationTime = previousCast.start + previousCast.duration,
+	})
 
 	return true
 end
@@ -374,7 +400,7 @@ local function OnCombatLogEventUnfiltered(states, ...)
 		local name, icon = getSpellMeta(spellId)
 		local now = GetTime()
 
-		states[aura_env.spellcasts] = {
+		states:Update(aura_env.spellcasts, {
 			show = true,
 			changed = true,
 			name = name,
@@ -390,7 +416,7 @@ local function OnCombatLogEventUnfiltered(states, ...)
 			specialNumber = 0,
 			interrupted = false,
 			isPet = false,
-		}
+		})
 
 		aura_env.spellcasts = aura_env.spellcasts + 1
 
@@ -413,9 +439,11 @@ local function OnCombatLogEventUnfiltered(states, ...)
 			return false
 		end
 
-		previousCast.lastTick = now
-		previousCast.specialNumber = previousCast.specialNumber + 1
-		previousCast.changed = true
+		states:Update(aura_env.spellcasts - 1, {
+			lastTick = now,
+			specialNumber = previousCast.specialNumber + 1,
+			changed = true,
+		})
 
 		return true
 	elseif subEvent == "SPELL_CAST_START" then
@@ -437,24 +465,30 @@ local function OnCombatLogEventUnfiltered(states, ...)
 		if castTime > 0 then
 			paused = true
 
-			for _, state in pairs(states) do
-				-- pause everything that isn't already paused
-				if state then
+			-- pause everything that isn't already paused
+			for index = aura_env.spellcasts, aura_env.spellcasts - limit, -1 do
+				local state = states[index]
+
+				if state and state.show then
+					local nextState = {}
+
 					if not state.paused then
-						state.paused = true
-						state.changed = true
+						nextState.paused = true
+						nextState.changed = true
 					end
 
 					-- chain channeling by eg skipping ticks of Disintegrate leaves the previous cast still desaturated, so correct this here
 					if state.desaturated then
-						state.desaturated = false
-						state.changed = true
+						nextState.desaturated = false
+						nextState.changed = true
 					end
+
+					states:Update(index, nextState)
 				end
 			end
 		end
 
-		states[aura_env.spellcasts] = {
+		states:Update(aura_env.spellcasts, {
 			show = true,
 			changed = true,
 			name = name,
@@ -470,7 +504,7 @@ local function OnCombatLogEventUnfiltered(states, ...)
 			specialNumber = 0,
 			interrupted = false,
 			isPet = isPet(sourceGUID),
-		}
+		})
 
 		aura_env.spellcasts = aura_env.spellcasts + 1
 
@@ -480,7 +514,6 @@ local function OnCombatLogEventUnfiltered(states, ...)
 
 		if castTime > 0 then
 			local now = GetTime()
-			local hasChanges = false
 
 			local previousIndex = aura_env.spellcasts - 1
 			local previousCast = states[previousIndex]
@@ -488,23 +521,26 @@ local function OnCombatLogEventUnfiltered(states, ...)
 			-- revert marking item use as interrupted when trying to use an
 			-- item that was already being casted
 			if previousCast and previousCast.spellId == spellId and previousCast.interrupted then
-				hasChanges = true
-				previousCast.interrupted = false
-				previousCast.changed = true
+				states:Update(previousIndex, {
+					interrupted = false,
+					changed = true,
+				})
 			end
 
-			-- unpause everything paused
-			for _, state in pairs(states) do
-				if state.paused then
-					hasChanges = true
-					state.paused = false
-					state.changed = true
-					state.desaturated = false
-					state.remaining = now - state.start
+			for index = aura_env.spellcasts, aura_env.spellcasts - limit, -1 do
+				local state = states[index]
+
+				if state and state.show and state.paused then
+					states:Update(index, {
+						paused = false,
+						changed = true,
+						desaturated = false,
+						remaining = now - state.start,
+					})
 				end
 			end
 
-			return hasChanges
+			return
 		end
 
 		local channelStartTime = select(4, UnitChannelInfo("player"))
@@ -517,12 +553,16 @@ local function OnCombatLogEventUnfiltered(states, ...)
 		local now = GetTime()
 
 		-- unpause everything paused
-		for _, state in pairs(states) do
-			if state.show and state.paused then
-				state.paused = false
-				state.changed = true
-				state.desaturated = false
-				state.remaining = now - state.start
+		for index = aura_env.spellcasts, aura_env.spellcasts - limit, -1 do
+			local state = states[index]
+
+			if state and state.show and state.paused then
+				states:Update(index, {
+					paused = false,
+					changed = true,
+					desaturated = false,
+					remaining = now - state.start,
+				})
 			end
 		end
 
@@ -532,7 +572,7 @@ local function OnCombatLogEventUnfiltered(states, ...)
 			specialNumber = isCataclysm and currentComboPoints or lastComboPoints
 		end
 
-		states[aura_env.spellcasts] = {
+		states:Update(aura_env.spellcasts, {
 			show = true,
 			changed = true,
 			name = name,
@@ -548,7 +588,7 @@ local function OnCombatLogEventUnfiltered(states, ...)
 			specialNumber = specialNumber,
 			interrupted = false,
 			isPet = isPet(sourceGUID),
-		}
+		})
 
 		aura_env.spellcasts = aura_env.spellcasts + 1
 
@@ -581,24 +621,27 @@ local function OnCombatLogEventUnfiltered(states, ...)
 			return false
 		end
 
-		local hasChanges = false
-
 		-- unpause everything paused
-		for index, state in pairs(states) do
-			if state.show and state.paused then
-				hasChanges = true
-				state.paused = false
-				state.changed = true
-				state.desaturated = false
-				state.remaining = now - state.start
+		for index = aura_env.spellcasts, aura_env.spellcasts - limit, -1 do
+			local state = states[index]
+
+			if state and state.show and state.paused then
+				local nextState = {
+					paused = false,
+					changed = true,
+					desaturated = false,
+					remaining = now - state.start,
+				}
 
 				if index == previousIndex then
-					state.interrupted = true
+					nextState.interrupted = true
 				end
+
+				states:Update(index, nextState)
 			end
 		end
 
-		return hasChanges
+		return
 	elseif subEvent == "SPELL_EMPOWER_START" then
 		local now = GetTime()
 		local _, _, _, channelStartTime, channelEndTime = UnitChannelInfo("player")
@@ -606,7 +649,7 @@ local function OnCombatLogEventUnfiltered(states, ...)
 		local castTimeInSeconds = (channelEndTime - channelStartTime) / 1000
 		local duration = aura_env.config.general.duration + castTimeInSeconds
 
-		states[aura_env.spellcasts] = {
+		states:Update(aura_env.spellcasts, {
 			show = true,
 			changed = true,
 			name = name,
@@ -622,7 +665,7 @@ local function OnCombatLogEventUnfiltered(states, ...)
 			specialNumber = 0,
 			interrupted = false,
 			isPet = isPet(sourceGUID),
-		}
+		})
 
 		aura_env.spellcasts = aura_env.spellcasts + 1
 
@@ -638,16 +681,22 @@ local function OnCombatLogEventUnfiltered(states, ...)
 		local previousIndex = aura_env.spellcasts - 1
 
 		-- unpause everything paused
-		for index, state in pairs(states) do
-			if state.show and state.paused then
-				state.paused = false
-				state.changed = true
-				state.desaturated = false
-				state.remaining = now - state.start
+		for index = aura_env.spellcasts, aura_env.spellcasts - limit, -1 do
+			local state = states[index]
+
+			if state and state.show and state.paused then
+				local nextState = {
+					paused = false,
+					changed = true,
+					desaturated = false,
+					remaining = now - state.start,
+				}
 
 				if index == previousIndex then
-					state.interrupted = true
+					nextState.interrupted = true
 				end
+
+				states:Update(index, nextState)
 			end
 		end
 
@@ -659,13 +708,15 @@ local function OnCombatLogEventUnfiltered(states, ...)
 			return false
 		end
 
-		previousCast.changed = true
-		previousCast.paused = false
-		previousCast.desaturated = false
-		previousCast.specialNumber = stage
-		-- initial duration is based on max channel, but we don't always fully empower
-		previousCast.duration = aura_env.config.general.duration + GetTime() - previousCast.start
-		previousCast.expirationTime = previousCast.start + previousCast.duration
+		states:Update(aura_env.spellcasts - 1, {
+			changed = true,
+			paused = false,
+			desaturated = false,
+			specialNumber = stage,
+			-- initial duration is based on max channel, but we don't always fully empower
+			duration = aura_env.config.general.duration + GetTime() - previousCast.start,
+			expirationTime = previousCast.start + previousCast.duration,
+		})
 
 		return true
 	end

@@ -12,6 +12,9 @@ function f(_, unitId, unitFrame, _, modTable)
 	end
 
 	local specialScale = modTable.getSpitefulLikeScale(npcID)
+	local scale = modTable.targetsPlayer(unitId) and specialScale.self or specialScale.others
 
-	Plater.SetNameplateScale(unitFrame, modTable.targetsPlayer(unitId) and specialScale.self or specialScale.others)
+	if scale ~= unitFrame.nameplateScaleAdjust then
+		Plater.SetNameplateScale(unitFrame, scale)
+	end
 end

@@ -4,18 +4,21 @@ function aura_env.GetDragonrageCooldown()
 	return dragonrageCooldownInfo.startTime + dragonrageCooldownInfo.duration
 end
 
-aura_env.timer = nil
-aura_env.slopPercent = 0.15
-aura_env.showWhenCdBelow = 10
-
+---@param state EngulfState
 ---@return boolean
 function aura_env.shouldHold(state)
-	local chargeCooldown = state.duration > 0 and state.duration or C_Spell.GetSpellCharges(443328).cooldownDuration
+	local dragonrageReadyAt = state.dragonrageReadyAt or aura_env.GetDragonrageCooldown()
 
+	if dragonrageReadyAt == 0 then
+		return false
+	end
+
+	local chargeCooldown = state.duration > 0 and state.duration or C_Spell.GetSpellCharges(443328).cooldownDuration
 	local cappingChargesIn = 0
+	local now = GetTime()
 
 	if state.expirationTime > 0 then
-		local timeToNextCharge = state.expirationTime - GetTime()
+		local timeToNextCharge = state.expirationTime - now
 		cappingChargesIn = cappingChargesIn + timeToNextCharge
 
 		if state.stacks == 0 then
@@ -23,24 +26,36 @@ function aura_env.shouldHold(state)
 		end
 	end
 
-	local dragonrageReadyAt = state.dragonrageReadyAt or aura_env.GetDragonrageCooldown()
+	local dragonrageReadyIn = dragonrageReadyAt == 0 and 0 or dragonrageReadyAt - now
 
-	if dragonrageReadyAt == 0 then
-		return false
+	-- currently at 2 charges
+	if cappingChargesIn == 0 then
+		local fudge = aura_env.config.slopPercent * chargeCooldown
+
+		-- DR cd is further away than another charge, send
+		if dragonrageReadyIn > chargeCooldown + fudge then
+			return false
+		end
+
+		return true
 	end
 
-	local capsBeforeDragonrageCd = GetTime() + cappingChargesIn < dragonrageReadyAt
+	local capsBeforeDragonrageCd = cappingChargesIn < dragonrageReadyIn
 
 	if not capsBeforeDragonrageCd then
 		return true
 	end
 
-	local timeBetweenCappingAndDragonrage = dragonrageReadyAt - cappingChargesIn - GetTime()
+	local timeBetweenCappingAndDragonrage = dragonrageReadyIn - cappingChargesIn
 
 	if timeBetweenCappingAndDragonrage <= chargeCooldown then
-		-- delaying DR by up to approx. 25% of an engulf charge cd is ok if it means you can cast another
-		local fudge = 0.15 * chargeCooldown
-		return timeBetweenCappingAndDragonrage > fudge
+		local fudge = aura_env.config.slopPercent * chargeCooldown
+
+		if timeBetweenCappingAndDragonrage > chargeCooldown + fudge then
+			return false
+		end
+
+		return true
 	end
 
 	return false

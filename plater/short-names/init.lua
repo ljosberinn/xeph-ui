@@ -103,13 +103,14 @@ function f(modTable)
 			return
 		end
 
-		local name = unitFrame.namePlateUnitName or UnitName(unitId) or ""
+		local currentName = unitFrame.namePlateUnitName or UnitName(unitId) or ""
+		local nextName = currentName
 
 		if modTable.config.short_names and not unitFrame.unitName.isRenamed then
 			if unitFrame.namePlateNpcId and specialTreatmentNpcIdMap[unitFrame.namePlateNpcId] then
-				name = specialTreatmentNpcIdMap[unitFrame.namePlateNpcId](name)
+				nextName = specialTreatmentNpcIdMap[unitFrame.namePlateNpcId](nextName)
 			else
-				local a, b, c, d, e, f = GetSanitizedParts(name)
+				local a, b, c, d, e, f = GetSanitizedParts(nextName)
 
 				local unitName
 
@@ -126,7 +127,7 @@ function f(modTable)
 						unitName = f or e or d or c or b or a
 					end
 				end
-				name = unitName or name
+				nextName = unitName or nextName
 			end
 		end
 
@@ -134,10 +135,14 @@ function f(modTable)
 			local marker = GetRaidTargetIndex(unitId)
 			if marker then
 				local color = markerToHex[marker or 8]
-				name = WrapTextInColorCode(name, color)
+				nextName = WrapTextInColorCode(nextName, color)
 			end
 		end
 
-		unitFrame.healthBar.unitName:SetText(name)
+		if nextName == currentName then
+			return
+		end
+
+		unitFrame.healthBar.unitName:SetText(nextName)
 	end
 end

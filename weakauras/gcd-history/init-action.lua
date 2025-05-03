@@ -210,22 +210,21 @@ local function OnPlayerDeath(states, ...)
 end
 
 ---@param states table<number, GCDHistoryState>
----@return boolean
 local function OnUnitSpellcastSucceeded(states, ...)
 	if not isEvoker then
-		return false
+		return
 	end
 
 	local unit, _, spellId = ...
 
 	if unit ~= "player" or not spellId or empowers[spellId] == nil then
-		return false
+		return
 	end
 
 	local previousCast = states[aura_env.spellcasts - 1]
 
 	if previousCast ~= nil and previousCast.spellId == spellId then
-		return false
+		return
 	end
 
 	local now = GetTime()
@@ -266,17 +265,14 @@ local function OnUnitSpellcastSucceeded(states, ...)
 	})
 
 	aura_env.spellcasts = aura_env.spellcasts + 1
-
-	return true
 end
 
 ---@param states table<number, GCDHistoryState>
----@return boolean
 local function OnUnitSpellcastChannelStart(states, ...)
 	local unit, _, spellId = ...
 
 	if unit ~= "player" or not spellId then
-		return false
+		return
 	end
 
 	for index = aura_env.spellcasts, aura_env.spellcasts - limit, -1 do
@@ -329,24 +325,21 @@ local function OnUnitSpellcastChannelStart(states, ...)
 	})
 
 	aura_env.spellcasts = aura_env.spellcasts + 1
-
-	return true
 end
 
 ---@param states table<number, GCDHistoryState>
----@return boolean
 local function OnUnitSpellcastChannelStop(states, ...)
 	local unit, _, spellId = ...
 
 	if unit ~= "player" or not spellId then
-		return false
+		return
 	end
 
 	local previousIndex = aura_env.spellcasts - 1
 	local previousCast = states[previousIndex]
 
 	if not previousCast then
-		return false
+		return
 	end
 
 	local now = GetTime()
@@ -375,12 +368,9 @@ local function OnUnitSpellcastChannelStop(states, ...)
 		duration = aura_env.config.general.duration + GetTime() - previousCast.start,
 		expirationTime = previousCast.start + previousCast.duration,
 	})
-
-	return true
 end
 
 ---@param states table<number, GCDHistoryState>
----@return boolean
 local function OnCombatLogEventUnfiltered(states, ...)
 	local _, subEvent, _, sourceGUID, _, sourceFlags, _, _, _, _, _, spellId, _, _, stage = ...
 	--- @cast subEvent "SPELL_EMPOWER_START" | "SPELL_EMPOWER_INTERRUPT" | "SPELL_EMPOWER_END" | "SPELL_CAST_START" | "SPELL_CAST_SUCCESS" | "SPELL_CAST_FAILED"
@@ -389,12 +379,12 @@ local function OnCombatLogEventUnfiltered(states, ...)
 	--- @cast stage number
 
 	if not subEvent or ignorelist[spellId] ~= nil or not isBasicallyMe(sourceGUID, sourceFlags) then
-		return false
+		return
 	end
 
 	if subEvent == "SPELL_AURA_APPLIED" or subEvent == "SPELL_AURA_REFRESH" then
 		if not isCataclysm or spellId ~= 32645 then
-			return false
+			return
 		end
 
 		local name, icon = getSpellMeta(spellId)
@@ -419,24 +409,22 @@ local function OnCombatLogEventUnfiltered(states, ...)
 		})
 
 		aura_env.spellcasts = aura_env.spellcasts + 1
-
-		return true
 	elseif subEvent == "SPELL_PERIODIC_DAMAGE" then
 		-- disintegrate
 		if not isEvoker or spellId ~= 356995 then
-			return false
+			return
 		end
 
 		local previousCast = states[aura_env.spellcasts - 1]
 
 		if not previousCast then
-			return false
+			return
 		end
 
 		local now = GetTime()
 
 		if previousCast.lastTick ~= nil and now - previousCast.lastTick < 0.25 then
-			return false
+			return
 		end
 
 		states:Update(aura_env.spellcasts - 1, {
@@ -444,8 +432,6 @@ local function OnCombatLogEventUnfiltered(states, ...)
 			specialNumber = previousCast.specialNumber + 1,
 			changed = true,
 		})
-
-		return true
 	elseif subEvent == "SPELL_CAST_START" then
 		local now = GetTime()
 		local name, icon, castTime = getSpellMeta(spellId)
@@ -507,8 +493,6 @@ local function OnCombatLogEventUnfiltered(states, ...)
 		})
 
 		aura_env.spellcasts = aura_env.spellcasts + 1
-
-		return true
 	elseif subEvent == "SPELL_CAST_SUCCESS" then
 		local name, icon, castTime = getSpellMeta(spellId)
 
@@ -547,7 +531,7 @@ local function OnCombatLogEventUnfiltered(states, ...)
 
 		-- channels are handled separately due to sending SPELL_CAST_SUCCESS at channel start
 		if channelStartTime ~= nil then
-			return false
+			return
 		end
 
 		local now = GetTime()
@@ -591,34 +575,32 @@ local function OnCombatLogEventUnfiltered(states, ...)
 		})
 
 		aura_env.spellcasts = aura_env.spellcasts + 1
-
-		return true
 	elseif subEvent == "SPELL_CAST_FAILED" then
 		local previousIndex = aura_env.spellcasts - 1
 		local previousCast = states[previousIndex]
 
 		if not previousCast or not previousCast.paused then
-			return false
+			return
 		end
 
 		-- ignore spamcasting an ability you currently cannot cast
 		-- for whichever reason (already casting, cd, range, line of sight, missing resources)
 		if previousCast.spellId ~= spellId then
-			return false
+			return
 		end
 
 		local now = GetTime()
 
 		-- ignore spamming buttons but be sensible enough about instant aborts
 		if now - previousCast.start < 0.05 then
-			return false
+			return
 		end
 
 		local _, _, _, channelStartTime, _, _, _, channelSpellId = UnitChannelInfo("player")
 
 		-- ignore spamming channels. why would you anyways?
 		if channelStartTime ~= nil and channelSpellId == spellId then
-			return false
+			return
 		end
 
 		-- unpause everything paused
@@ -640,8 +622,6 @@ local function OnCombatLogEventUnfiltered(states, ...)
 				states:Update(index, nextState)
 			end
 		end
-
-		return
 	elseif subEvent == "SPELL_EMPOWER_START" then
 		local now = GetTime()
 		local _, _, _, channelStartTime, channelEndTime = UnitChannelInfo("player")
@@ -668,13 +648,11 @@ local function OnCombatLogEventUnfiltered(states, ...)
 		})
 
 		aura_env.spellcasts = aura_env.spellcasts + 1
-
-		return true
 	elseif subEvent == "SPELL_EMPOWER_INTERRUPT" then
 		local previousCast = states[aura_env.spellcasts - 1]
 
 		if not previousCast then
-			return false
+			return
 		end
 
 		local now = GetTime()
@@ -699,13 +677,11 @@ local function OnCombatLogEventUnfiltered(states, ...)
 				states:Update(index, nextState)
 			end
 		end
-
-		return true
 	elseif subEvent == "SPELL_EMPOWER_END" then
 		local previousCast = states[aura_env.spellcasts - 1]
 
 		if not previousCast then
-			return false
+			return
 		end
 
 		states:Update(aura_env.spellcasts - 1, {
@@ -717,36 +693,29 @@ local function OnCombatLogEventUnfiltered(states, ...)
 			duration = aura_env.config.general.duration + GetTime() - previousCast.start,
 			expirationTime = previousCast.start + previousCast.duration,
 		})
-
-		return true
 	end
-
-	return false
 end
 
 ---@param states table<number, GCDHistoryState>
----@return boolean
 local function OnUnitPowerUpdate(states, ...)
 	if not isRogue then
-		return false
+		return
 	end
 
 	local unit, powerType = ...
 
 	if unit ~= "player" or powerType ~= "COMBO_POINTS" then
-		return false
+		return
 	end
 
 	local next = getComboPoints()
 
 	if next == currentComboPoints then
-		return false
+		return
 	end
 
 	lastComboPoints = currentComboPoints
 	currentComboPoints = next
-
-	return false
 end
 
 aura_env.eventHandlers = {

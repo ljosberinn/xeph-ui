@@ -1,8 +1,7 @@
 function f(_, _, _, envTable, scriptTable)
 	--TWW Dungeons
-	local araKara = {
-		[214840] = { 30 }, --Engorged Crawler
-	}
+
+	local araKara = {}
 
 	local cityOfThreads = {
 		[219984] = { 50 }, --Xeph'itik
@@ -15,10 +14,21 @@ function f(_, _, _, envTable, scriptTable)
 
 	local prioryOfTheSacredFlame = {
 		[207940] = { 50 }, --Prioress Murrpray
+		[206710] = { 25 }, -- Lightspawn
 	}
 
 	local darkflameCleft = {
-		[210797] = { 55 }, --The Darkness
+		[208747] = { 55 }, -- The Darkness
+	}
+
+	local cinderbrewMeadery = {
+		[210271] = { 66, 33 }, -- Brew Master Aldryr
+		[210265] = { 30 }, -- Worker Bee
+		[223497] = { 30 }, -- Worker Bee Summoned
+	}
+
+	local theRookery = {
+		[212739] = { 40 }, --Consuming Voidstone
 	}
 
 	--DF Dungeons
@@ -88,11 +98,11 @@ function f(_, _, _, envTable, scriptTable)
 	}
 
 	local mistsOfTirnaScithe = {
-		[164929] = { 20 }, -- Tirnenn Villager
 		[164501] = { 70, 40, 10 }, -- Mistcaller
 		[164926] = { 50 }, --Drust Boughbreaker
 		[164804] = { 20 }, -- Droman Oulfarran
 		[164517] = { 70, 40 }, --Tred'ova
+		[164929] = { 20 }, --Tirnenn Villager
 	}
 
 	local plaguefall = {
@@ -147,6 +157,7 @@ function f(_, _, _, envTable, scriptTable)
 
 	local motherlode = {
 		[133345] = { 20 }, -- Feckless Assistant
+		[129232] = { 50 }, -- Mogul Razdunk
 	}
 
 	local junkyard = {
@@ -234,6 +245,14 @@ function f(_, _, _, envTable, scriptTable)
 
 	--Raids
 
+	local liberationOfUndermine = {
+		[231531] = { 80 }, -- Territorial Bombshell
+		[229953] = { 40 }, -- Mug'Zee
+		[230316] = { 80 }, -- MK II Electro Shocker
+		[228458] = { 30 }, -- One-armed Bandit
+		[231075] = { 50 }, -- Gallywix
+	}
+
 	local amirdrassil = {
 		[208445] = { 35 }, -- Larodar
 		[204931] = { 70 }, -- Fyrakk
@@ -297,6 +316,8 @@ function f(_, _, _, envTable, scriptTable)
 	envTable.lifePercent = {}
 
 	local zones = {
+		liberationOfUndermine,
+		cinderbrewMeadery,
 		araKara,
 		darkflameCleft,
 		prioryOfTheSacredFlame,
@@ -347,6 +368,7 @@ function f(_, _, _, envTable, scriptTable)
 		openWorld,
 		mageTower,
 		dawnOfTheInfinite,
+		theRookery,
 	}
 
 	for i = 1, #zones do
@@ -383,13 +405,16 @@ function f(_, _, _, envTable, scriptTable)
 					envTable.CreateMarker(unitFrame)
 				end
 
-				unitFrame.healthMarker:Show()
+				if not unitFrame.healthMarker:IsVisible() then
+					unitFrame.healthMarker:Show()
+				end
+
 				local width = unitFrame.healthBar:GetWidth()
-				unitFrame.healthMarker:SetPoint("left", unitFrame.healthBar, "left", width * percent, 0)
+				PixelUtil.SetPoint(unitFrame.healthMarker, "LEFT", unitFrame.healthBar, "LEFT", width * percent, 0)
 
 				local overlaySize = width * (unitLifePercent - percent)
 				unitFrame.healthOverlay:SetWidth(overlaySize)
-				unitFrame.healthOverlay:SetPoint("left", unitFrame.healthMarker, "right", 0, 0)
+				PixelUtil.SetPoint(unitFrame.healthOverlay, "LEFT", unitFrame.healthMarker, "RIGHT", 0, 0)
 
 				unitFrame.healthMarker:SetVertexColor(Plater:ParseColors(scriptTable.config.indicatorColor))
 				unitFrame.healthMarker:SetAlpha(scriptTable.config.indicatorAlpha)

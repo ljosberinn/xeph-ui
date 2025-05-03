@@ -11,7 +11,7 @@ function f(self, unitId, unitFrame, envTable, modTable)
 
 	local scale = modTable.npcIDs[npcID]
 
-	if scale then
+	if scale and scale ~= unitFrame.nameplateScaleAdjust then
 		Plater.SetNameplateScale(unitFrame, scale)
 	end
 end

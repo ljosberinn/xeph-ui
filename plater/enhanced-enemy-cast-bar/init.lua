@@ -113,7 +113,9 @@ function f(modTable)
 					return 19647
 				end
 
-				if C_UnitAuras.GetPlayerAuraBySpellID(196099) ~= nil and IsSpellKnown(132409, true) then -- spell lock via grimoire of sacrifice
+				if
+					C_UnitAuras.GetPlayerAuraBySpellID(196099) ~= nil and IsSpellKnownOrOverridesKnown(132409, false)
+				then -- spell lock via grimoire of sacrifice
 					return 132409
 				end
 
@@ -154,6 +156,7 @@ function f(modTable)
 
 	local GetInterruptID = DetermineInterruptId()
 	local playerIsWarlock = playerClass == 9
+	local playerName = UnitName("player")
 
 	---@param unitId string
 	---@param unitFrame Frame
@@ -169,13 +172,8 @@ function f(modTable)
 		end
 
 		local targetUnitId = unitId .. "target"
-
-		if not UnitExists(targetUnitId) then
-			return
-		end
-
-		local targetName = UnitName(targetUnitId)
-		local isTargettingMe = targetName == UnitName("player")
+		local targetName = UnitExists(targetUnitId) and UnitName(targetUnitId) or nil
+		local isTargettingMe = targetName == playerName
 		castBar.Text:SetText(castBar.SpellName)
 
 		-- Cast is targetting a specific unit
@@ -210,8 +208,8 @@ function f(modTable)
 				end
 
 				local castBarWidth = castBar:GetWidth()
-				-- clip cast name at 50% of cast bar width always
-				DetailsFramework:TruncateText(castBar.Text, castBarWidth * 0.5)
+				-- clip cast name at 60% of cast bar width always
+				DetailsFramework:TruncateText(castBar.Text, castBarWidth * 0.6)
 
 				-- first, truncate the spell name to make space for the target name
 				local currentText = castBar.Text:GetText()
@@ -253,7 +251,7 @@ function f(modTable)
 
 			if canInterrupt then
 				-- Check to see if the spell is known/talented
-				if IsSpellKnown(interruptID, playerIsWarlock) then
+				if IsSpellKnown(interruptID, playerIsWarlock) or IsSpellKnownOrOverridesKnown(interruptID, false) then
 					if interruptReadyTime == 0 then
 						nextColor = modTable.config.colorInterruptAvailable
 					elseif
@@ -306,6 +304,17 @@ function f(modTable)
 
 	if playerClass == 1 then
 		--TWW Dungeons
+
+		local operationFloodgate = {
+			473112, -- Mudslide - Boss
+			469721, -- Backwash
+			465871, -- Blood Bolt
+			1214468, -- Trickshot
+			465754, -- Flamethrower - Unsure if targetted
+			465595, -- Lightning Bolt
+			462771, -- Surveying Beam
+		}
+
 		local araKara = {
 			436322, -- Poison bolt - atik
 			434786, -- Web bolt
@@ -338,13 +347,37 @@ function f(modTable)
 			430097, -- Molten Metal - Speaker Brokk
 		}
 
-		local cinderbrewMeadery = {}
+		local cinderbrewMeadery = {
+			453989, -- Boiling Flames
+			454318, -- Boiling Flames
+			454319, -- Boiling Flames
+			437721, -- Boiling Flames
+		}
 
-		local darkflameCleft = {}
+		local darkflameCleft = {
+			421817, --Wicklighter Barrage
+			421910, -- Extinguishing Gust
+			423479, -- Wickligher Bolt
+			426677, -- Candleflame Bolt
+			428563, -- Flame Bolt
+		}
 
-		local prioryOfTheSacredFlame = {}
+		local prioryOfTheSacredFlame = {
+			424420, -- Cinderblast - Boss
+			424421, --Fireball - Boss
+			423015, -- Castigator's Shield - Boss
+			423536, --Holy Smite - Boss
+			427357, -- Holy Smite
+			427469, -- Fireball
+			427950, -- Seal of Flame
+		}
 
-		local theRookery = {}
+		local theRookery = {
+			430805, -- Arcing Void
+			430179, -- Seeping Corruption
+			430109, -- Lightning Bolt
+			430238, -- Void Bolt
+		}
 
 		--DF Dungeons
 
@@ -438,6 +471,19 @@ function f(modTable)
 
 		--Shadowlands Dungeons
 
+		local theaterOfPain = {
+			1216475, -- Necrotic Bolt - Kul'Tharok
+			1217138, -- Necrotic Bolt - Sathel
+			319669, -- Spectral Reach - Boss
+			324589, -- Death Bolt - Boss add
+			341969, -- Withering Discharge
+			330697, -- Decaying Strike
+			330784, -- Necrotic Bolt
+			330810, -- Bind Soul
+			333299, -- Curse of Desolation
+			330875, -- Spirit Frost
+		}
+
 		local mistsOfTirnaScithe = {
 			332767, --Spirit Bolt
 			323057, --Spirit Bolt - Boss
@@ -461,6 +507,23 @@ function f(modTable)
 		}
 
 		--BFA Dungeons
+
+		local mechagonWorkshop = {
+			291878, -- Pulse Blast - 4th boss
+			294860, -- Blossom Blast - 3rd Boss
+			294195, -- Arcing Zap
+			293827, -- Giga-Wallop
+		}
+
+		local theMotherlode = {
+			263202, -- Rock Lance
+			263628, -- Charged Shield
+			280604, -- Iced Spritzer
+			262268, -- Caustic Compound
+			268846, -- Echo Blade
+			262794, -- Mind lash
+			260318, -- Alpha Cannon -- Mogul Razdunk
+		}
 
 		local siegeOfBoralus = {
 			272581, -- Water bolt
@@ -560,6 +623,7 @@ function f(modTable)
 			169839, -- Pyroblast
 			427858, -- Fireball
 			164965, -- Choking Vines
+			--164973, -- Test Dancing thorns
 		}
 
 		local shadowmoonBurialGrounds = {
@@ -615,6 +679,11 @@ function f(modTable)
 		}
 
 		-- Raids
+		local liberationOfUndermine = {
+			460847, --Electric Blast - Reel Assistant - One-armed bandit
+			1219384, -- Scrap Rockets - Scrapmaster - Stix Bunkjunker
+		}
+
 		local nerubarPalace = {
 			438807, --Vicious Bite - Broodtwister
 			441362, --Volatile Concoction - Broodtwister
@@ -646,6 +715,11 @@ function f(modTable)
 		}
 
 		local zones = {
+			liberationOfUndermine,
+			operationFloodgate,
+			theaterOfPain,
+			theMotherlode,
+			mechagonWorkshop,
 			nerubarPalace,
 			araKara,
 			cityOfThreads,

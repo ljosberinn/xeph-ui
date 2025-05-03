@@ -11,14 +11,14 @@ function f(self, unitId, unitFrame, envTable, modTable)
 	local useHalfBar = false --use a "half bar" overlay if the health+absorb is > 100% of the health
 
 	--init
-	local hb = unitFrame.healthBar
+	local healthBar = unitFrame.healthBar
 	if shieldTexture and shieldTexture ~= "" then
 		local texture = modTable.LibSharedMedia:Fetch("statusbar", shieldTexture)
-		hb.Settings.ShieldIndicatorTexture = texture or [[Interface\RaidFrame\Shield-Fill]]
-		hb.shieldAbsorbIndicator:SetTexture(hb.Settings.ShieldIndicatorTexture, true, true)
+		healthBar.Settings.ShieldIndicatorTexture = texture or [[Interface\RaidFrame\Shield-Fill]]
+		healthBar.shieldAbsorbIndicator:SetTexture(healthBar.Settings.ShieldIndicatorTexture, true, true)
 	else
-		hb.Settings.ShieldIndicatorTexture = [[Interface\RaidFrame\Shield-Fill]]
-		hb.shieldAbsorbIndicator:SetTexture(hb.Settings.ShieldIndicatorTexture, true, true)
+		healthBar.Settings.ShieldIndicatorTexture = [[Interface\RaidFrame\Shield-Fill]]
+		healthBar.shieldAbsorbIndicator:SetTexture(healthBar.Settings.ShieldIndicatorTexture, true, true)
 	end
 
 	-- ensure settings are up to date... workardound till fix in Plater core.
@@ -29,30 +29,34 @@ function f(self, unitId, unitFrame, envTable, modTable)
 		if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
 			return
 		end
-		local hb = unitFrame.healthBar
 
-		if hb.isCustomShieldHook then
+		local healthBar = unitFrame.healthBar
+
+		if healthBar.isCustomShieldHook then
 			return
 		end
+
+		healthBar.isCustomShieldHook = true
+
 		--health and absorbs prediction from Plater core, reworked to integrate shields into the health bar
-		hb.UpdateHealPrediction = function(self)
+		healthBar.UpdateHealPrediction = function(self)
 			local currentHealth = self.currentHealth
 			local currentHealthMax = self.currentHealthMax
-			local healthPercent = currentHealth / currentHealthMax
 
 			if not currentHealthMax or currentHealthMax <= 0 then
 				return
 			end
 
-			--order is: the health of the unit > damage absorb > heal absorb > incoming heal
-			local width = self:GetWidth()
-
-			hb.shieldAbsorbIndicator:Hide()
-			hb.shieldAbsorbGlow:Hide()
+			healthBar.shieldAbsorbIndicator:Hide()
+			healthBar.shieldAbsorbGlow:Hide()
 
 			if not self.displayedUnit then
 				return
 			end
+
+			--order is: the health of the unit > damage absorb > heal absorb > incoming heal
+			local width = self:GetWidth()
+			local healthPercent = currentHealth / currentHealthMax
 
 			if self.Settings.ShowHealingPrediction then
 				--incoming heal on the unit from all sources
@@ -139,16 +143,14 @@ function f(self, unitId, unitFrame, envTable, modTable)
 					self.shieldAbsorbIndicator:Hide()
 				end
 			end
-
-			hb.isCustomShieldHook = true
 		end
 
-		if hb.displayedUnit then
-			hb.shieldAbsorbIndicator:Hide()
-			hb.shieldAbsorbGlow:Hide()
-			hb:UNIT_MAXHEALTH()
+		if healthBar.displayedUnit then
+			healthBar.shieldAbsorbIndicator:Hide()
+			healthBar.shieldAbsorbGlow:Hide()
+			healthBar:UNIT_MAXHEALTH()
 		else
-			hb.customShieldHookNeedsUpdate = true
+			healthBar.customShieldHookNeedsUpdate = true
 		end
 	end
 end

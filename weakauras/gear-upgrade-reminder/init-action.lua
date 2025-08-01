@@ -18,55 +18,56 @@ local itemSlots = {
 }
 
 -- https://www.raidbots.com/static/data/xptr/bonuses.json
--- copy(JSON.stringify(Object.values(JSON.parse($0.textContent)).filter(x => x.upgrade?.seasonId === 25).reduce((acc, data) => {
+-- copy(JSON.stringify(Object.values(JSON.parse($0.textContent)).filter(x => x.upgrade?.seasonId === 30).reduce((acc, data) => {
 --     acc[data.id] = data.upgrade.name
 --     return acc
 -- }, {})))
 
 local bonusToTierMap = {
-	[11942] = "Explorer",
-	[11943] = "Explorer",
-	[11944] = "Explorer",
-	[11945] = "Explorer",
-	[11946] = "Explorer",
-	[11947] = "Explorer",
-	[11948] = "Explorer",
-	[11949] = "Explorer",
-	[11950] = "Adventurer",
-	[11951] = "Adventurer",
-	[11952] = "Adventurer",
-	[11953] = "Adventurer",
-	[11954] = "Adventurer",
-	[11955] = "Adventurer",
-	[11956] = "Adventurer",
-	[11957] = "Adventurer",
-	[11969] = "Veteran",
-	[11970] = "Veteran",
-	[11971] = "Veteran",
-	[11972] = "Veteran",
-	[11973] = "Veteran",
-	[11974] = "Veteran",
-	[11975] = "Veteran",
-	[11976] = "Veteran",
-	[11977] = "Champion",
-	[11978] = "Champion",
-	[11979] = "Champion",
-	[11980] = "Champion",
-	[11982] = "Champion",
-	[11983] = "Champion",
-	[11984] = "Champion",
-	[11985] = "Hero",
-	[11986] = "Hero",
-	[11987] = "Hero",
-	[11988] = "Hero",
-	[11989] = "Hero",
-	[11990] = "Hero",
-	[11991] = "Myth",
-	[11992] = "Myth",
-	[11993] = "Myth",
-	[11994] = "Myth",
-	[11995] = "Myth",
-	[11996] = "Myth",
+	[12265] = "Explorer",
+	[12266] = "Explorer",
+	[12267] = "Explorer",
+	[12268] = "Explorer",
+	[12269] = "Explorer",
+	[12270] = "Explorer",
+	[12271] = "Explorer",
+	[12272] = "Explorer",
+	[12274] = "Adventurer",
+	[12275] = "Adventurer",
+	[12276] = "Adventurer",
+	[12277] = "Adventurer",
+	[12278] = "Adventurer",
+	[12279] = "Adventurer",
+	[12280] = "Adventurer",
+	[12281] = "Adventurer",
+	[12282] = "Veteran",
+	[12283] = "Veteran",
+	[12284] = "Veteran",
+	[12285] = "Veteran",
+	[12286] = "Veteran",
+	[12287] = "Veteran",
+	[12288] = "Veteran",
+	[12289] = "Veteran",
+	[12290] = "Champion",
+	[12291] = "Champion",
+	[12292] = "Champion",
+	[12293] = "Champion",
+	[12294] = "Champion",
+	[12295] = "Champion",
+	[12296] = "Champion",
+	[12297] = "Champion",
+	[12350] = "Hero",
+	[12351] = "Hero",
+	[12352] = "Hero",
+	[12353] = "Hero",
+	[12354] = "Hero",
+	[12355] = "Hero",
+	[12356] = "Myth",
+	[12357] = "Myth",
+	[12358] = "Myth",
+	[12359] = "Myth",
+	[12360] = "Myth",
+	[12361] = "Myth",
 }
 
 -- copy(JSON.stringify(Object.values(JSON.parse($0.textContent)).filter(x => x.upgrade?.seasonId === 25).reduce((acc, data) => {
@@ -88,12 +89,12 @@ local bonusToTierMap = {
 -- }, {})).replaceAll(':', '=').replaceAll('"', ''))
 
 local tiers = {
-	Explorer = { min = 597, max = 619 },
-	Adventurer = { min = 610, max = 632 },
-	Veteran = { min = 623, max = 645 },
-	Champion = { min = 636, max = 658 },
-	Hero = { min = 649, max = 665 },
-	Myth = { min = 662, max = 678 },
+	Explorer = { min = 642, max = 665 },
+	Adventurer = { min = 655, max = 678 },
+	Veteran = { min = 668, max = 691 },
+	Champion = { min = 681, max = 704 },
+	Hero = { min = 694, max = 710 },
+	Myth = { min = 707, max = 723 },
 }
 
 local crestFreeItemLevelUpgradeThreshold = 580
@@ -105,6 +106,7 @@ local function isCraftedBonusId(id)
 		or id == 10249 -- Awakened Crafted
 		or id == 10222 -- Omen Crafted
 		or id == 12040 -- Fortune Crafted
+		or id == 12050 -- Starlight Crafted
 end
 
 local function getUpgradeTrack(bonusIds)

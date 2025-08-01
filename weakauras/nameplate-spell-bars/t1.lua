@@ -1,4 +1,4 @@
----BWSPELLS_ADD, BWSPELLS_REMOVE, BWSPELLS_DISABLE, NAME_PLATE_UNIT_ADDED, NAME_PLATE_UNIT_REMOVED,RAID_TARGET_UPDATE, PLAYER_REGEN_ENABLED
+---PLAYER_REGEN_ENABLED, XEPHUI_BigWigs_StartBar, XEPHUI_BigWigs_StartNameplate, XEPHUI_BigWigs_StopNameplate, XEPHUI_BigWigs_StopBars, XEPHUI_BigWigs_OnBossDisable, XEPHUI_BigWigs_OnBossWipe
 ---@class NameplateSpellCDBar
 ---@field show boolean
 ---@field changed boolean
@@ -7,52 +7,55 @@
 ---@field name string
 ---@field expirationTime number
 ---@field icon number
----@field autoHide false
----@field guid string
+---@field autoHide boolean
+---@field guid string?
 ---@field mark number?
----@field unit string
+---@field unit string?
 ---@field interruptable boolean
 ---@field aoe boolean
 ---@field stoppable boolean
----@field glowBelow number?
+---@field isBossBar boolean
 
 ---@param states table<string, NameplateSpellCDBar>
----@param event "BWSPELLS_ADD" | "BWSPELLS_REMOVE" | "BWSPELLS_DISABLE" | "NAME_PLATE_UNIT_ADDED" | "NAME_PLATE_UNIT_REMOVED" | "RAID_TARGET_UPDATE" | "PLAYER_REGEN_ENABLED"
+---@param event  "XEPHUI_BigWigs_StartBar" | "XEPHUI_BigWigs_StartNameplate" | "XEPHUI_BigWigs_StopNameplate" | "XEPHUI_BigWigs_StopBars" | "XEPHUI_BigWigs_OnBossDisable" | "XEPHUI_BigWigs_OnBossWipe"
 function f(states, event, ...)
-	if event == "NAME_PLATE_UNIT_ADDED" then
-		local unit = ...
+	if event == "XEPHUI_BigWigs_StartBar" then
+		local id, eventName, bossMod, spellId, name, cooldown, icon = ...
 
-		if not unit then
+		if id ~= aura_env.id then
 			return false
 		end
 
-		local guid = UnitGUID(unit)
+		if cooldown > 10 then
+			local diff = cooldown - 10
 
-		if guid then
-			aura_env.unitsByGuid[guid] = unit
-		end
-
-		return false
-	end
-
-	if event == "NAME_PLATE_UNIT_REMOVED" then
-		local unit = ...
-
-		if not unit then
+			table.insert(
+				aura_env.timers,
+				C_Timer.NewTimer(diff, function()
+					WeakAuras.ScanEvents(event, id, eventName, bossMod, spellId, name, 10, icon)
+				end)
+			)
 			return false
 		end
 
-		local guid = UnitGUID(unit)
+		states[spellId] = {
+			show = true,
+			changed = true,
+			progressType = "timed",
+			duration = cooldown,
+			name = name,
+			expirationTime = GetTime() + cooldown,
+			icon = icon,
+			autoHide = true,
+			interruptable = false,
+			aoe = false,
+			stoppable = false,
+			isBossBar = true,
+		}
 
-		if guid then
-			aura_env.unitsByGuid[guid] = unit
-		end
-
-		return false
-	end
-
-	if event == "BWSPELLS_ADD" then
-		local id, _, _, guid, spellId, cd = ...
+		return true
+	elseif event == "XEPHUI_BigWigs_StartNameplate" then
+		local id, eventName, bossMod, guid, spellId, cooldown = ...
 
 		if id ~= aura_env.id then
 			return false
@@ -64,34 +67,40 @@ function f(states, event, ...)
 			return false
 		end
 
-		local key = guid .. spellId
+		if cooldown > 10 then
+			local diff = cooldown - 10
 
-		if aura_env.unitsByGuid[guid] == nil then
-			aura_env.unitsByGuid[guid] = UnitGUID(guid)
+			print(event, "queueing " .. spell.name .. " for " .. diff)
 
-			if not aura_env.unitsByGuid[guid] then
-				return false
-			end
+			table.insert(
+				aura_env.timers,
+				C_Timer.NewTimer(diff, function()
+					WeakAuras.ScanEvents("BWSPELLS_ADD", id, eventName, bossMod, guid, spellId, 10)
+				end)
+			)
+
+			return false
 		end
 
-		local unit = aura_env.unitsByGuid[guid]
+		local key = guid .. spellId
+
+		print(event, "instantly showing " .. spell.name)
 
 		local nextState = {
 			show = true,
 			changed = true,
 			progressType = "timed",
-			duration = cd,
+			duration = cooldown,
 			name = spell.name,
-			expirationTime = cd + GetTime(),
+			expirationTime = cooldown + GetTime(),
 			icon = spell.icon,
-			autoHide = false,
+			autoHide = true,
 			guid = guid,
-			mark = GetRaidTargetIndex(unit),
-			unit = unit,
 			interruptable = spell.interruptable,
 			aoe = spell.aoe,
 			stoppable = spell.stoppable,
 			glowBelow = spell.glowBelow,
+			isBossBar = false,
 		}
 
 		if states[key] then
@@ -111,9 +120,7 @@ function f(states, event, ...)
 		states[key] = nextState
 
 		return true
-	end
-
-	if event == "BWSPELLS_REMOVE" then
+	elseif event == "XEPHUI_BigWigs_StopNameplate" then
 		local id, _, _, guid = ...
 
 		if id ~= aura_env.id then
@@ -123,31 +130,33 @@ function f(states, event, ...)
 		local changed = false
 
 		for _, state in pairs(states) do
-			if state.guid == guid and state.show then
+			if state.show and state.guid == guid then
 				state.show = false
 				state.changed = true
 				changed = true
 			end
 		end
 
-		aura_env.unitsByGuid[guid] = nil
+		if guid then
+			aura_env.unitsByGuid[guid] = nil
+		end
 
 		return changed
-	end
-
-	if event == "BWSPELLS_DISABLE" then
+	elseif
+		event == "XEPHUI_BigWigs_OnBossDisable"
+		or event == "XEPHUI_BigWigs_OnBossWipe"
+		or event == "XEPHUI_BigWigs_StopBars"
+	then
 		local id = ...
 
 		if id ~= aura_env.id then
 			return false
 		end
 
-		table.wipe(aura_env.unitsByGuid)
-
 		local changed = false
 
 		for _, state in pairs(states) do
-			if state.show then
+			if state.isBossBar and state.show then
 				state.show = false
 				state.changed = true
 				changed = true
@@ -157,35 +166,184 @@ function f(states, event, ...)
 		return changed
 	end
 
-	if event == "RAID_TARGET_UPDATE" then
-		local changed = false
+	-- if event == "BWSPELLS_ADD_BAR" then
+	-- 	local id, eventName, bossMod, spellId, name, cooldown, icon = ...
 
-		for _, state in pairs(states) do
-			local currentMarkIdx = GetRaidTargetIndex(state.unit)
+	-- 	if id ~= aura_env.id then
+	-- 		return false
+	-- 	end
 
-			if currentMarkIdx ~= state.mark then
-				state.mark = currentMarkIdx
-				state.changed = true
-				changed = true
-			end
-		end
+	-- 	if cooldown > 10 then
+	-- 		local diff = cooldown - 10
 
-		return changed
-	end
+	-- 		table.insert(
+	-- 			aura_env.timers,
+	-- 			C_Timer.NewTimer(diff, function()
+	-- 				WeakAuras.ScanEvents("BWSPELLS_ADD_BAR", id, eventName, bossMod, spellId, name, 10, icon)
+	-- 			end)
+	-- 		)
+	-- 		return false
+	-- 	end
 
-	if event == "PLAYER_REGEN_ENABLED" and aura_env.config.clearAfterCombat then
-		local changed = false
+	-- 	states[spellId] = {
+	-- 		show = true,
+	-- 		changed = true,
+	-- 		progressType = "timed",
+	-- 		duration = cooldown,
+	-- 		name = name,
+	-- 		expirationTime = GetTime() + cooldown,
+	-- 		icon = icon,
+	-- 		autoHide = true,
+	-- 		interruptable = false,
+	-- 		aoe = false,
+	-- 		stoppable = false,
+	-- 		isBossBar = true,
+	-- 	}
 
-		for _, state in pairs(states) do
-			if state.show then
-				state.show = false
-				state.changed = true
-				changed = true
-			end
-		end
+	-- 	return true
+	-- end
 
-		return changed
-	end
+	-- if event == "BWSPELLS_REMOVE_BAR" then
+	-- 	local id = ...
+
+	-- 	if id ~= aura_env.id then
+	-- 		return false
+	-- 	end
+
+	-- 	for _, timer in pairs(aura_env.timers) do
+	-- 		timer:Cancel()
+	-- 	end
+
+	-- 	table.wipe(aura_env.timers)
+
+	-- 	return false
+	-- end
+
+	-- if event == "BWSPELLS_ADD" then
+	-- 	local id, eventName, bossMod, guid, spellId, cd = ...
+
+	-- 	if id ~= aura_env.id then
+	-- 		return false
+	-- 	end
+
+	-- 	local spell = aura_env.spells[spellId]
+
+	-- 	if not spell then
+	-- 		return false
+	-- 	end
+
+	-- 	if cd > 10 then
+	-- 		local diff = cd - 10
+
+	-- 		print("queueing " .. spell.name .. " for " .. diff)
+
+	-- 		table.insert(
+	-- 			aura_env.timers,
+	-- 			C_Timer.NewTimer(diff, function()
+	-- 				WeakAuras.ScanEvents("BWSPELLS_ADD", id, eventName, bossMod, guid, spellId, 10)
+	-- 			end)
+	-- 		)
+
+	-- 		return false
+	-- 	end
+
+	-- 	local key = guid .. spellId
+
+	-- 	if aura_env.unitsByGuid[guid] == nil then
+	-- 		aura_env.unitsByGuid[guid] = UnitTokenFromGUID(guid)
+
+	-- 		if not aura_env.unitsByGuid[guid] then
+	-- 			return false
+	-- 		end
+	-- 	end
+
+	-- 	local unit = aura_env.unitsByGuid[guid]
+
+	-- 	print("instantly showing " .. spell.name)
+
+	-- 	local nextState = {
+	-- 		show = true,
+	-- 		changed = true,
+	-- 		progressType = "timed",
+	-- 		duration = cd,
+	-- 		name = spell.name,
+	-- 		expirationTime = cd + GetTime(),
+	-- 		icon = spell.icon,
+	-- 		autoHide = true,
+	-- 		guid = guid,
+	-- 		mark = GetRaidTargetIndex(unit),
+	-- 		unit = unit,
+	-- 		interruptable = spell.interruptable,
+	-- 		aoe = spell.aoe,
+	-- 		stoppable = spell.stoppable,
+	-- 		glowBelow = spell.glowBelow,
+	-- 		isBossBar = false,
+	-- 	}
+
+	-- 	if states[key] then
+	-- 		local changed = false
+	-- 		local currentState = states[key]
+
+	-- 		for k, v in pairs(nextState) do
+	-- 			if currentState[k] ~= v then
+	-- 				currentState[k] = v
+	-- 				changed = true
+	-- 			end
+	-- 		end
+
+	-- 		return changed
+	-- 	end
+
+	-- 	states[key] = nextState
+
+	-- 	return true
+	-- end
+
+	-- if event == "BWSPELLS_REMOVE" then
+	-- 	local id, _, _, guid = ...
+
+	-- 	if id ~= aura_env.id then
+	-- 		return false
+	-- 	end
+
+	-- 	local changed = false
+
+	-- 	for _, state in pairs(states) do
+	-- 		if (state.guid == guid or state.isBossBar) and state.show then
+	-- 			state.show = false
+	-- 			state.changed = true
+	-- 			changed = true
+	-- 		end
+	-- 	end
+
+	-- 	if guid then
+	-- 		aura_env.unitsByGuid[guid] = nil
+	-- 	end
+
+	-- 	return changed
+	-- end
+
+	-- if event == "BWSPELLS_DISABLE" then
+	-- 	local id = ...
+
+	-- 	if id ~= aura_env.id then
+	-- 		return false
+	-- 	end
+
+	-- 	table.wipe(aura_env.unitsByGuid)
+
+	-- 	local changed = false
+
+	-- 	for _, state in pairs(states) do
+	-- 		if state.show then
+	-- 			state.show = false
+	-- 			state.changed = true
+	-- 			changed = true
+	-- 		end
+	-- 	end
+
+	-- 	return changed
+	-- end
 
 	if WeakAuras.IsOptionsOpen() then
 		for index, spell in pairs(aura_env.config.spells) do
@@ -202,13 +360,14 @@ function f(states, event, ...)
 				name = spellInfo.name,
 				expirationTime = cd + GetTime(),
 				icon = spellInfo.iconID,
-				autoHide = false,
+				autoHide = true,
 				guid = index,
 				mark = math.random(0, 8),
 				unit = index,
 				interruptable = spell.interruptable,
 				aoe = spell.aoe,
 				stoppable = spell.stoppable,
+				isBossBar = false,
 			}
 		end
 

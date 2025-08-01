@@ -99,10 +99,20 @@ local function getSpellMeta(spellId)
 			info.icon = C_Spell.GetSpellTexture(spellId)
 		end
 
+		-- patch Metamorphosis stun icon to Metamorphosis
+		if spellId == 200166 then
+			info.icon = 1247262
+		end
+
 		return info.name, info.icon, info.castTime
 	end
 
 	local name, _, icon, castTime = GetSpellInfo(spellId)
+
+	if spellId == 200166 then
+		icon = 1247262
+	end
+
 	return name, icon, castTime
 end
 
@@ -145,13 +155,6 @@ elseif id == 4 then
 		[2098] = true, -- dispatch
 		[315341] = true, -- between the eyes
 	}
-elseif id == 7 and WOW_PROJECT_ID == WOW_PROJECT_MAINLINE and aura_env.config.petActions then
-	print(
-		format(
-			"[%s] Warning: Shaman totems cast a lot of noisy pet spells. If you wish to filter these, disable Pet Actions in the Custom Config tab of this aura.",
-			aura_env.id
-		)
-	)
 end
 
 --- @type table<string, boolean>
@@ -267,12 +270,26 @@ local function OnUnitSpellcastSucceeded(states, ...)
 	aura_env.spellcasts = aura_env.spellcasts + 1
 end
 
+-- these send duplicated channel start events. eye beam / abyssal gaze and fel devastation / fel desolation
+local function isIgnoredChannelSpell(spellId)
+	return spellId == 198013 or spellId == 452497 or spellId == 452486 or spellId == 212084
+end
+
 ---@param states table<number, GCDHistoryState>
 local function OnUnitSpellcastChannelStart(states, ...)
 	local unit, _, spellId = ...
 
 	if unit ~= "player" or not spellId then
 		return
+	end
+
+	-- Eye Beam/Abyssal Gaze send two channel start events...
+	if isIgnoredChannelSpell(spellId) then
+		local previous = states[aura_env.spellcasts - 1]
+
+		if previous and isIgnoredChannelSpell(previous.spellId) then
+			return
+		end
 	end
 
 	for index = aura_env.spellcasts, aura_env.spellcasts - limit, -1 do
@@ -360,13 +377,16 @@ local function OnUnitSpellcastChannelStop(states, ...)
 		end
 	end
 
+	-- initial duration is based on max channel, but we don't always fully channel
+	local duration = aura_env.config.general.duration + now - previousCast.start
+	local expirationTime = previousCast.start + previousCast.duration
+
 	states:Update(previousIndex, {
 		changed = true,
-		pause = false,
+		paused = false,
 		desaturated = false,
-		-- initial duration is based on max channel, but we don't always fully channel
-		duration = aura_env.config.general.duration + GetTime() - previousCast.start,
-		expirationTime = previousCast.start + previousCast.duration,
+		duration = duration,
+		expirationTime = expirationTime,
 	})
 end
 

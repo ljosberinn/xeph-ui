@@ -1,5 +1,5 @@
 function f(self, unitId, unitFrame, envTable, modTable)
-	if not modTable.config.scale then
+	if not modTable.isActive then
 		return
 	end
 
@@ -8,6 +8,8 @@ function f(self, unitId, unitFrame, envTable, modTable)
 	if not npcID then
 		return
 	end
+
+	modTable.compile()
 
 	local scale = modTable.npcIDs[npcID]
 

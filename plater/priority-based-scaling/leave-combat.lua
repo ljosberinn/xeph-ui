@@ -1,7 +1,7 @@
 function f(_, unitId, unitFrame, _, modTable)
 	-- when updating this, also update Init and Nameplate Updated
 
-	if not modTable.config.scale then
+	if not modTable.isActive then
 		return
 	end
 

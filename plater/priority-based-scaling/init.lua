@@ -1,4 +1,6 @@
 function f(modTable)
+	modTable.isActive = modTable.config.scale and WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+
 	local medium = modTable.config.midScale -- 0.90
 	local small = modTable.config.lowScale -- 0.80
 	local extrasmall = modTable.config.extraLowScale -- 0.70,
@@ -26,21 +28,151 @@ function f(modTable)
 	---@type table<number, SpitefulLikeScaling>
 	---@description table of npc ids with conditional scaling based on their current target
 	local spitefulLikes = {
-		[220626] = {
+		[220626] = { -- Blood Parasite, Ovinax
 			self = larger,
 			others = extrasmall,
-		}, --Blood Parasite, Ovinax
+		},
+		[235631] = { -- Crawler Mine, Motherlode
+			self = larger,
+			others = small,
+		},
+		[133482] = { -- Crawler Mine, Motherlode
+			self = larger,
+			others = small,
+		},
+		[167898] = { -- Manifestation of Envy, HoA
+			self = medium,
+			others = small,
+		},
 	}
 
+	---@table<number, number>
 	modTable.npcIDs = {}
-	do
+
+	modTable.playerMetaInformation = {
+		specId = nil,
+		isRdps = false,
+		isTank = false,
+		isMdps = false,
+		isHealer = false,
+		lastQuery = 0,
+	}
+
+	local function GetCurrentSpecId()
+		local diff = GetTime() - modTable.playerMetaInformation.lastQuery
+
+		if diff >= 60 then
+			modTable.playerMetaInformation.lastQuery = GetTime()
+			return PlayerUtil.GetCurrentSpecID()
+		end
+
+		return modTable.playerMetaInformation.specId
+	end
+
+	---@return  boolean, boolean, boolean, boolean
+	function modTable.determinePlayerMetaInformation(specId)
+		local role = select(5, GetSpecializationInfoByID(specId))
+
+		if role == "NONE" then
+			role = "DAMAGER"
+		end
+
+		local isTank = false
+		local isHealer = false
+		local isRdps = false
+		local isMdps = false
+
+		if role == "TANK" then
+			isTank = true
+		elseif role == "HEALER" then
+			isHealer = true
+		elseif role == "DAMAGER" then
+			isRdps = specId == 102 -- balance
+				or specId == 1467 -- devastation
+				or specId == 1473 -- augmentation
+				or specId == 253 -- beast mastery
+				or specId == 254 -- marksmanship
+				or specId == 62 -- arcane
+				or specId == 63 -- fire
+				or specId == 64 -- frost
+				or specId == 258 -- shadow
+				or specId == 262 -- elemental
+				or specId == 265 -- afflictin
+				or specId == 266 -- demonology
+				or specId == 267 -- destruction
+
+			isMdps = not isRdps
+		end
+
+		return isRdps, isTank, isMdps, isHealer
+	end
+
+	---@param defaultScale number
+	---@param condition boolean
+	---@return number
+	local function downscaleByOneIf(defaultScale, condition)
+		if condition then
+			if defaultScale == larger then
+				return medium
+			elseif defaultScale == medium then
+				return small
+			end
+		end
+
+		return defaultScale
+	end
+
+	function modTable.compile(force)
+		if not modTable.isActive then
+			return
+		end
+
+		local specId = GetCurrentSpecId()
+
+		if not force and specId == modTable.playerMetaInformation.specId then
+			return
+		end
+
+		modTable.playerMetaInformation.specId = specId
+
+		local isRdps, isTank, isMdps, isHealer = modTable.determinePlayerMetaInformation(specId)
+
+		if
+			not force
+			and isRdps == modTable.playerMetaInformation.isRdps
+			and isTank == modTable.playerMetaInformation.isTank
+			and isMdps == modTable.playerMetaInformation.isMdps
+			and isHealer == modTable.playerMetaInformation.isHealer
+		then
+			return
+		end
+
+		modTable.playerMetaInformation.isRdps = isRdps
+		modTable.playerMetaInformation.isTank = isTank
+		modTable.playerMetaInformation.isMdps = isMdps
+		modTable.playerMetaInformation.isHealer = isHealer
+
+		table.wipe(modTable.npcIDs)
+
 		local test = {
 			--[87329] = extrasmall, -- test dummy
 		}
 		-- raids
+
+		local manaforgeOmega = {}
+		if not isTank then
+			manaforgeOmega[244922] = medium -- Shadowguard Phaseblade
+		end
+
+		local liberationOfUndermine = {
+			[231935] = small, -- Junkyard Hyena
+			[236280] = small, -- Tiny Torq
+			[236284] = small, -- Fun-sized Flarendo
+			[231977] = medium, -- Darkfuse Technician
+		}
+
 		local nerubarPalace = {
 			[219739] = small, -- Infested Spawn
-			--[220626] = small, -- Blood Parasite -
 			[223674] = small, --Skitterer - Ansurek
 			[219746] = small, -- Tomb - Ansurek
 			[221344] = medium, -- Gloom Hatchling - Ansurek
@@ -61,21 +193,45 @@ function f(modTable)
 		}
 
 		-- War Within dungeons
+		local ecoDomeAldani = {
+			[234870] = small, -- Invading Mite
+		}
+
+		local operationFloodgate = {
+			[231497] = medium, -- Bombshell crab
+			[231014] = medium, -- Loaderbot
+			[229252] = medium, -- Darkfuse Hyena
+			[228144] = downscaleByOneIf(medium, isRdps or isMdps), -- Darkfuse Soldier
+		}
+		if not isTank then
+			operationFloodgate[227145] = medium -- Waterworks Crocolisk
+		end
+
+		local theRookery = {
+			[219066] = small, -- Citizen
+		}
 
 		local prioryOfTheSacredFlame = {
 			[212838] = small, --Arathi Neophyte
-			[207943] = small, --Arathi Neophyte
+			[207943] = extrasmall, --Arathi Neophyte
+			[206705] = small, -- Arathi Footman
+			[206699] = downscaleByOneIf(medium, isMdps or isTank), -- War lynx
+			[206694] = medium, -- Fervent Sharpshooter
+			[211140] = small, -- Arathi Neophyte - Last boss
 		}
 
 		local darkflameCleft = {
 			[210148] = small, -- Menial Laborer
 			[210810] = small, -- Menial Laborer
 			[208457] = small, -- Skittering Darkness
+			[213008] = medium, -- Wriggling Darkspawn
 		}
 
 		local cinderbrewMeadery = {
+			[218671] = medium, -- Pyromaniac
 			[217126] = extrasmall, --Over-indulged Patron
 			[214668] = small, -- Patron
+			[214920] = small, -- Tasting room attendant
 			[218865] = small, --Bee-let
 			[210270] = small, --Brew Drop
 			[223562] = small, --Brew Drop #2
@@ -90,6 +246,7 @@ function f(modTable)
 			[216341] = small, --Jabbing Flyer
 			[218325] = extrasmall, --Swarming Flyer
 			[216337] = small, --Bloodworker
+			[215968] = small, -- Black blood
 		}
 
 		local cityOfThreads = {
@@ -105,9 +262,13 @@ function f(modTable)
 		}
 
 		local theDawnbreaker = {
-			--[225601] = extrasmall, --Webbed Victim
-			[224616] = small, --Animated Shadow
+			[224616] = small, -- Animated Shadow
+			[213894] = small, -- Nightfall Curseblade
 		}
+
+		if not isTank then
+			theDawnbreaker[213895] = medium -- Nightfall Shadowalker
+		end
 
 		-- DF Dungeons
 
@@ -179,11 +340,23 @@ function f(modTable)
 		-- Shadowlands Dungeons
 
 		local tazavesh = {
-			[178163] = small, -- Murkbrine Shorerunner
+			[178163] = small, -- Murkbrine Shorerunner - Gambit
+			[178394] = medium, -- Cartel Lackey - Streets
+			[176396] = medium, -- Defective Sorter - Streets
+			[177807] = medium, -- Customs Security
+			[179386] = medium, -- Corsair Officer
+			[180432] = small, -- Devoted Accomplice
 		}
+
+		if not isTank then
+			tazavesh[176394] = medium -- P.O.S.T. Worker
+			tazavesh[180015] = medium -- Burly Deckhand
+		end
 
 		local theaterOfPain = {
 			[163089] = small, -- Disgusting Refuse
+			[169875] = medium, -- Shackled Soul
+			[167994] = medium, -- Ossified Conscript
 		}
 
 		local necroticWake = {
@@ -202,8 +375,17 @@ function f(modTable)
 		}
 
 		local hallsOfAtonement = {
-			[167892] = medium, -- Tormented Soul
+			[167892] = small, -- Tormented Soul
+			[167806] = small, -- Animated Sin
+			[167610] = small, -- Anklebiter
+			[165415] = small, -- Toiling Groundskeeper
+			[164363] = medium, -- Undying Stonefiend - Echelon
 		}
+
+		if isRdps then
+			hallsOfAtonement[164563] = medium -- Vicious Gargon
+			hallsOfAtonement[165515] = medium -- Depraved Darkblade
+		end
 
 		local deOtherSide = {
 			[168986] = small, -- Skeletal Raptor
@@ -221,8 +403,21 @@ function f(modTable)
 
 		--BFA Dungeons
 
+		local theMotherlode = {
+			[130436] = medium, -- Off-Duty Laborer
+			[136006] = extrasmall, -- Rowdy Reveler
+			[136005] = extrasmall, -- Rowdy Reveler
+			[130437] = medium, -- Mine Rat
+			[133963] = small, -- Test Subject
+			[130653] = small, -- Wanton Sapper
+			[134005] = small, -- Shalebiter
+			[138369] = small, -- Footbomb Hooligan
+		}
+
 		local mechagon = {
-			[144300] = small, -- Mechagon Citizen
+			[144300] = extrasmall, -- Mechagon Citizen
+			[150547] = medium, -- Scrapbone Grunter
+			[144301] = small, -- Living Waste
 		}
 
 		local siegeOfBoralus = {
@@ -338,6 +533,12 @@ function f(modTable)
 
 		local maps = {
 			test,
+			manaforgeOmega,
+			liberationOfUndermine,
+			ecoDomeAldani,
+			operationFloodgate,
+			theMotherlode,
+			theRookery,
 			prioryOfTheSacredFlame,
 			darkflameCleft,
 			cinderbrewMeadery,

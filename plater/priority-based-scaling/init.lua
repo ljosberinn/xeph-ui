@@ -44,6 +44,10 @@ function f(modTable)
 			self = medium,
 			others = small,
 		},
+		[231014] = { -- Loaderbot - Floodgate
+			self = larger,
+			others = medium,
+		},
 	}
 
 	---@table<number, number>
@@ -195,11 +199,15 @@ function f(modTable)
 		-- War Within dungeons
 		local ecoDomeAldani = {
 			[234870] = small, -- Invading Mite
+			[234912] = medium, -- Ravaging Scavenger
+			[245411] = medium, -- Ravaging Scavenger
+			[234960] = medium, -- Tamed Ruinstalker
+			[239379] = small, -- Unbound Ethereal
 		}
 
 		local operationFloodgate = {
 			[231497] = medium, -- Bombshell crab
-			[231014] = medium, -- Loaderbot
+			--[231014] = medium, -- Loaderbot
 			[229252] = medium, -- Darkfuse Hyena
 			[228144] = downscaleByOneIf(medium, isRdps or isMdps), -- Darkfuse Soldier
 		}
@@ -263,9 +271,9 @@ function f(modTable)
 
 		local theDawnbreaker = {
 			[224616] = small, -- Animated Shadow
-			[213894] = small, -- Nightfall Curseblade
+			[213894] = medium, -- Nightfall Curseblade
+			[223995] = medium, -- Nightfall Curseblade
 		}
-
 		if not isTank then
 			theDawnbreaker[213895] = medium -- Nightfall Shadowalker
 		end
@@ -347,7 +355,6 @@ function f(modTable)
 			[179386] = medium, -- Corsair Officer
 			[180432] = small, -- Devoted Accomplice
 		}
-
 		if not isTank then
 			tazavesh[176394] = medium -- P.O.S.T. Worker
 			tazavesh[180015] = medium -- Burly Deckhand
@@ -381,7 +388,6 @@ function f(modTable)
 			[165415] = small, -- Toiling Groundskeeper
 			[164363] = medium, -- Undying Stonefiend - Echelon
 		}
-
 		if isRdps then
 			hallsOfAtonement[164563] = medium -- Vicious Gargon
 			hallsOfAtonement[165515] = medium -- Depraved Darkblade

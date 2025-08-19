@@ -64,6 +64,10 @@ function f(states, event, ...)
 
 			return changed
 		elseif updatedTriggerNumber == 4 then -- dragonrage
+			if not state[""] then
+				return false
+			end
+
 			local nextState = {
 				dragonrageReadyAt = state[""].duration > 0 and state[""].expirationTime or 0,
 				hold = false,

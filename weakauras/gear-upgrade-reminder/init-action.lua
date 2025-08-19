@@ -70,7 +70,7 @@ local bonusToTierMap = {
 	[12361] = "Myth",
 }
 
--- copy(JSON.stringify(Object.values(JSON.parse($0.textContent)).filter(x => x.upgrade?.seasonId === 25).reduce((acc, data) => {
+-- copy(JSON.stringify(Object.values(JSON.parse($0.textContent)).filter(x => x.upgrade?.seasonId === 30).reduce((acc, data) => {
 --     const [tier] = data.upgrade.fullName.split(' ')
 --     if (acc[tier]) {
 --         if (data.upgrade.itemLevel > acc[tier].max) {
@@ -109,7 +109,7 @@ local function isCraftedBonusId(id)
 		or id == 12050 -- Starlight Crafted
 end
 
-local function getUpgradeTrack(bonusIds)
+local function GetUpgradeTrack(bonusIds)
 	for i = 1, #bonusIds do
 		local id = tonumber(bonusIds[i])
 
@@ -123,6 +123,30 @@ local function getUpgradeTrack(bonusIds)
 			return tiers[key]
 		end
 	end
+end
+
+local function GetBonusIds(link)
+	local itemString = string.match(link, "item:([%-?%d:]+)")
+	if not itemString then
+		return {}
+	end
+
+	local bonuses = {}
+	local itemSplit = {}
+
+	for v in string.gmatch(itemString, "(%d*:?)") do
+		if v == ":" then
+			itemSplit[#itemSplit + 1] = 0
+		else
+			itemSplit[#itemSplit + 1] = string.gsub(v, ":", "")
+		end
+	end
+
+	for index = 1, tonumber(itemSplit[13]) do
+		bonuses[#bonuses + 1] = itemSplit[13 + index]
+	end
+
+	return bonuses
 end
 
 ---@return number
@@ -140,11 +164,8 @@ function aura_env.doUpgradeCheck()
 				local itemLink = C_Item.GetItemLink(itemLoc)
 
 				if itemLink then
-					local itemLinkValues = StringSplitIntoTable(":", itemLink)
-					local numBonusIDs = itemLinkValues[14]
-					numBonusIDs = numBonusIDs and tonumber(numBonusIDs) or 0
-					local bonusIds = numBonusIDs > 0 and { unpack(itemLinkValues, 15, 15 + numBonusIDs - 1) } or {}
-					local upgradeTrack = getUpgradeTrack(bonusIds)
+					local bonusIds = GetBonusIds(itemLink)
+					local upgradeTrack = GetUpgradeTrack(bonusIds)
 
 					if upgradeTrack and currentItemLevel < upgradeTrack.max then
 						local redundancySlot = slot == INVSLOT_OFFHAND and Enum.ItemRedundancySlot.Offhand

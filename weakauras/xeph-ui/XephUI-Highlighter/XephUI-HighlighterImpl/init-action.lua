@@ -583,13 +583,47 @@ local function cacheUpdated(key, total)
 	return true
 end
 
+---@type table<string, boolean>
+local guidTargetDummyCache = {}
+
+---@param guid string
+---@return boolean
+local function isTargetDummy(guid)
+	if guidTargetDummyCache[guid] ~= nil then
+		return guidTargetDummyCache[guid]
+	end
+
+	local idStr = select(6, strsplit("-", guid))
+	local id = tonumber(idStr)
+
+	if
+		-- Dornogal target dummies
+		id == 225982
+		or id == 219250
+		or id == 225985
+		or id == 225978
+		or id == 225983
+		or id == 225984
+		or id == 225976
+		or id == 225977
+	then
+		guidTargetDummyCache[guid] = true
+		return true
+	end
+
+	guidTargetDummyCache[guid] = false
+
+	return false
+end
+
 ---@return boolean
 local function handleDamageEvent(...)
 	if not InCombatLockdown() then -- cannot possibly be our damage event
 		return false
 	end
 
-	local _, _, _, sourceGUID, _, sourceFlags, _, targetGUID, _, _, _, spellId, _, _, amount, _, _, _, _, absorbed = ...
+	local _, _, _, sourceGUID, _, sourceFlags, _, targetGUID, _, _, _, spellId, _, _, amount, overkill, _, _, _, absorbed =
+		...
 
 	local keys = keyMaps.damage[spellId]
 	local isReflecting = false
@@ -611,7 +645,15 @@ local function handleDamageEvent(...)
 			validateAndDetermineAmplification(key, sourceGUID, sourceFlags, targetGUID, spellId, "damage")
 
 		if mayProceed or isReflecting then
-			local total = calculateTotal(amount + (absorbed or 0), amplification)
+			if not overkill or overkill == -1 then
+				overkill = 0
+			end
+
+			if overkill > 0 and isTargetDummy(targetGUID) then
+				overkill = 0
+			end
+
+			local total = calculateTotal(amount + (absorbed or 0) - overkill, amplification)
 
 			if total > 0 and cacheUpdated(key, total) then
 				hasChanges = true
@@ -758,9 +800,28 @@ end
 
 ---@return boolean
 local function handleSpellMissed(...)
-	local _, _, _, sourceGUID, _, _, _, targetGUID, _, _, _, spellId, _, _, missType = ...
+	local _, _, _, sourceGUID, _, _, _, targetGUID, _, _, _, spellId, _, _, missType, _, amount = ...
 
-	if hasReflect and missType == "REFLECT" and targetGUID == WeakAuras.myGUID then
+	if missType == "ABSORB" then
+		return handleDamageEvent(
+			nil,
+			nil,
+			nil,
+			sourceGUID,
+			nil,
+			nil,
+			nil,
+			targetGUID,
+			nil,
+			nil,
+			nil,
+			spellId,
+			nil,
+			nil,
+			amount,
+			0
+		)
+	elseif hasReflect and missType == "REFLECT" and targetGUID == WeakAuras.myGUID then
 		reflects[sourceGUID] = reflects[sourceGUID] or {}
 		reflects[sourceGUID][spellId] = GetTime()
 	end
@@ -877,17 +938,9 @@ aura_env.cleuMap = {
 		return handleHealEvent(...)
 	end,
 	["SPELL_MISSED"] = function(...)
-		if not hasReflect then
-			return false
-		end
-
 		return handleSpellMissed(...)
 	end,
 	["SPELL_PERIODIC_MISSED"] = function(...)
-		if not hasReflect then
-			return false
-		end
-
 		return handleSpellMissed(...)
 	end,
 	["SPELL_SUMMON"] = function(...)
@@ -914,6 +967,9 @@ end
 ---to just assume whenever you leave combat, we can drop all seen debuff stacks
 ---@return boolean
 function aura_env.onPlayerRegenEnabled()
+	-- just so we don't carry around a massive list over time
+	table.wipe(guidTargetDummyCache)
+
 	if hasReflect then
 		table.wipe(reflects)
 	end

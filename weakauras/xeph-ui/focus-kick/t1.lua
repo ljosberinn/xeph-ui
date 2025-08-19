@@ -82,15 +82,16 @@ function f(states, event, updatedTriggerNumber, updatedTriggerStates)
 			states[""].castType = "cast"
 		end
 
-		local interruptCooldown, interruptCastTimestamp = aura_env.getInterruptCooldown()
-		states[""].interruptOnCooldown = interruptCooldown > 0
+		local interruptInfo = C_Spell.GetSpellCooldown(aura_env.config.interruptSpellId)
+
+		states[""].interruptOnCooldown = interruptInfo.duration > 0
 
 		if not state.interruptible or not states[""].interruptOnCooldown then
 			aura_env.hideTick()
 			return true
 		end
 
-		local interruptReadyAt = interruptCastTimestamp + interruptCooldown
+		local interruptReadyAt = interruptInfo.startTime + interruptInfo.duration
 
 		if interruptReadyAt > state.expirationTime - aura_env.config.interruptThreshold then
 			aura_env.hideTick()

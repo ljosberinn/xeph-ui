@@ -33,7 +33,7 @@ function aura_env.shouldHold(state)
 		local fudge = aura_env.config.slopPercent * chargeCooldown
 
 		-- DR cd is further away than another charge, send
-		if dragonrageReadyIn > chargeCooldown + fudge then
+		if dragonrageReadyIn > chargeCooldown - fudge then
 			return false
 		end
 
@@ -51,7 +51,7 @@ function aura_env.shouldHold(state)
 	if timeBetweenCappingAndDragonrage <= chargeCooldown then
 		local fudge = aura_env.config.slopPercent * chargeCooldown
 
-		if timeBetweenCappingAndDragonrage > chargeCooldown + fudge then
+		if timeBetweenCappingAndDragonrage > (chargeCooldown - fudge) then
 			return false
 		end
 

@@ -89,9 +89,3 @@ function aura_env.hideTick()
 		tick:SetVisible(false)
 	end
 end
-
----@return number, number
-function aura_env.getInterruptCooldown()
-	local spellCd = C_Spell.GetSpellCooldown(aura_env.config.interruptSpellId)
-	return spellCd.duration, spellCd.startTime
-end
